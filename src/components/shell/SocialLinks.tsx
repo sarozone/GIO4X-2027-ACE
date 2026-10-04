@@ -73,6 +73,21 @@ const MARKS: Record<SocialKey, ReactNode> = {
   tiktok: <path d="M11 3.5v9a2.8 2.8 0 1 1-2.8-2.8M11 3.5c.2 2 1.6 3.4 3.6 3.6" />,
 };
 
+/**
+ * Each mark in its channel's own colour, lifted a little where the original is
+ * too dark to read on the night header and footer. X and Threads have no colour
+ * of their own (black on white), so they take the text colour.
+ */
+const TINTS: Partial<Record<SocialKey, string>> = {
+  linkedin: "#3B9CF2",
+  facebook: "#4A94FF",
+  instagram: "#F0527F",
+  youtube: "#FF4D4D",
+  telegram: "#35B4EE",
+  whatsapp: "#2FD872",
+  tiktok: "#FF3D6E",
+};
+
 /** the channels shown before their addresses have been supplied */
 const SHOWN: SocialKey[] = ["linkedin", "x", "facebook", "instagram", "youtube", "telegram"];
 
@@ -99,7 +114,7 @@ export function SocialLinks({ names = false, className = "", limit }: { names?: 
   const slots = socialSlots().slice(0, limit);
   if (slots.length === 0) return null;
   const mark = (key: SocialKey) => (
-    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden style={{ color: TINTS[key] }}>
       {MARKS[key]}
     </svg>
   );
@@ -115,7 +130,7 @@ export function SocialLinks({ names = false, className = "", limit }: { names?: 
             </a>
           ) : (
             // no address yet: the mark is shown, and is not a link
-            <span role="img" aria-label={`${SOCIAL_LABELS[key]}: link to follow`} title={`${SOCIAL_LABELS[key]}: link to follow`} className={`${shape} cursor-default opacity-70`}>
+            <span role="img" aria-label={`${SOCIAL_LABELS[key]}: link to follow`} title={`${SOCIAL_LABELS[key]}: link to follow`} className={`${shape} cursor-default`}>
               {mark(key)}
               {names && <span>{SOCIAL_LABELS[key]}</span>}
             </span>

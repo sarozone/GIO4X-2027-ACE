@@ -157,7 +157,7 @@ export const fundingConfirmed: { title: string; body: string }[] = [
 ];
 
 export const fundingPending: { label: string; why: string }[] = [
-  { label: "Payment methods", why: "The two previous websites list different methods." },
+  { label: "Payment methods", why: "The two previous websites list different methods. What the client portal implements is listed below; which are open to you is confirmed in your client area." },
   { label: "Deposit and withdrawal fees", why: "Previously published figures contradict one another." },
   { label: "Processing times and cut-off", why: "Several different timings were published." },
   { label: "Minimum and maximum amounts", why: "Previously published minimums differ." },

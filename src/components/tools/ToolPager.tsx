@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 /**
- * Previous and next tool, as ordinary links: the way through the twelve tools
+ * Previous and next tool, as ordinary links: the way through the tools
  * for a keyboard, a mouse and a screen reader, and the visible counterpart of
  * the swipe on a touch screen (SwipeNav). The order is the hub's own.
  */

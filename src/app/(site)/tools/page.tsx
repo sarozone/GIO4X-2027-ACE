@@ -11,14 +11,17 @@ import { NextSteps, PageHero } from "@/components/ui/Page";
 import { HubMini } from "@/components/tools/HubMini";
 import { PageTour } from "@/components/tour/PageTour";
 import type { PageTourStop } from "@/components/tour/stops";
-import { toolGroups } from "@/components/tools/content";
+import { countWord, toolGroups } from "@/components/tools/content";
 import { educationalNote } from "@/config/legal";
 import { getTool, tools, type Tool } from "@/data/tools";
 import { pageMeta } from "@/lib/meta";
 import { webPageSchema } from "@/lib/schema";
 
-const description =
-  "Twelve calculators and visualisers for position size, pip value, margin, cost, leverage and order types. They share your inputs, show their formulae and working, and never tell you what to trade.";
+/** How many tools the registry holds, in words: never typed, so a new tool cannot leave it wrong. */
+const COUNT = countWord(tools.length);
+const COUNT_CAP = countWord(tools.length, true);
+
+const description = `${COUNT_CAP} calculators and visualisers for position size, pip value, margin, cost, swap, pivot and Fibonacci levels, leverage and order types. They share your inputs, show their formulae and working, and never tell you what to trade.`;
 
 export const metadata = pageMeta({ title: "Trader Toolkit", description, path: "/tools" });
 
@@ -28,11 +31,11 @@ const ungrouped = tools.filter((t) => !toolGroups.some((g) => g.slugs.includes(t
 
 /** The first-visit Toolkit tour. Each step repeats what the page says at the place it points to. */
 const tour: PageTourStop[] = [
-  { title: "Twelve tools, one system", body: "Calculators and visualisers that work together. Each shows its formula and the working with your own numbers. None of them tells you what to trade." },
-  { target: "main .cx-hero .cx-aside", title: "One set of figures", body: "Set a balance and a risk share here. Instrument, account currency, balance, lot size, leverage and risk are kept in your browser and shared by all twelve tools. Nothing is sent to GIO4X." },
+  { title: `${COUNT_CAP} tools, one system`, body: "Calculators and visualisers that work together. Each shows its formula and the working with your own numbers. None of them tells you what to trade." },
+  { target: "main .cx-hero .cx-aside", title: "One set of figures", body: "Set a balance and a risk share here. Instrument, account currency, balance, lot size, leverage and risk are kept in your browser and shared by every tool that uses them. Nothing is sent to GIO4X." },
   ...toolGroups.map((g): PageTourStop => ({ target: `[data-tour-group="${g.key}"]`, title: g.title, body: `${g.question} ${g.note}` })),
   { target: "#rules", title: "Arithmetic in the open", body: "Every result sits beside its formula and the same formula with your numbers in it, line by line, so any figure can be checked by hand. Starting figures are placeholders, not suggestions." },
-  { title: "Inside a tool", body: "Save keeps a tool on My desk, in this browser only. Previous and next links at the top and foot of each tool lead through all twelve in order; on a phone, a swipe left or right does the same." },
+  { title: "Inside a tool", body: `Save keeps a tool on My desk, in this browser only. Previous and next links at the top and foot of each tool lead through all ${COUNT} in order; on a phone, a swipe left or right does the same.` },
 ];
 
 function ToolRow({ tool }: { tool: Tool }) {
@@ -64,11 +67,11 @@ export default function ToolsHub() {
         crumbs={[{ name: "Tools", href: "/tools" }]}
         eyebrow="Trader Toolkit"
         title="GIO4X Trader Toolkit"
-        lead="Twelve calculators and visualisers that work as one system. Set a balance, an instrument or a risk figure in one and it is there in the next. Each shows its formula and the working with your own numbers. None of them tells you what to trade."
+        lead={`${COUNT_CAP} calculators and visualisers that work as one system. Set a balance, an instrument or a risk figure in one and it is there in the next. Each shows its formula and the working with your own numbers. None of them tells you what to trade.`}
         aside={<HubMini />}
         companion={
           <HeroCompanion figure={<SharedFigures />} label="One set of figures">
-            Instrument, account currency, balance, lot size, leverage and risk are kept in your browser and shared by all twelve tools. Nothing is sent to GIO4X. Set a balance and a risk share here, open any tool below, and both are already in place.
+            Instrument, account currency, balance, lot size, leverage and risk are kept in your browser and shared by every tool that uses them. Nothing is sent to GIO4X. Set a balance and a risk share here, open any tool below, and both are already in place.
           </HeroCompanion>
         }
       >
@@ -134,7 +137,7 @@ export default function ToolsHub() {
           </div>
           <ol className="border-t border-line">
             {[
-              { t: "One set of figures.", d: "Instrument, account currency, balance, lot size, leverage and risk are kept in your browser and shared by all twelve tools. Nothing is sent to GIO4X." },
+              { t: "One set of figures.", d: "Instrument, account currency, balance, lot size, leverage and risk are kept in your browser and shared by every tool that uses them. Nothing is sent to GIO4X." },
               { t: "No hidden step.", d: "Every result sits beside its formula and the same formula with your numbers in it, line by line, so any figure can be checked by hand." },
               { t: "Sourced or yours.", d: "Conversions use the European Central Bank’s daily reference rate, named and dated. Costs start from the conditions GIO4X publishes. Everything else is a number you typed." },
               { t: "No suggestions.", d: "There are no recommended settings and no “optimal” values. Starting figures are placeholders that make the working visible." },

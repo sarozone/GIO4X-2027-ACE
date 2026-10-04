@@ -7,6 +7,7 @@ import { ReturnLoop } from "@/components/figures/trading/ReturnLoop";
 import { AskLine, NumberedRows, PendingList, RiskNote } from "@/components/trading/Blocks";
 import { NextSteps, PageHero, SectionHead } from "@/components/ui/Page";
 import { riskWarning } from "@/config/legal";
+import { PORTAL_READ_ON, portalMethods, portalWalletCurrencies, portalWithdrawalRules } from "@/data/funding-methods";
 import { fundingConfirmed, fundingCurrencies, fundingExplainers, fundingFlow, fundingPending } from "@/data/trading";
 import { pageMeta } from "@/lib/meta";
 
@@ -26,7 +27,7 @@ export default function FundingPage() {
         ]}
         eyebrow="Funding and withdrawals"
         title="How money moves in and out."
-        lead="This page publishes only what GIO4X has stated consistently. Fees, methods and timings that were published in more than one version are not repeated here; they are confirmed in your client area before you commit to a payment."
+        lead="This page publishes only what GIO4X has stated consistently, and what its client portal can be seen to do. Fees, limits and timings that were published in more than one version are not repeated here; they are confirmed in your client area before you commit to a payment."
         aside={
           <div className="border-t border-line-strong pt-21">
             <p className="label">Accepted currencies</p>
@@ -76,9 +77,94 @@ export default function FundingPage() {
           <div>
             <p className="eyebrow">Not yet published</p>
             <h2 className="h3 mt-13">What is confirmed in your client area.</h2>
-            <p className="mt-13 text-sm text-ink-2">GIO4X’s two previous websites gave different answers on each of these. Rather than choose one, this site publishes none until the owner confirms it.</p>
+            <p className="mt-13 text-sm text-ink-2">
+              GIO4X’s two previous websites gave different answers on each of these. Rather than choose one, this site publishes none until the owner confirms it. For payment methods there is one thing it can show in the meantime:{" "}
+              <Link href="#portal" className="link">
+                what the client portal supports
+              </Link>
+              , read from the portal itself. Which of those methods are open to you is still confirmed in your client area.
+            </p>
             <PendingList items={fundingPending} className="mt-21" />
             <AskLine className="mt-13" />
+          </div>
+        </div>
+      </section>
+
+      {/* what the portal software implements: every row comes from src/data/funding-methods.ts */}
+      <section className="section hairline" aria-labelledby="portal">
+        <div className="wrap">
+          <SectionHead
+            eyebrow={`From the portal, ${PORTAL_READ_ON}`}
+            title={<span id="portal">What the client portal supports.</span>}
+            lead={`A description of what the GIO4X client portal software implements as of ${PORTAL_READ_ON}, taken from the portal itself.`}
+          />
+          <div className="mt-21 grid gap-8 text-ink-2">
+            <p>
+              It is not a statement of fees, limits or processing times, which are not yet published. It is not a promise that every method is open to every client or in every country. It says what the software does, and where a screen exists with nothing connected behind it, it says that too.
+            </p>
+            <p>
+              As of this date the portal is not connected to a payment provider. A deposit or a withdrawal made there is a request: the portal records it, a member of staff reviews it, and the wallet balance changes only when it is approved. The payment itself travels outside the portal, through your bank or the network you used.
+            </p>
+          </div>
+
+          <div className="mt-34 overflow-x-auto">
+            <table className="table-gx min-w-[46rem]">
+              <caption className="sr-only">Methods in the GIO4X client portal as of {PORTAL_READ_ON}</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Method</th>
+                  <th scope="col">For</th>
+                  <th scope="col">How the portal processes it</th>
+                  <th scope="col">Currencies</th>
+                </tr>
+              </thead>
+              <tbody>
+                {portalMethods.map((m) => (
+                  <tr key={m.method}>
+                    <th scope="row" className="align-top text-left font-semibold text-ink">
+                      {m.method}
+                    </th>
+                    <td className="align-top">{m.direction}</td>
+                    <td className={`align-top ${m.notConnected ? "text-ink-3" : "text-ink-2"}`}>{m.processing}</td>
+                    <td className="align-top">{m.currencies}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="mt-34 grid gap-34 lg:grid-cols-2 lg:gap-55">
+            <div>
+              <h3 className="h4">What a withdrawal request requires</h3>
+              <ul className="mt-13 border-t border-line">
+                {portalWithdrawalRules.map((r) => (
+                  <li key={r} className="border-b border-line py-13 text-sm text-ink-2">
+                    {r}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h3 className="h4">Wallet currencies, fees and limits</h3>
+              <p className="mt-13 text-sm text-ink-2">The portal’s wallet can be held in these units. USC is the US cent, used by cent accounts. A new client’s wallet is opened in US dollars.</p>
+              <ul className="mt-13 flex flex-wrap gap-5" aria-label="Currencies a portal wallet can be held in">
+                {portalWalletCurrencies.map((c) => (
+                  <li key={c} className="chip num">
+                    {c}
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-13 text-sm text-ink-2">
+                This is not the same list as the accepted currencies at the top of this page, which comes from the previous GIO4X websites. Until GIO4X confirms one list, treat the currency offered to you in your client area as the answer.
+              </p>
+              <p className="mt-13 text-sm text-ink-2">
+                Fees, minimum and maximum amounts are set by GIO4X in the portal, the fee charges in tables its staff maintain, and not in this website. No figure is given here. Check what the portal shows you, or{" "}
+                <Link href="/contact" className="link">
+                  ask
+                </Link>
+                , before you confirm a payment.
+              </p>
+            </div>
           </div>
         </div>
       </section>

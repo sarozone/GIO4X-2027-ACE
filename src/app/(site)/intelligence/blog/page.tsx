@@ -89,7 +89,13 @@ export default async function BlogPage({ searchParams }: Search) {
         ]}
         eyebrow="Daily blog"
         title="The daily blog"
-        lead="Short notes from GIO4X’s desks, written and published by staff. They explain what happened or how something works. They are educational, and they are not advice or a recommendation to trade."
+        lead={
+          <>
+            {/* the blog's caption, given by the owner */}
+            <span className="mb-13 block font-display text-2xl text-on-night">One Market. One Story. Every Day.</span>
+            Short notes from GIO4X’s desks, written and published by staff. They explain what happened or how something works. They are educational, and they are not advice or a recommendation to trade.
+          </>
+        }
       />
 
       <section className="section-quiet" aria-labelledby="blog-posts">

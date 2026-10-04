@@ -109,6 +109,8 @@ owner's to confirm or change. Changing one is a one-line edit in the file named.
 | H2 | Leverage steps in the allocation demonstration | 1:50, 1:100, 1:200, 1:500 | The usual steps up to the published ceiling of 1:500 | `EXAMPLE_LEVERAGE` in `src/components/funding/AllocationDemo.tsx` |
 | H3 | Minimum funding in the allocation demonstration | 150.00, the lowest published minimum deposit | No per-platform minimum has been set | the same file |
 | H4 | Social channels shown without addresses | LinkedIn, X, Facebook, Instagram, YouTube, Telegram, as marks that are not links | The owner asked for them to be displayed; the addresses will follow (B7) | `SHOWN` in `src/components/shell/SocialLinks.tsx`; addresses go in `socials` in `src/config/destinations.ts` |
+| H5 | Demo account terms | Valid for 30 days; opened with 100,000 in virtual funds | Common practice among brokers, and what the earlier GIO4X site stated | `DEMO_DAYS`, `DEMO_FUNDS` in `src/app/(site)/trading/demo/page.tsx` |
+| H6 | Swap-free option | On request, subject to approval; for clients who cannot pay or receive interest for reasons of religious belief; may be withdrawn if misused. No fee, number of nights or instrument list is stated | Common practice among brokers | `terms` in `src/app/(site)/trading/swap-free/page.tsx` |
 
 Not filled from other brokers, and still waiting: anything that is a statement about GIO4X's legal or
 regulatory position (A1, A2, A5), who it accepts (A3), its documents (A8), or a figure that would be

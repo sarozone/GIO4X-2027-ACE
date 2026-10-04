@@ -15,4 +15,7 @@ export const toolRhymes: Record<string, readonly [string, string]> = {
   "leverage-visualizer": ["Leverage lifts, and leverage drops:", "see how near the margin stops."],
   "spread-visualizer": ["Mind the spread", "before you tread."],
   "order-anatomy": ["Entry, stop and target, three:", "an order's whole anatomy."],
+  "pivot-points": ["High and low and close, combined:", "seven lines, and none divined."],
+  "fibonacci-levels": ["A swing, a ratio and a line:", "a place to look, and not a sign."],
+  swap: ["Hold it past the close of day:", "a little comes, or goes away."],
 };

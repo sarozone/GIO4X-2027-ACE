@@ -219,7 +219,7 @@ export function ToolsTeaser() {
     <section className="section hairline bg-paper" aria-labelledby="tools-home">
       <div className="wrap phi items-start">
         <div>
-          <SectionHead eyebrow="Trader Toolkit" title={<span id="tools-home">Work the numbers before the market does.</span>} lead="Twelve calculators and visualisers that share their inputs, show their formulae and never tell you what to trade." />
+          <SectionHead eyebrow="Trader Toolkit" title={<span id="tools-home">Work the numbers before the market does.</span>} lead="Fifteen calculators and visualisers that share their inputs, show their formulae and never tell you what to trade." />
           <ul className="mt-34 grid border-l border-t border-line sm:grid-cols-2">
             {tools.map((t, i) => (
               <li key={t.href} className="border-b border-r border-line" data-reveal style={{ ["--i" as string]: i }}>

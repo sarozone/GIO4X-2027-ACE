@@ -90,7 +90,7 @@ export const PAGE_TOUR_FLAG: Record<PageTourId, "tourTools" | "tourGateway"> = {
 
 /** Where each page tour lives, and the words that offer it. */
 export const PAGE_TOURS: Record<PageTourId, { path: string; name: string; offer: string }> = {
-  tools: { path: "/tools", name: "Toolkit tour", offer: "First time in the Toolkit? A few short steps show how the twelve tools fit together." },
+  tools: { path: "/tools", name: "Toolkit tour", offer: "First time in the Toolkit? A few short steps show how the tools fit together." },
   gateway: { path: "/sign-in", name: "Gateway tour", offer: "Not sure which door is yours? A few short steps explain each portal and how to check an address." },
 };
 

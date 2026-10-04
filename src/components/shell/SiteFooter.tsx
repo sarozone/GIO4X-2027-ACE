@@ -180,11 +180,11 @@ export function SiteFooter() {
           target="_blank"
           rel="noopener noreferrer"
           className="group flex items-center gap-13 self-start rounded-sm md:self-auto"
-          aria-label="Technology provided by 777 Raptor (opens 777raptor.com in a new tab)"
+          aria-label="Website and trading technology provided by 777 Raptor (opens 777raptor.com in a new tab)"
         >
           <span className="text-right text-xs leading-snug text-on-night-2 transition-colors duration-fast group-hover:text-on-night">
-            Technology provided by
-            <span className="block font-semibold tracking-[0.04em] text-on-night">777 Raptor</span>
+            Website and trading
+            <span className="block">technology provided by:</span>
           </span>
           <picture>
             <source srcSet="/brand/777-raptor-logo.webp" type="image/webp" />

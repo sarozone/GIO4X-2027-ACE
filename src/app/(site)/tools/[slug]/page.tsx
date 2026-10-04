@@ -8,14 +8,17 @@ import { CompoundGrowth } from "@/components/tools/CompoundGrowth";
 import { CostLab } from "@/components/tools/CostLab";
 import { CurrencyConverter } from "@/components/tools/CurrencyConverter";
 import { Drawdown } from "@/components/tools/Drawdown";
+import { FibonacciLevels } from "@/components/tools/FibonacciLevels";
 import { LeverageVisualizer } from "@/components/tools/LeverageVisualizer";
 import { Margin } from "@/components/tools/Margin";
 import { OrderAnatomy } from "@/components/tools/OrderAnatomy";
 import { PipValue } from "@/components/tools/PipValue";
+import { PivotPoints } from "@/components/tools/PivotPoints";
 import { PositionSize } from "@/components/tools/PositionSize";
 import { ProfitLoss } from "@/components/tools/ProfitLoss";
 import { RiskReward } from "@/components/tools/RiskReward";
 import { SpreadVisualizer } from "@/components/tools/SpreadVisualizer";
+import { SwapCalculator } from "@/components/tools/SwapCalculator";
 import { SwipeNav } from "@/components/tools/SwipeNav";
 import { ToolPager, type PagerTool } from "@/components/tools/ToolPager";
 import type { RatesProp } from "@/components/tools/calc";
@@ -41,6 +44,9 @@ const TOOLS: Record<string, { Component: ComponentType<ToolProps>; rates: boolea
   "leverage-visualizer": { Component: LeverageVisualizer, rates: false },
   "spread-visualizer": { Component: SpreadVisualizer, rates: true },
   "order-anatomy": { Component: OrderAnatomy, rates: false },
+  "pivot-points": { Component: PivotPoints, rates: false },
+  "fibonacci-levels": { Component: FibonacciLevels, rates: false },
+  swap: { Component: SwapCalculator, rates: false },
 };
 
 /** The tools in the order the hub lists them (its groups, then anything not yet grouped): the order "previous" and "next" follow. */

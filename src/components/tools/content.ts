@@ -19,7 +19,7 @@ export const toolGroups: ToolGroup[] = [
     title: "Cost the trade",
     question: "What does it cost, and what would it return?",
     note: "Spread, commission and overnight financing added up line by line, the outcome between any two prices, and conversion at a published reference rate.",
-    slugs: ["cost-lab", "profit-loss", "currency-converter"],
+    slugs: ["cost-lab", "profit-loss", "currency-converter", "swap"],
   },
   {
     key: "mechanics",
@@ -28,7 +28,21 @@ export const toolGroups: ToolGroup[] = [
     note: "Five drawings of things that are easier to see than to read: what leverage multiplies, what a spread takes, what each order does, and why losses are harder to undo than to make.",
     slugs: ["leverage-visualizer", "spread-visualizer", "order-anatomy", "drawdown", "compound-growth"],
   },
+  {
+    key: "levels",
+    title: "Mark the levels",
+    question: "Where do the conventional lines fall?",
+    note: "Two sets of lines that chart users draw from prices already printed: pivot points from one finished bar, Fibonacci levels from one swing. Both are arithmetic on the past, and neither is a forecast.",
+    slugs: ["pivot-points", "fibonacci-levels"],
+  },
 ];
+
+/** A count of tools in words, as the hub writes it ("Fifteen calculators…"): computed from the registry, so adding a tool never leaves a number wrong. */
+const COUNT_WORDS = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty"];
+export function countWord(n: number, capital = false): string {
+  const w = COUNT_WORDS[n] ?? String(n);
+  return capital ? w.charAt(0).toUpperCase() + w.slice(1) : w;
+}
 
 export type ToolContent = {
   heading: string;
@@ -138,5 +152,35 @@ export const toolContent: Record<string, ToolContent> = {
       "This is why a stop loss limits a loss in ordinary conditions but cannot fix it in advance. If the market jumps over the level, the order is filled on the far side of the jump.",
     ],
     context: { label: "Compare platforms", href: "/platforms/compare", note: "Where these orders are placed: 777 Raptor and MetaTrader 5.", kind: "Platforms" },
+  },
+  "pivot-points": {
+    heading: "Seven lines from three numbers, and no opinion in any of them.",
+    paragraphs: [
+      "A pivot point is an average of one finished bar: its high, its low and its close, added together and divided by three. The support and resistance levels are that average pushed up and down by amounts taken from the same bar. Nothing else goes in. Two people who start from the same bar get the same seven lines.",
+      "The method comes from exchange floors, where the levels for the day could be worked out by hand before the opening. The variants change the recipe a little. The Fibonacci version spaces the levels at 38.2%, 61.8% and 100% of the bar’s range; Woodie’s counts the close twice; Camarilla measures from the close and keeps the levels close to it.",
+      "Pivot levels are arithmetic on one past bar: a convention many traders watch, not a forecast. If a price pauses near one, part of the reason may simply be that many people have the same line on their screens. The calculation itself knows nothing about what happens next.",
+      "The choice of bar matters more than the choice of formula. A day’s high, low and close depend on when the platform’s day begins and ends, so the same market can show different daily pivots on two platforms.",
+    ],
+    context: { label: "Support and resistance", href: "/chart-school/support-and-resistance", note: "What a level is, and what it cannot promise.", kind: "Chart school" },
+  },
+  "fibonacci-levels": {
+    heading: "Fractions of a move that has already happened.",
+    paragraphs: [
+      "Take one swing, from a low to a high or from a high to a low. A retracement level is the price at which a given fraction of that move would have been given back. An extension level is the price at which the move would have grown to a given multiple of itself. That is the whole calculation: one subtraction and one multiplication for each line.",
+      "The ratios come from the Fibonacci sequence, in which each number is the sum of the two before it: 1, 1, 2, 3, 5, 8, 13, 21, 34, 55. Divide any number by the next and the answer settles towards 0.618: that is the 61.8% level, the ratio of neighbouring Fibonacci numbers. Skip one place and it is 0.382; skip two and it is 0.236. Divide the other way and it is 1.618. The 78.6% and 127.2% levels are the square roots of 0.618 and 1.618. The 50% level is not a Fibonacci ratio at all, and is included by convention.",
+      "The golden ratio gives these tools their arithmetic. Whether the levels have predictive value is a separate question: the evidence for it is weak and disputed, and part of what is seen near a level may simply be that many traders are watching the same lines. The levels are reference points, not forecasts.",
+      "The lines also depend on a choice the formula cannot make: which high and which low. Different swings give different levels, and with enough lines on a chart a price will always be near one of them.",
+    ],
+    context: { label: "Fibonacci retracement", href: "/glossary/fibonacci-retracement", note: "The term, defined plainly.", kind: "Glossary" },
+  },
+  swap: {
+    heading: "The cost, or the credit, of holding a position overnight.",
+    paragraphs: [
+      "A leveraged position is financed. In a currency pair you are in effect holding one currency and owing the other, and each carries its own interest rate. When a position is kept open past the end of the trading day it is rolled over to the next one, and the difference between the two rates is applied to the account, together with the broker’s own margin. That adjustment is the swap.",
+      "It can be a charge or a credit. Holding the currency with the higher rate against the one with the lower can produce a credit; holding it the other way round produces a charge. Because the broker’s margin is taken on both sides, the long rate and the short rate are not mirror images of each other, and both can be charges. That is why this page asks for the two separately.",
+      "On one night of the week the swap is applied three times over. A trade in the spot market settles two business days later, so a position rolled on that night steps across the weekend, and the two days on which the market is closed are charged with it. Which night that is depends on the instrument and the broker, so the page asks only how many such nights fall inside the period.",
+      "GIO4X’s swap rates are not yet published on this site, so nothing here is prefilled: the rates are the ones your own platform shows. What is published is the “Overnight swap” line of each account type: “Applies” for Classic and Premium, and “Swap-free” for ECN.",
+    ],
+    context: { label: "Account types", href: "/trading/accounts", note: "The overnight swap line of each account, as published.", kind: "Trading" },
   },
 };

@@ -68,7 +68,11 @@ export const nav: NavSection[] = [
         items: [
           { label: "Account Types", href: "/trading/accounts", note: "Classic, Premium, ECN" },
           { label: "Choose an Account", href: "/trading/accounts/choose", note: "Four questions" },
+          { label: "Demo account", href: "/trading/demo", note: "Practise with virtual money" },
+          { label: "Swap-free accounts", href: "/trading/swap-free", note: "No overnight financing" },
           { label: "Trading Conditions", href: "/trading/conditions", note: "Spreads, leverage, margin rules" },
+          { label: "Contract specifications", href: "/trading/specifications", note: "Every instrument in one table" },
+          { label: "Trading hours", href: "/trading/hours", note: "Sessions, the week, holidays" },
           { label: "Funding & Withdrawals", href: "/trading/funding", note: "Paying in and taking out" },
           { label: "Dividing funds", href: "/trading/funding/allocation", note: "One wallet, two platforms: a demonstration" },
         ],
@@ -85,11 +89,14 @@ export const nav: NavSection[] = [
       {
         title: "Trader Toolkit",
         items: [
-          { label: "All tools", href: "/tools", note: "Twelve calculators and visualisers" },
+          { label: "All tools", href: "/tools", note: "Fifteen calculators and visualisers" },
           { label: "Position Size", href: "/tools/position-size", note: "Size from risk and stop" },
           { label: "Pip Value", href: "/tools/pip-value", note: "What one pip is worth" },
           { label: "Margin", href: "/tools/margin", note: "What a position sets aside" },
           { label: "Cost Lab", href: "/tools/cost-lab", note: "Spread, commission, swap together" },
+          { label: "Swap", href: "/tools/swap", note: "The overnight charge or credit" },
+          { label: "Pivot Points", href: "/tools/pivot-points", note: "Seven levels from one bar" },
+          { label: "Fibonacci Levels", href: "/tools/fibonacci-levels", note: "Retracements and extensions" },
         ],
       },
       {
@@ -142,7 +149,7 @@ export const nav: NavSection[] = [
         title: "Read",
         items: [
           { label: "Latest", href: "/intelligence", note: "Analysis and explainers" },
-          { label: "Daily blog", href: "/intelligence/blog", note: "Short notes from the desks" },
+          { label: "Daily blog", href: "/intelligence/blog", note: "One market. One story. Every day." },
           { label: "Morning Room", href: "/morning-room", note: "Today in sessions and schedule" },
         ],
       },
