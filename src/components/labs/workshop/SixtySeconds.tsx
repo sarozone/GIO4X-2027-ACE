@@ -19,6 +19,13 @@ import { seeded } from "./rng";
  * real markets are not this walk, and a score here says nothing about them.
  *
  * The best score is kept in this browser (gx:play), and only that.
+ *
+ * With `coach`, a panel beside the chart reads what the player is doing while
+ * the minute runs and says what is going right, what is going wrong and what
+ * to try. It comments on conduct (how often the spread is paid, how long a
+ * losing trade is held, reversing after a loss), never on direction: nothing
+ * predicts this price, and the panel says so. It is worked out from the round
+ * in progress and kept nowhere.
  */
 
 const TICKS = 240;
@@ -27,8 +34,86 @@ const PIP = 0.0001;
 const SPREAD = 1; // pips, paid across each round trip
 const DOWN: Colour = [214, 96, 88, 1];
 
-type Game = { phase: "idle" | "run" | "done"; t0: number; path: number[]; side: 0 | 1 | -1; entry: number; banked: number; trades: number };
-const fresh = (): Game => ({ phase: "idle", t0: 0, path: [1], side: 0, entry: 0, banked: 0, trades: 0 });
+type Game = {
+  phase: "idle" | "run" | "done";
+  t0: number;
+  path: number[];
+  side: 0 | 1 | -1;
+  entry: number;
+  banked: number;
+  trades: number;
+  /** for the coach: the tick each trade opened on, every closed trade, and reversals made straight from one side to the other */
+  openedAt: number;
+  opens: number[];
+  closed: { pips: number; held: number }[];
+  flips: number;
+};
+const fresh = (): Game => ({ phase: "idle", t0: 0, path: [1], side: 0, entry: 0, banked: 0, trades: 0, openedAt: 0, opens: [], closed: [], flips: 0 });
+
+type Coaching = { right: string[]; wrong: string[]; ideas: string[] };
+
+const secs = (ticks: number) => Math.max(1, Math.round(ticks / PER_SECOND));
+const avg = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0);
+
+/** What the round so far shows about the player's conduct. `open` is the open trade's result in pips, spread included. */
+function coaching(g: Game, i: number, open: number): Coaching {
+  const right: string[] = [];
+  const wrong: string[] = [];
+  const ideas: string[] = [];
+  const paid = g.trades * SPREAD;
+  const pl = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
+
+  if (g.phase === "idle") {
+    ideas.push("Before you press Start, decide two numbers: how many pips against you will make you close, and how many ahead will be enough.");
+    ideas.push("Nothing predicts this price. What you control is how often you pay the spread and how large a loss you allow.");
+    return { right, wrong, ideas };
+  }
+
+  const wins = g.closed.filter((c) => c.pips > 0);
+  const losses = g.closed.filter((c) => c.pips < 0);
+  const holdWin = avg(wins.map((c) => c.held));
+  const holdLoss = avg(losses.map((c) => c.held));
+  const lately = g.opens.filter((t) => i - t <= 10 * PER_SECOND).length;
+  const held = g.side === 0 ? 0 : i - g.openedAt;
+
+  if (g.phase === "done") {
+    if (g.trades === 0) {
+      right.push("No trade, so no spread paid. Standing aside is a decision too, and here it cost nothing.");
+      ideas.push("Play a round with one trade held for the whole minute, then a round with ten. Compare what the spread took from each.");
+      return { right, wrong, ideas };
+    }
+    if (g.trades <= 3) right.push(`You made ${pl(g.trades, "trade")} and paid ${pl(paid, "pip")} in spread: a small cost for the minute.`);
+    if (losses.length && wins.length && holdLoss <= holdWin) right.push("You closed losing trades at least as quickly as winning ones.");
+    if (g.trades >= 6) wrong.push(`${pl(g.trades, "trade")} cost ${pl(paid, "pip")} in spread. On a price like this, that cost is most of the result.`);
+    if (losses.length && wins.length && holdLoss > holdWin * 1.5) wrong.push(`You held losing trades about ${secs(holdLoss)}s and winning ones about ${secs(holdWin)}s: gains were cut short and losses were left to run.`);
+    if (g.flips >= 2) wrong.push(`You reversed ${pl(g.flips, "time")} straight from one side to the other. Each reversal is a new trade and a new spread.`);
+    ideas.push("Next round, cap yourself at three trades and see what the spread takes.");
+    ideas.push("A good or bad score here is luck. Judge the round by whether you kept to the two numbers you chose.");
+    return { right, wrong, ideas };
+  }
+
+  // the minute is running
+  if (g.side === 0 && g.trades === 0) right.push("No position yet. Waiting costs nothing here.");
+  if (g.trades > 0 && g.trades <= 3) right.push(`${pl(g.trades, "trade")} so far, ${pl(paid, "pip")} of spread paid. Few trades keep the cost small.`);
+  if (g.side !== 0 && open > 0) right.push(`This trade is ${open.toFixed(1)} pips ahead after its spread.`);
+  if (losses.length && wins.length && holdLoss <= holdWin) right.push("You have closed losing trades at least as quickly as winning ones.");
+  const last = g.closed[g.closed.length - 1];
+  if (last && last.pips < 0 && last.pips > -4) right.push("Your last loss was kept small.");
+
+  if (lately >= 3) wrong.push(`${pl(lately, "trade")} in the last ten seconds. Each one started a pip behind.`);
+  if (g.trades >= 5) wrong.push(`${pl(paid, "pip")} paid in spread so far. On this price, that is the main thing between you and zero.`);
+  if (g.side !== 0 && open <= -5) wrong.push(`This trade is ${Math.abs(open).toFixed(1)} pips behind. A coin-flip price is as likely to go further as to come back.`);
+  if (g.side !== 0 && open < 0 && held >= 15 * PER_SECOND) wrong.push(`You have held this losing trade for ${secs(held)}s. Waiting for it to come back is hoping, not a plan.`);
+  if (losses.length && wins.length && holdLoss > holdWin * 1.5) wrong.push("You are holding losing trades longer than winning ones.");
+  if (g.flips >= 2) wrong.push(`${pl(g.flips, "reversal")} straight from one side to the other: a new spread each time.`);
+
+  if (g.side === 0) ideas.push("Before the next trade, name the loss at which you will close and the gain that will be enough.");
+  if (g.side !== 0 && open < 0) ideas.push("If this has passed the loss you had in mind, close it. If you had none in mind, that is the thing to fix next round.");
+  if (g.side !== 0 && open > 0) ideas.push("Decide now what would make you close: a number of pips, or the end of the minute. Then keep to it.");
+  if (lately >= 3 || g.trades >= 5) ideas.push("Take your hands off for ten seconds. Fewer trades is the only sure way to pay less here.");
+  ideas.push("Nothing predicts this price. Judge yourself by cost and discipline, not by the score.");
+  return { right: right.slice(0, 3), wrong: wrong.slice(0, 3), ideas: ideas.slice(0, 3) };
+}
 
 function pathOf(seed: number): number[] {
   const r = seeded(seed);
@@ -38,9 +123,9 @@ function pathOf(seed: number): number[] {
 }
 const fmt = (pips: number) => `${pips > 0 ? "+" : ""}${pips.toFixed(1)}`;
 
-export function SixtySeconds() {
+export function SixtySeconds({ coach = false }: { coach?: boolean } = {}) {
   const game = useRef<Game>(fresh());
-  const [view, setView] = useState({ phase: "idle" as Game["phase"], left: 60, score: 0, side: 0 as Game["side"], trades: 0, best: false });
+  const [view, setView] = useState({ phase: "idle" as Game["phase"], left: 60, score: 0, side: 0 as Game["side"], trades: 0, best: false, coaching: coaching(fresh(), 0, 0) });
   const [rev, setRev] = useState(0);
   const play = usePlay();
 
@@ -50,22 +135,28 @@ export function SixtySeconds() {
   const sync = (best = false) => {
     const g = game.current;
     const i = g.phase === "run" ? indexNow() : g.phase === "done" ? TICKS : 0;
-    setView({ phase: g.phase, left: Math.max(0, Math.ceil(60 - i / PER_SECOND)), score: g.banked + openPips(g, i), side: g.side, trades: g.trades, best });
+    setView({ phase: g.phase, left: Math.max(0, Math.ceil(60 - i / PER_SECOND)), score: g.banked + openPips(g, i), side: g.side, trades: g.trades, best, coaching: coaching(g, i, openPips(g, i)) });
     setRev((v) => v + 1);
   };
 
   const close = () => {
     const g = game.current;
     if (g.side === 0) return;
-    g.banked += openPips(g, g.phase === "done" ? TICKS : indexNow());
+    const at = g.phase === "done" ? TICKS : indexNow();
+    const pips = openPips(g, at);
+    g.banked += pips;
+    g.closed.push({ pips, held: at - g.openedAt });
     g.side = 0;
   };
   const open = (side: 1 | -1) => {
     const g = game.current;
     if (g.phase !== "run") return;
+    if (g.side !== 0 && g.side !== side) g.flips += 1;
     close();
     g.side = side;
     g.entry = g.path[indexNow()];
+    g.openedAt = indexNow();
+    g.opens.push(g.openedAt);
     g.trades += 1;
     sync();
   };
@@ -204,8 +295,15 @@ export function SixtySeconds() {
   };
 
   const running = view.phase === "run";
+  const c = view.coaching;
+  const notes: { title: string; tone: string; label: string; items: string[]; none: string }[] = [
+    { title: "Going right", tone: "text-pos", label: "!text-pos", items: c.right, none: running ? "Nothing to note yet." : "Shown while the minute runs." },
+    { title: "Going wrong", tone: "text-neg", label: "!text-neg", items: c.wrong, none: running ? "Nothing so far." : "Shown while the minute runs." },
+    { title: "Try this", tone: "text-accent", label: "!text-accent", items: c.ideas, none: "" },
+  ];
   return (
-    <div>
+    <div className={coach ? "grid items-start gap-21 lg:grid-cols-[minmax(0,1.618fr)_minmax(0,1fr)]" : undefined}>
+     <div className="min-w-0">
       <div className="flex flex-wrap items-baseline gap-x-34 gap-y-5">
         <p>
           <span className="label">Time left</span> <span className="num ml-5 font-display text-2xl text-ink">{view.left}s</span>
@@ -264,6 +362,32 @@ export function SixtySeconds() {
             : `The minute is over: ${fmt(view.score)} pips over ${view.trades} ${view.trades === 1 ? "trade" : "trades"}${view.best ? ", your best so far" : ""}. You paid ${view.trades} ${view.trades === 1 ? "pip" : "pips"} in spread. The price was a coin-flip walk, so over many rounds the average comes out at about what the spread cost: the fewer the trades, the less is paid.`)}
       </p>
       <p className="mt-8 text-xs text-ink-3">An invented price from a new seed each round. A real market is not this walk, and a score here says nothing about one. Your best score is kept in this browser only.</p>
+     </div>
+      {coach && (
+        <aside className="panel grid gap-21 p-21" aria-label="A coach’s notes on this round">
+          <div>
+            <p className="eyebrow">At your shoulder</p>
+            <p className="mt-8 text-sm text-ink-3">Notes on how you are trading this minute, not on where the price will go. Nothing predicts it.</p>
+          </div>
+          {notes.map((n) => (
+            <div key={n.title} className="border-t border-line pt-13">
+              <p className={`label ${n.label}`}>{n.title}</p>
+              {n.items.length ? (
+                <ul className="mt-8 grid gap-8 text-sm text-ink-2">
+                  {n.items.map((x) => (
+                    <li key={x} className="grid grid-cols-[0.8125rem_1fr] gap-x-8">
+                      <span aria-hidden className={`mt-[0.7em] h-px w-full bg-current ${n.tone}`} />
+                      <span>{x}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-8 text-sm text-ink-3">{n.none}</p>
+              )}
+            </div>
+          ))}
+        </aside>
+      )}
     </div>
   );
 }

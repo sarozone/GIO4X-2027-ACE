@@ -93,7 +93,7 @@ export const academyStory: Record<string, LessonStory> = {
       // Single-candle patterns
       { diagram: { kind: "candles", shape: "doji", labels: ["Open", "Close"] }, caption: "A candle where the open and close are virtually identical, creating a cross-like shape." },
       // Two-candle patterns
-      { quote: "Two-candle chart patterns provide stronger signals by showing a shift in momentum." },
+      { quote: "Two-candle chart patterns are read as stronger signals, because they show a shift in momentum over two periods." },
       // Three-candle reversal patterns
       { diagram: { kind: "candles", shape: "reversal-bottom", labels: ["Bearish candle", "The star", "Bullish candle"] }, caption: "A three-candle bullish reversal: a long bearish candle, followed by a small-bodied candle (the star), and then a long bullish candle." },
       // Trading candlestick patterns effectively
@@ -165,7 +165,7 @@ export const academyStory: Record<string, LessonStory> = {
       // RSI divergence
       { term: "divergence", caption: "It occurs when price and the RSI indicator move in opposite directions." },
       // Understanding the MACD
-      { term: "macd", caption: "This indicator excels at revealing changes in trend momentum." },
+      { term: "macd", caption: "This indicator is designed to show changes in trend momentum." },
       // MACD signal line crossovers
       { diagram: { kind: "lines", labels: ["MACD line", "Signal line"], relation: "cross-up" }, caption: "The MACD line crosses above the signal line." },
       // The MACD histogram: stated in the chapter before as the difference between the two lines
@@ -254,7 +254,7 @@ export const academyStory: Record<string, LessonStory> = {
   },
 
   "managing-trading-psychology": {
-    opening: { quote: "Even with a proven strategy and sound risk management, forex emotions can derail your trading results." },
+    opening: { quote: "Even with a well-tested strategy and sound risk management, forex emotions can derail your trading results." },
     chapters: [
       // Common psychological pitfalls
       { quote: "This overconfidence bias is one of the most dangerous forex emotions because it feels like skill rather than luck." },
@@ -264,6 +264,94 @@ export const academyStory: Record<string, LessonStory> = {
       { diagram: { kind: "cycle", labels: ["Deep breaths", "Trades", "Journal", "Review weekly"] }, caption: "Review this journal weekly to identify patterns." },
       // A durable mindset
       { quote: "Losses are a natural cost of doing business — not personal failures." },
+    ],
+  },
+
+  /* ── lessons written by hand (src/data/academy-added): the same rule, every caption a sentence of its chapter ── */
+
+  "how-a-blockchain-works": {
+    opening: { quote: "It is an entry in a shared record, called a blockchain, that says which address holds how much." },
+    chapters: [
+      // A ledger with no keeper
+      { diagram: { kind: "hub", labels: ["Blockchain", "Nodes", "Block", "Fingerprint"] }, caption: "No single one of them is in charge." },
+      // How a payment settles
+      { diagram: { kind: "flow", labels: ["Signed", "Broadcast", "Included", "Confirmed"] }, caption: "Each later block built on top is one more confirmation." },
+      // Bitcoin
+      { quote: "The rules aim for a new block about every ten minutes on average, and they cap the supply at 21 million coins." },
+      // Ethereum
+      { diagram: { kind: "balance", labels: ["Bitcoin", "Ethereum"], tilt: "level" }, caption: "A block is added about every twelve seconds, and ether has no fixed cap on supply." },
+      // Stablecoins
+      { quote: "The fixed value is a promise, not a property of the technology." },
+      // What the chain does not do
+      { quote: "A blockchain settles transfers of its own coin." },
+    ],
+  },
+
+  "crypto-custody-weekends-and-venues": {
+    opening: { quote: "There are two quite different ways to have a stake in the price of a cryptocurrency: holding the coin, or holding a contract on its price." },
+    chapters: [
+      // Holding the coin
+      { quote: "Whoever knows the private key controls the coins." },
+      // Holding a contract on the price
+      { term: "cfd", caption: "No coin is bought." },
+      // A market that never closes
+      { term: "liquidity", caption: "Open is not the same as busy." },
+      // Why prices differ between venues
+      { term: "arbitrage", caption: "Arbitrage keeps the differences small: traders buy where the coin is cheaper and sell where it is dearer." },
+      // What follows
+      { quote: "It says what is held, who is owed, and why the number on one screen is not the number on another." },
+    ],
+  },
+
+  "testing-a-set-of-rules": {
+    opening: { quote: "A trading idea is an opinion until it is written as rules that someone else could follow." },
+    chapters: [
+      // Step one: describe the rule
+      { diagram: { kind: "hub", labels: ["Rule", "Open", "Stop-loss", "Target", "Risk"] }, caption: "A rule is ready to test when it answers four questions." },
+      // Step two: test it on invented prices
+      { diagram: { kind: "flow", labels: ["Entry", "Stop", "Target", "Risk per trade"] }, caption: "It runs the rule over invented prices and reports the result." },
+      // What invented prices can and cannot show
+      { diagram: { kind: "balance", labels: ["Can show", "Cannot show"], tilt: "level" }, caption: "No rule has an edge on such prices, so every gain there is luck and the only reliable effect is cost." },
+      // Step three: see what size does
+      { quote: "The same list of trades gives very different accounts at different sizes." },
+      // Step four: record real decisions
+      { quote: "A journal tests what no simulation can, which is whether the rules were followed." },
+      // What the four steps add up to
+      { diagram: { kind: "flow", labels: ["Stated", "Tested", "Sized", "Checked"] }, caption: "None of them shows that a rule will be profitable." },
+    ],
+  },
+
+  "expert-advisors-and-how-they-run": {
+    opening: { term: "expert-advisor", caption: "It runs inside the MetaTrader platform, reads prices and sends orders without anyone clicking." },
+    chapters: [
+      // What an Expert Advisor is
+      { term: "metatrader", caption: "The platform knows three main kinds of program." },
+      // How it runs
+      { diagram: { kind: "flow", labels: ["Start", "Each tick", "Stop"] }, caption: "The terminal calls the program when something happens, and three events matter most." },
+      // How it fails in operation
+      { quote: "Most failures of an automated system have nothing to do with its trading idea." },
+      // What a VPS is for
+      { term: "vps", caption: "A virtual private server (VPS) is a computer rented in a data centre that stays switched on and connected." },
+      // Rules, not judgement
+      { quote: "An EA does what its code says, including its mistakes, at any hour and at any size it was told to use." },
+    ],
+  },
+
+  "backtesting-optimisation-and-overfitting": {
+    opening: { quote: "A backtest runs a set of trading rules over past prices and records the trades they would have made." },
+    chapters: [
+      // What a backtest is
+      { diagram: { kind: "hub", labels: ["Backtest", "Price history", "Detail", "Costs", "Fills"] }, caption: "Every one of those figures depends on assumptions." },
+      // Optimisation
+      { quote: "The best of 2,500 attempts is partly the best by luck." },
+      // Overfitting
+      { quote: "An overfitted system describes the past very well and says little about what comes next." },
+      // Out-of-sample testing
+      { diagram: { kind: "flow", labels: ["In-sample", "Out-of-sample"] }, caption: "The check works only once." },
+      // Walk-forward testing
+      { diagram: { kind: "cycle", labels: ["Optimised", "Tested", "Moves forward"] }, caption: "The out-of-sample stretches are joined into one record." },
+      // Why a good backtest is not a forecast
+      { quote: "A backtest shown by someone selling a system is also the one they chose to show." },
     ],
   },
 };

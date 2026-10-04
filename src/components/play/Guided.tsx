@@ -31,7 +31,7 @@ import { readPlay, noteSeen, usePlay } from "./store";
 const ROOMS = [
   { name: "Build it", lead: "Before any trade: where you get in, where you are wrong, where you would be content. Then the size that makes being wrong cost what you chose.", body: <OrderBuilder /> },
   { name: "Check it", lead: "Before it is sent: read the ticket the way you would read someone else’s. Six to try.", body: <FixTheTrade /> },
-  { name: "Live with it", lead: "One minute on an invented price. Every trade pays the spread. See what is left, and why.", body: <SixtySeconds /> },
+  { name: "Live with it", lead: "One minute on an invented price. Every trade pays the spread. See what is left, and why.", body: <SixtySeconds coach />, wide: true },
 ] as const;
 
 export function FirstTrade() {
@@ -59,7 +59,8 @@ export function FirstTrade() {
           <>
             <h2 className="h2">{ROOMS[at].name}</h2>
             <p className="lead mt-8 max-w-[40rem]">{ROOMS[at].lead}</p>
-            <div className="mt-21 max-w-[52rem]">{ROOMS[at].body}</div>
+            {/* the room with a coach beside its chart uses the full column */}
+            <div className={`mt-21 ${"wide" in ROOMS[at] ? "" : "max-w-[52rem]"}`}>{ROOMS[at].body}</div>
             <div className="mt-34 flex flex-wrap gap-13 border-t border-line pt-21">
               {at > 0 && (
                 <button type="button" className="btn btn-ghost" onClick={() => go(at - 1)}>

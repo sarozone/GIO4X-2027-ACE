@@ -104,7 +104,7 @@ export function SiteHeader() {
       </a>
 
       <div className={`wrap flex items-center gap-21 transition-[height] duration-slow ${scrolled ? "h-[3.4375rem]" : "h-[4.25rem]"}`}>
-        <Logo height={scrolled ? 28 : 34} className="shrink-0 transition-opacity duration-fast hover:opacity-80" />
+        <Logo height={scrolled ? 36 : 44} className="shrink-0 transition-opacity duration-fast hover:opacity-80" />
 
         <nav aria-label="Primary" className="ml-13 hidden lg:block">
           <ul className="flex items-center">
@@ -198,7 +198,7 @@ export function SiteHeader() {
             <div className="grid grid-cols-4 gap-21 xl:gap-34">
               {s.groups.map((g, gi) => (
                 <div key={g.title} data-mg-fx={rowFx(si, gi)}>
-                  <p className="label">{g.title}</p>
+                  <p className="label !text-accent">{g.title}</p>
                   <ul className="mt-13 grid gap-2">
                     {g.items.map((i) => (
                       <li key={i.href}>
@@ -256,10 +256,16 @@ export function SiteHeader() {
                       <Link href={s.href} className="go">
                         {s.label} overview
                       </Link>
-                      {s.groups.map((g) => (
-                        <div key={g.title}>
-                          <p className="label">{g.title}</p>
-                          <ul className="mt-8">
+                      {/* each group opens on its own, so a long section is a few lines until one is wanted */}
+                      {s.groups.map((g, gi) => (
+                        <details key={g.title} open={gi === 0} className="group/d border-t border-line pt-13 first:border-t-0 first:pt-0">
+                          <summary className="flex min-h-[2.75rem] cursor-pointer list-none items-center justify-between [&::-webkit-details-marker]:hidden">
+                            <span className="label !text-accent">{g.title}</span>
+                            <span className="num text-xs text-ink-3">
+                              {g.items.length} <span aria-hidden className="ml-5 inline-block transition-transform duration-fast group-open/d:rotate-90">›</span>
+                            </span>
+                          </summary>
+                          <ul className="mt-5">
                             {g.items.map((i, ii) => (
                               <li key={i.href}>
                                 <Link href={i.href} className="flex items-center gap-8 py-[0.45rem] text-base text-ink-2">
@@ -269,7 +275,7 @@ export function SiteHeader() {
                               </li>
                             ))}
                           </ul>
-                        </div>
+                        </details>
                       ))}
                     </div>
                   )}

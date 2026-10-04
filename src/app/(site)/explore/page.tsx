@@ -15,6 +15,7 @@ export const metadata = pageMeta({
 });
 
 const chapters = [
+  { id: "start", label: "Starting routes" },
   { id: "sections", label: "Sections" },
   { id: "instruments", label: "Instruments" },
   { id: "tools", label: "Tools" },
@@ -25,6 +26,62 @@ const chapters = [
 ];
 
 const anchor = "scroll-mt-[calc(var(--header-h)+4.25rem)]";
+
+/**
+ * Five ways in, for five kinds of visitor. Each is three or four pages that
+ * already exist, in the order they would be read; none is a new landing page.
+ */
+const routes: { title: string; line: string; links: { label: string; href: string }[] }[] = [
+  {
+    title: "New to markets",
+    line: "The words first, then a first trade on invented prices.",
+    links: [
+      { label: "Your first trade", href: "/academy/first-trade" },
+      { label: "Academy", href: "/academy" },
+      { label: "Glossary", href: "/glossary" },
+      { label: "Practice desk", href: "/labs/simulator" },
+    ],
+  },
+  {
+    title: "Choosing a platform",
+    line: "What each platform documents, and what is still to be published.",
+    links: [
+      { label: "Platforms", href: "/platforms" },
+      { label: "Compare platforms", href: "/platforms/compare" },
+      { label: "777 Raptor", href: "/platforms/raptor" },
+      { label: "MetaTrader 5", href: "/platforms/metatrader-5" },
+    ],
+  },
+  {
+    title: "Checking trading costs",
+    line: "Where a cost comes from, worked on figures you enter.",
+    links: [
+      { label: "Cost Lab", href: "/tools/cost-lab" },
+      { label: "Spread, visualised", href: "/tools/spread-visualizer" },
+      { label: "Trading Conditions", href: "/trading/conditions" },
+      { label: "Side by side", href: "/side-by-side" },
+    ],
+  },
+  {
+    title: "Already a client",
+    line: "Accounts, paying in and out, help, and the way to the portal.",
+    links: [
+      { label: "Account Types", href: "/trading/accounts" },
+      { label: "Funding & Withdrawals", href: "/trading/funding" },
+      { label: "Support requests", href: "/support" },
+      { label: "Sign in", href: "/sign-in" },
+    ],
+  },
+  {
+    title: "Studying investing",
+    line: "How the instruments work, worked cases, and the sums of saving.",
+    links: [
+      { label: "Investing", href: "/investing" },
+      { label: "Case studies", href: "/investing/case-studies" },
+      { label: "Money calculators", href: "/money" },
+    ],
+  },
+];
 
 function ChapterHead({ n, title, count, href, go }: { n: string; title: string; count?: string; href?: string; go?: string }) {
   return (
@@ -74,8 +131,40 @@ export default function ExplorePage() {
         </div>
       </nav>
 
+      {/* starting routes: five ways in, each a short run of existing pages */}
+      <section id="start" className={`section-quiet ${anchor}`} aria-labelledby="start-h">
+        <div className="wrap">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-21 gap-y-8 border-b border-line-strong pb-13">
+            <h2 id="start-h" className="h3">
+              Starting routes
+            </h2>
+            <span className="text-xs text-ink-3">Five ways in. The full directory follows.</span>
+          </div>
+          <ul className="grid gap-x-34 sm:grid-cols-2 lg:grid-cols-5 lg:gap-x-21">
+            {routes.map((r) => (
+              <li key={r.title} className="border-b border-line py-21 lg:border-b-0">
+                <h3 className="h4">{r.title}</h3>
+                <p className="mt-3 text-xs text-ink-3">{r.line}</p>
+                <ol className="mt-8">
+                  {r.links.map((l, i) => (
+                    <li key={l.href}>
+                      <Link href={l.href} className="link-quiet flex min-h-[2.75rem] items-baseline gap-8 py-8 text-[0.9375rem] font-medium text-ink md:min-h-0 md:py-5">
+                        <span className="num text-xs font-normal text-ink-3" aria-hidden>
+                          {i + 1}
+                        </span>
+                        {l.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ol>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
       {/* 01 — the six sections, from the same structure the header reads */}
-      <section id="sections" className={`section-quiet ${anchor}`}>
+      <section id="sections" className={`section-quiet hairline ${anchor}`}>
         <div className="wrap">
           <ChapterHead n="01" title="Sections" count={`${nav.length} sections`} />
           <div className="divide-y divide-line">

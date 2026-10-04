@@ -70,7 +70,7 @@ export function SiteFooter() {
       <nav aria-label="Footer" className="wrap relative grid grid-cols-2 gap-x-21 gap-y-34 border-t border-night-line py-55 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
         {columns.map((c) => (
           <div key={c.title}>
-            <p className="label">{c.title}</p>
+            <p className="label !text-accent">{c.title}</p>
             <ul className="mt-13 grid gap-[0.4rem]">
               {c.items.map((i) => (
                 <li key={`${c.title}-${i.href}`}>
@@ -89,7 +89,7 @@ export function SiteFooter() {
         <div className="grid grid-cols-2 gap-x-21 gap-y-34 md:grid-cols-3">
           {secondary.map((g) => (
             <div key={g.title}>
-              <p className="label">{g.title}</p>
+              <p className="label !text-accent">{g.title}</p>
               <ul className="mt-13 grid gap-[0.4rem]">
                 {g.items.map((i) => (
                   <li key={i.href}>
@@ -169,7 +169,7 @@ export function SiteFooter() {
       {/* colophon */}
       <div className="wrap relative flex flex-col gap-21 border-t border-night-line py-34 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-21">
-          <Logo height={26} />
+          <Logo height={40} />
           <p className="text-xs text-on-night-2">
             © {year} {site.legalName}. All rights reserved.
           </p>

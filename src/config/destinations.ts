@@ -99,6 +99,25 @@ function resolve(key: PortalKey): Destination {
   return { status: "UNCONFIGURED", url: null };
 }
 
+/**
+ * The host this website itself is served from (NEXT_PUBLIC_SITE_URL). While that is not an official
+ * domain, the site is a PREVIEW: a demonstration address, not GIO4X's production service. The portal a
+ * preview serves under /portal is reached at that same preview address, so the checker must be able to
+ * say what the address is instead of "not recognised", without calling it official. Only this one
+ * exact host is treated so: no other host on the same hosting provider is.
+ */
+export const siteHost = (() => {
+  try {
+    return new URL(site.url).hostname.toLowerCase().replace(/\.$/, "");
+  } catch {
+    return "";
+  }
+})();
+export const siteIsOfficial = siteHost !== "" && isOfficialHost(siteHost);
+
+/** True when a configured destination is a path on this website while this website is a preview. */
+export const isPreviewDestination = (url: string): boolean => url.startsWith("/") && !siteIsOfficial;
+
 export const portals: Record<PortalKey, Destination> = {
   client: resolve("client"),
   trader: resolve("trader"),
@@ -147,6 +166,7 @@ export const socials: Partial<Record<SocialKey, string>> = {};
 export type Verdict =
   | { verdict: "OFFICIAL"; host: string }
   | { verdict: "APPROVED_THIRD_PARTY"; host: string; label: string; why: string }
+  | { verdict: "PREVIEW"; host: string }
   | { verdict: "NOT_RECOGNIZED"; host: string | null; reason?: "not-https" | "unparseable" | "has-credentials" };
 
 /**
@@ -167,6 +187,8 @@ export function verifyDestination(input: string): Verdict {
   if (u.username || u.password) return { verdict: "NOT_RECOGNIZED", host, reason: "has-credentials" };
   if (u.protocol !== "https:") return { verdict: "NOT_RECOGNIZED", host, reason: "not-https" };
   if (isOfficialHost(host)) return { verdict: "OFFICIAL", host };
+  // this website's own address, while it is served from a preview host
+  if (siteHost && host === siteHost && !siteIsOfficial) return { verdict: "PREVIEW", host };
   const third = approvedThirdParties.find((t) => matches(host, t.host));
   if (third) return { verdict: "APPROVED_THIRD_PARTY", host, label: third.label, why: third.why };
   const social = Object.values(socials).some((s) => s && candidate.toLowerCase().startsWith(s.toLowerCase()));

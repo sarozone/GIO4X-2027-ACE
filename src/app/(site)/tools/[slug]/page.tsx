@@ -111,6 +111,10 @@ export default async function ToolPage({ params }: Params) {
         title={tool.name}
         lead={tool.line}
       >
+        {/* on a phone the stage fills the first screen: this goes straight to the tool below it */}
+        <a href="#calculator" className="btn btn-primary">
+          Jump to the calculator
+        </a>
         {/* keeps the tool on My desk (/desk), in this browser only */}
         <SaveButton href={`/tools/${tool.slug}`} title={tool.name} className="btn btn-ghost" />
       </PageHero>
@@ -126,7 +130,7 @@ export default async function ToolPage({ params }: Params) {
         </div>
       )}
 
-      <section className="section-quiet" aria-label={`${tool.name}: the tool`}>
+      <section id="calculator" className="section-quiet scroll-mt-[var(--header-h)]" aria-label={`${tool.name}: the tool`}>
         <div className="wrap">
           <Component meta={{ slug: tool.slug, name: tool.name, formula: tool.formula, glossary }} rates={rates} />
         </div>

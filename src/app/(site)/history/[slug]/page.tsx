@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Decision } from "@/components/history/Decision";
 import { EpisodeTimeline } from "@/components/history/EpisodeTimeline";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { NextSteps, PageHero } from "@/components/ui/Page";
@@ -15,7 +16,9 @@ import { articleSchema, faqSchema } from "@/lib/schema";
  * to it, the dated events in order, what changed, what it helps to
  * understand, what is disputed and where the account comes from. The stepped
  * timeline at the top repeats the events; its curve is an illustrative shape
- * and is labelled so.
+ * and is labelled so. Further down, "What was knowable then?" takes a few
+ * moments of the same timeline one at a time, with no score; and the sources
+ * block lists the named public documents, without web addresses.
  */
 
 /** the day these pages were written; changed when their words are */
@@ -127,6 +130,19 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
               <p className="mt-13 text-sm text-ink-3">These are observations about how markets and rules work, drawn from one episode. They are not advice, and they do not say that anything like it will or will not happen again.</p>
             </Block>
 
+            <Block id="mh-knowable" title="What was knowable then?">
+              <p>
+                It is easy to judge an episode once its ending is known. This exercise takes {e.junctures.length === 3 ? "three" : "four"} moments from the timeline above, one at a time. At each it shows only what had been made public by then, asks a hypothetical question with three plain choices, and then shows what came next and what each choice would have meant.
+              </p>
+              <p className="mt-13">
+                The text headed “what had been made public by then” is this site’s own summary of the record, written afterwards. It is not a contemporary document and nothing in it is a quotation. The position described is imagined. No choice is marked right, there is no score, and nothing is stored.
+              </p>
+              <div className="mt-21 min-w-0">
+                <Decision events={e.events} start={e.start} shape={e.shape} seat={e.seat} junctures={e.junctures} />
+              </div>
+              <p className="mt-13 text-sm text-ink-3">A hypothetical for study, not advice. It does not say what anyone should have done then, or what to do now.</p>
+            </Block>
+
             <Block id="mh-caution" title="What is uncertain or disputed">
               <p>{e.caution}</p>
             </Block>
@@ -159,6 +175,25 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
             <Block id="mh-sources" title="Where this account comes from">
               <p>{e.sources}</p>
               <p className="mt-13 text-sm text-ink-3">A number is given on this page only where it is famous and certain. Nothing here is a quotation.</p>
+              {e.documents.length > 0 && (
+                <div className="mt-21">
+                  <h3 id="mh-documents" className="h4">
+                    Documents
+                  </h3>
+                  <ul className="mt-13 grid gap-13" aria-labelledby="mh-documents">
+                    {e.documents.map((d) => (
+                      <li key={d.title} className="border-l-2 border-line pl-13">
+                        <cite className="font-medium not-italic text-ink">{d.title}</cite>
+                        <span className="mt-3 block text-sm text-ink-3">
+                          {d.by} · <span className="num">{d.date}</span>
+                        </span>
+                        <span className="mt-5 block">{d.supports}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="mt-13 text-sm text-ink-3">These are public documents, named by title, issuer and date. No web addresses are given, because addresses change; the title and the issuer are what to search for. The account above is this site’s summary and does not quote them.</p>
+                </div>
+              )}
             </Block>
 
             <p className="mt-34 border-t border-line pt-13 text-sm text-ink-3">A history for study. {educationalNote} What happened in one episode says nothing certain about what any market will do next.</p>

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { WatchButton } from "@/components/desk/Buttons";
 import { HeroCompanion } from "@/components/figures/markets/HeroCompanion";
 import { InstrumentHelix } from "@/components/figures/markets/InstrumentHelix";
+import { InstrumentDepth } from "@/components/markets/InstrumentDepth";
 import { firstSentence, ofKind, ratePair, resolveAll, resolveTerms, resolveTools, toneStyle } from "@/components/markets/graph";
 import { RelatedColumn } from "@/components/markets/LinkRows";
 import { MarketDna } from "@/components/markets/MarketDna";
@@ -13,6 +14,7 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { Change, Sparkline } from "@/components/ui/Data";
 import { DataNote, NextSteps, PageHero, SpecList } from "@/components/ui/Page";
 import { educationalNote, indicativeNote, riskWarning } from "@/config/legal";
+import { depthFor } from "@/data/instrument-depth";
 import { getAssetClass, getInstrument, instrumentHref, instruments, instrumentsByClass, type AssetClass, type Instrument } from "@/data/instruments";
 import { pageMeta } from "@/lib/meta";
 import { crossChange, crossRate, crossSeries, formatFixingDate, formatRate, getReferenceRates, RATES_SOURCE, type ReferenceRates } from "@/lib/rates";
@@ -99,6 +101,7 @@ export default async function InstrumentPage({ params }: Params) {
   const cls = getAssetClass(key);
   if (!i || !cls) notFound();
 
+  const depth = depthFor(key, slug);
   const pair = ratePair(i);
   const rates = pair ? await getReferenceRates() : undefined;
   const siblings = instrumentsByClass(cls.key);
@@ -220,6 +223,9 @@ export default async function InstrumentPage({ params }: Params) {
           </div>
         </div>
       </section>
+
+      {/* what is particular to this instrument: general education, no price and no GIO4X condition */}
+      {depth && <InstrumentDepth depth={depth} name={i.name} costHref="/tools/cost-lab" />}
 
       {/* risk, in ordinary type */}
       <section className="section-quiet hairline" aria-labelledby="risk-title">

@@ -80,7 +80,7 @@ export default function Page() {
           </h2>
           <div className="mt-13 grid max-w-measure gap-13 text-ink-2">
             <p>A number appears only where it is famous and certain, such as the size of a one-day fall in a published index or a rate announced by a central bank. Where historians disagree, or the record is thin, the page says so and gives no figure.</p>
-            <p>The curve on each page is an illustrative shape, not market data: a hand-made line on a scale of 0 to 100 with no axis values, there to show the order of a rise and a fall. Sources are named by kind, such as central bank histories, official inquiry reports and contemporary newspaper accounts.</p>
+            <p>The curve on each page is an illustrative shape, not market data: a hand-made line on a scale of 0 to 100 with no axis values, there to show the order of a rise and a fall. Each page names the documents its account rests on, by title, issuer and date, and has a short exercise in what was knowable at the time.</p>
             <p>These pages describe what happened. They do not say that anything will happen again, and nothing in them is a reason to trade or not to trade. {educationalNote}</p>
           </div>
         </div>

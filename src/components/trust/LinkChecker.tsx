@@ -54,6 +54,15 @@ function Outcome({ result }: { result: Result }) {
     markTone = "text-accent";
     heading = "Approved third-party destination";
     body = [`${v.label}. ${v.why}`, "This is not a GIO4X website. GIO4X links to it on purpose, and the organisation that runs it is responsible for what is on it."];
+  } else if (v.verdict === "PREVIEW") {
+    tone = "border-accent";
+    mark = "i";
+    markTone = "text-accent";
+    heading = "This website’s preview address";
+    body = [
+      "This is the address the website you are reading is served from. It is a preview: a demonstration address, not on the gio4x.com domain and not GIO4X’s production service. The portal linked from this preview is reached at the same address.",
+      "It is listed so that this checker and the links on this website agree. It has not been through the checks an official address goes through, and no other address on the same hosting service is recognised. For anything that involves real money, wait for an address on gio4x.com.",
+    ];
   } else if (v.reason === "not-https") {
     body = [
       "This address does not use https. GIO4X publishes only https addresses, so a link without it is not recognised even when the domain looks right.",

@@ -1,14 +1,21 @@
+import { addedLessons, moduleAdditions, pathAdditions } from "./academy-added";
 import raw from "./generated/academy.json";
 
 /**
  * GIO4X Academy: lessons, modules and learning paths.
  *
  * Carried over from the previous site after the editorial audit recorded in
- * docs/CONTENT-AUDIT.md (scripts/import-content.mjs). `body` is sanitised HTML
- * restricted to an allow-list of tags. Modules are outlines: a module lists
- * only the lessons that actually exist, and says so when it has none. There
- * are no certificates, lesson counts or hour counts, because none of them was
- * backed by content.
+ * docs/CONTENT-AUDIT.md (scripts/import-content.mjs), and joined here to the
+ * lessons written by hand since (src/data/academy-added). `body` is sanitised
+ * HTML restricted to an allow-list of tags. Modules are outlines: a module
+ * lists only the lessons that actually exist, says so when it has none, and
+ * may link to the pages elsewhere on this site that cover its subjects.
+ *
+ * Nothing here states a number of lessons, modules or hours: a page that shows
+ * one counts it from these exports. The Academy offers a printable record
+ * that its questions were answered (/academy/practice, /academy/exams). That
+ * record is not a qualification, a licence or evidence of an ability to
+ * trade, and nothing in the Academy promises that study leads to profit.
  */
 export type AcademyLevel = "Beginner" | "Intermediate" | "Advanced" | "Professional concepts";
 
@@ -34,6 +41,9 @@ export type Lesson = {
   body: string;
 };
 
+/** A page elsewhere on this site that covers part of a module's outline. */
+export type ModuleLink = { href: string; label: string; note?: string };
+
 export type AcademyModule = {
   key: string;
   title: string;
@@ -42,6 +52,8 @@ export type AcademyModule = {
   topics: string[];
   /** slugs of the lessons that exist; may be empty (outline only) */
   lessons: string[];
+  /** pages elsewhere on this site that already cover the module's subjects */
+  elsewhere?: ModuleLink[];
 };
 
 export type LearningPath = {
@@ -80,9 +92,22 @@ const corrected = (l: Lesson): Lesson => {
   return fixes ? { ...l, body: fixes.reduce((body, f) => body.split(f.find).join(f.replace), l.body) } : l;
 };
 
-export const lessons: Lesson[] = data.lessons.map(corrected).sort((a, b) => a.order - b.order);
-export const modules: AcademyModule[] = data.modules;
-export const paths: LearningPath[] = data.paths;
+const carried = data.lessons.map(corrected);
+const carriedSlugs = new Set(carried.map((l) => l.slug));
+// hand-written lessons are numbered on from the last carried one; a slug the import already has wins
+const added = addedLessons(Math.max(-1, ...carried.map((l) => l.order)) + 1).filter((l) => !carriedSlugs.has(l.slug));
+
+export const lessons: Lesson[] = [...carried, ...added].sort((a, b) => a.order - b.order);
+export const modules: AcademyModule[] = data.modules.map((m) => {
+  const more = moduleAdditions[m.key];
+  if (!more) return m;
+  return { ...m, lessons: [...m.lessons, ...more.lessons.filter((s) => !m.lessons.includes(s))], ...(more.elsewhere.length ? { elsewhere: more.elsewhere } : {}) };
+});
+export const paths: LearningPath[] = data.paths.map((p) => {
+  const more = pathAdditions[p.key];
+  if (!more) return p;
+  return { ...p, steps: p.steps.map((s) => (more[s.title] ? { ...s, lessons: [...s.lessons, ...more[s.title].filter((x) => !s.lessons.includes(x))] } : s)) };
+});
 
 const bySlug = new Map(lessons.map((l) => [l.slug, l]));
 export const getLesson = (slug: string) => bySlug.get(slug);

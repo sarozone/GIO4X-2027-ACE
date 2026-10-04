@@ -122,5 +122,9 @@
   {
     "source": "/platforms/777-raptor",
     "destination": "/platforms/raptor"
+  },
+  {
+    "source": "/academy/candlestick-patterns",
+    "destination": "/academy/candlestick-patterns-masterclass"
   }
 ]

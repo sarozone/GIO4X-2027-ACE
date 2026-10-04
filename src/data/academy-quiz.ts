@@ -306,6 +306,113 @@ export const academyQuiz: Record<string, LessonQuestions> = {
       because: "The lesson defines it as a maximum daily loss after which you stop trading for the day, with no exceptions.",
     },
   ],
+
+  /* ── lessons written by hand (src/data/academy-added) ─────────────────── */
+
+  "how-a-blockchain-works": [
+    {
+      question: "What does each block carry that ties it to the block before it?",
+      options: ["A copy of every holder’s private key", "A short digital fingerprint of the previous block", "The coin’s current price"],
+      answer: 1,
+      because: "The lesson says each block carries a fingerprint of the block before it, so altering an old entry would change that fingerprint and every one after it.",
+    },
+    {
+      question: "Since September 2022, how has Ethereum decided who adds the next block?",
+      options: ["By proof of stake: validators lock up ether as a stake", "By proof of work: miners compete to solve a puzzle", "A single company approves each block"],
+      answer: 0,
+      because: "The lesson says Ethereum has used proof of stake since September 2022; proof of work is the method it gives for Bitcoin.",
+    },
+    {
+      question: "How does the lesson describe a stablecoin’s fixed value?",
+      options: ["As a property of the blockchain itself", "As a guarantee given by a central bank", "As a promise that depends on the reserves and on holders being able to redeem"],
+      answer: 2,
+      because: "The fixed value is called a promise, not a property of the technology: it depends on the reserves being there and on holders being able to redeem.",
+    },
+  ],
+
+  "crypto-custody-weekends-and-venues": [
+    {
+      question: "What does someone with a CFD on a cryptocurrency hold?",
+      options: ["The coin, in a wallet kept by the provider", "A contract with the provider on the difference in price", "The private key, but not the coin"],
+      answer: 1,
+      because: "The lesson says no coin is bought: there is no wallet and no key, and what is held is a claim on the provider.",
+    },
+    {
+      question: "Why does the lesson say spreads are wider at weekends?",
+      options: ["Because blockchains stop adding blocks", "Because crypto exchanges are closed", "Because fewer orders rest in the order book, so liquidity is thinner"],
+      answer: 2,
+      because: "The market stays open, but banks are shut and many large firms are less active, so fewer orders rest in the book and liquidity is thinner.",
+    },
+    {
+      question: "Why can one coin show different prices on different exchanges at the same moment?",
+      options: ["Each exchange has its own order book, with its own buyers and sellers", "One exchange sets the official price and the others copy it late", "The blockchain records a separate price for each exchange"],
+      answer: 0,
+      because: "A cryptocurrency has no home exchange: each venue has its own order book and so its own last price, and arbitrage only keeps the differences small.",
+    },
+  ],
+
+  "testing-a-set-of-rules": [
+    {
+      question: "On the Rule bench, one bar touches both the stop and the target. What does the test count?",
+      options: ["The win", "The loss", "Neither: the trade is left out"],
+      answer: 1,
+      because: "The lesson says that where one bar touches both the stop and the target, the test counts the loss.",
+    },
+    {
+      question: "Why can no rule have an edge on the bench’s invented prices?",
+      options: ["Because they are a random walk, which has no memory", "Because the spread on them is zero", "Because the bench allows only one trade"],
+      answer: 0,
+      because: "The prices are a random walk with no memory, so every gain there is luck and the only reliable effect is cost.",
+    },
+    {
+      question: "What does the lesson say a journal tests that no simulation can?",
+      options: ["Whether the market will rise", "Whether the spread will widen", "Whether the rules were followed"],
+      answer: 2,
+      because: "Simulations leave out the person: a journal records real decisions, and so shows whether the rules were followed.",
+    },
+  ],
+
+  "expert-advisors-and-how-they-run": [
+    {
+      question: "Where does an Expert Advisor run?",
+      options: ["On the broker’s server", "In the trading terminal, on the trader’s own computer or on one rented for the purpose", "On the exchange where the order is filled"],
+      answer: 1,
+      because: "The lesson says an EA is attached to a chart in the terminal on the trader’s computer and does not run on the broker’s server; a VPS is a rented computer that runs the terminal instead.",
+    },
+    {
+      question: "The terminal loses its connection. Which of these stays in force?",
+      options: ["A stop-loss already attached to a position, which is held on the broker’s server", "A trailing stop the EA manages in its own code", "A rule in the EA to close at a set time"],
+      answer: 0,
+      because: "A pending order, a stop-loss or a take-profit is held on the broker’s server and remains there; anything the EA does in its own code stops happening.",
+    },
+    {
+      question: "Which failure does a VPS not remove?",
+      options: ["A power cut at home", "The home internet line going down", "Requotes and version changes"],
+      answer: 2,
+      because: "A VPS removes the home computer, its power and its internet line as points of failure. The lesson says it does not remove requotes, version changes or a broker’s server going down.",
+    },
+  ],
+
+  "backtesting-optimisation-and-overfitting": [
+    {
+      question: "A system has two settings, and each is tried at 50 values. How many backtests does the optimisation run?",
+      options: ["100", "2,500", "5,000"],
+      answer: 1,
+      because: "Every value of one setting is combined with every value of the other: 50 × 50 = 2,500, the lesson’s own example.",
+    },
+    {
+      question: "What is the out-of-sample part of the history?",
+      options: ["The part the settings were chosen on", "Prices invented by the tester", "A part kept back, on which the fixed settings are tested once"],
+      answer: 2,
+      because: "Settings are chosen in-sample and then tested once on a part they have never seen. If they are changed after that, the data has become in-sample too.",
+    },
+    {
+      question: "Which of these does the lesson list as a sign of overfitting?",
+      options: ["A result that collapses when a setting is moved by one step", "A large number of trades", "A test run on every tick"],
+      answer: 0,
+      because: "The signs listed are many settings, a result that collapses when a setting moves one step, few trades, and an equity curve that is almost a straight line.",
+    },
+  ],
 };
 
 /** The questions of a lesson, or null when none are written for it. */

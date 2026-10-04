@@ -11,6 +11,10 @@
  *   src/data/generated/books.json
  *   docs/CONTENT-AUDIT.md              (every decision and every removed sentence)
  *
+ * Its last step applies the later editorial corrections listed in
+ * scripts/editorial-fixes.json (see scripts/apply-editorial-fixes.mjs), so
+ * that a re-import ends with the corrected text.
+ *
  * Nothing is published by default. Each item has an explicit editorial
  * decision in the tables below: `publish`, `publish-with-notice` or `hold`.
  * Published items are sanitised against an HTML allow-list, lose their
@@ -1760,3 +1764,15 @@ if (audit.unmatched.length) {
   say(`  ${audit.unmatched.length} item(s) need attention:`);
   for (const u of audit.unmatched) say(`    - ${u}`);
 }
+
+/* ==========================================================================
+   6. EDITORIAL FIXES (override step)
+   ==========================================================================
+   Everything above is unchanged. The files it has just written are then
+   corrected by scripts/apply-editorial-fixes.mjs from the list kept in
+   scripts/editorial-fixes.json (later editorial passes: qualified claims,
+   dated correction notes, and their section of docs/CONTENT-AUDIT.md), so a
+   re-import does not undo them. If a fix no longer matches the text, that
+   script writes nothing and this run ends with a non-zero exit code. */
+const { applyEditorialFixes } = await import("./apply-editorial-fixes.mjs");
+if (!applyEditorialFixes({ log: say }).ok) process.exitCode = 1;

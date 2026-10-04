@@ -9,7 +9,7 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { LinkChecker } from "@/components/trust/LinkChecker";
 import { Chapter, Ext, Rows } from "@/components/trust/Parts";
 import { NextSteps, PageHero } from "@/components/ui/Page";
-import { approvedThirdParties, destinationAddress, officialDomains, portalMeta, portals, socials, type PortalKey } from "@/config/destinations";
+import { approvedThirdParties, destinationAddress, isPreviewDestination, officialDomains, portalMeta, portals, siteIsOfficial, socials, type PortalKey } from "@/config/destinations";
 import { site } from "@/config/site";
 import { pageMeta } from "@/lib/meta";
 import { webPageSchema } from "@/lib/schema";
@@ -146,7 +146,8 @@ export default function VerifyPage() {
                 </span>
                 {d.status === "CONFIGURED" ? (
                   <span className="grid gap-3 sm:justify-items-end">
-                    <span className="state state-open">Connected</span>
+                    {/* connected says only that the link works; on a preview address it says so */}
+                    <span className={`state ${isPreviewDestination(d.url) ? "state-pre" : "state-open"}`}>{isPreviewDestination(d.url) ? "Connected on this preview" : "Connected"}</span>
                     <span className="break-all font-mono text-[0.8125rem] text-ink-2">{destinationAddress(d.url)}</span>
                   </span>
                 ) : (
@@ -156,6 +157,12 @@ export default function VerifyPage() {
             );
           })}
         </ul>
+        {!siteIsOfficial && (
+          <p className="mt-21 max-w-measure text-ink-2">
+            <strong className="text-ink">This website is a preview.</strong> It is served from a demonstration address, not from gio4x.com, and a portal marked “Connected on this preview” is reached at that same address. “Connected” means only that the link
+            works. It does not mean the service has been security-reviewed or approved for real funds; those are separate steps, and neither is claimed here.
+          </p>
+        )}
         <p className="mt-21 max-w-measure text-ink-2">
           Until a portal is connected, this website does not link to any external sign-in, registration or download address. If a message sends you to a GIO4X “portal” today, check the address above before you do anything else. On this site, account requests begin at{" "}
           <Link href="/open-account" className="link">

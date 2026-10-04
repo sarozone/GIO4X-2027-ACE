@@ -1,0 +1,488 @@
+{
+  "about": "Corrections to carried-over article and lesson bodies, applied by scripts/apply-editorial-fixes.mjs (see the comment at the top of that file). Each `find` is an exact passage of the body as the import writes it; `with` replaces it. kind: ecn | commission | prescription | effectiveness | other.",
+  "date": "2026-10-04",
+  "articles": {
+    "ecn-vs-standard-forex-accounts": {
+      "note": "The description of ECN accounts was rewritten as the general meaning of the term in the industry, separated from GIO4X, whose order execution policy and commission basis are not yet published; statements that an ECN account is cheaper, or executes faster, were removed.",
+      "briefAppend": "“ECN” is an industry label, not a standard. GIO4X has not yet published its order execution policy, or whether its ECN commission is per side or per round trip, so nothing here describes how GIO4X routes or fills orders.",
+      "replace": [
+        {
+          "kind": "ecn",
+          "find": "have fundamentally different structures that affect your trading costs, execution quality, and overall experience.",
+          "with": "have different structures that affect how your trading costs are charged and shown to you."
+        },
+        {
+          "kind": "ecn",
+          "find": "<p>An ECN account connects you directly to a network of liquidity providers — major banks, financial institutions, and other market participants. Instead of the broker setting the spread, you see the raw interbank spread. In exchange for the raw spread, the broker charges a commission per lot traded.</p>",
+          "with": "<p>In the industry, ECN stands for electronic communication network: a venue where orders from many participants, such as banks, other financial institutions and other traders, are matched with one another. An account sold as ECN is generally described as passing on a spread close to the one in that underlying market, instead of a spread set by the broker, with the cost of dealing charged separately as a commission per lot traded.</p>\n<p>The label is not standardised. How orders are routed, who the counterparty to a trade is, and how quickly and at what price orders are filled differ from broker to broker. They are set out in a broker’s order execution policy, not by the name of an account.</p>\n<p>That is the general meaning of the term, and it is not a description of GIO4X. GIO4X has not yet published an order execution policy, so nothing in this article should be read as a statement about how GIO4X routes or fills orders, or about who provides its prices. What GIO4X has and has not published is listed on the <a href=\"/trust/transparency\">transparency page</a>.</p>\n<p>A commission quoted per lot also needs its basis: per side (charged once on opening and again on closing) or per round trip (charged once for both). GIO4X has not yet published the basis of its ECN commission, so a total cost for that account cannot be computed until it does.</p>"
+        },
+        {
+          "kind": "ecn",
+          "find": "ECN accounts have raw, near-zero spreads plus a commission.",
+          "with": "ECN accounts are typically quoted with a narrower, raw spread plus a commission."
+        },
+        {
+          "kind": "commission",
+          "find": "For active traders and scalpers, ECN accounts are typically cheaper. For less frequent traders, the simplicity of standard accounts may be preferable.",
+          "with": "Neither structure is cheaper by definition. The comparison is a wider spread on one side against a raw spread plus commission on the other, multiplied by how often you trade, and it can only be made once it is known whether the commission is charged per side or per round trip. The <a href=\"/tools/cost-lab\">Cost Lab</a> shows the arithmetic and leaves that multiplier for you to set."
+        },
+        {
+          "kind": "ecn",
+          "find": "This transparency helps traders gauge supply and demand in real time.",
+          "with": "Whether it is shown, and what it covers, depends on the broker and the platform."
+        },
+        {
+          "kind": "ecn",
+          "find": "You are an experienced trader, scalper, or algorithmic trader who requires the tightest possible spreads and fastest execution.",
+          "with": "You are an experienced trader, scalper, or algorithmic trader who wants a raw spread with the cost of dealing shown as a separate commission. The label alone does not promise tighter spreads or faster execution: those depend on a broker’s execution arrangements, which GIO4X has not yet published."
+        }
+      ]
+    },
+    "5-risk-management-rules-forex": {
+      "note": "The 1-2% limit, the 1:2 ratio and the 70% correlation threshold were presented as rules to be obeyed. They are now described as conventions and examples, with what each does and does not protect against; two headings were reworded to match.",
+      "headings": {
+        "rule-1-never-risk-more-than-1-2-per-trade": { "was": "Rule 1: Never risk more than 1-2% per trade", "now": "Rule 1: A limit on risk per trade (the 1-2% convention)" },
+        "rule-3-maintain-a-minimum-1-2-risk-reward-ratio": { "was": "Rule 3: Maintain a minimum 1:2 risk-reward ratio", "now": "Rule 3: A minimum risk-reward ratio (the 1:2 convention)" }
+      },
+      "replace": [
+        {
+          "kind": "prescription",
+          "find": "The five rules outlined below are non-negotiable for anyone serious about long-term trading success.",
+          "with": "The five rules outlined below are conventions that many traders use. They are set out here as examples of how risk can be limited, not as recommendations, and none of them makes a strategy profitable."
+        },
+        {
+          "kind": "prescription",
+          "find": "The one-percent rule is the bedrock of professional risk management. On any single trade, you should never risk more than 1-2% of your total account equity. If your account holds $10,000, your maximum loss per trade should be $100 to $200. This ensures that even a string of ten consecutive losses — which can happen to any strategy — only draws your account down 10-20% rather than wiping you out.",
+          "with": "The one-percent rule is a convention many traders use: on any single trade, the planned loss is kept to 1-2% of total account equity. It is an example, not a recommendation, and the figure that suits one person or strategy will not suit another. On a $10,000 account it puts the planned loss per trade at $100 to $200. What the convention protects against is a run of ordinary losses: ten consecutive losses — which can happen to any strategy — draw the account down by roughly 10-20% rather than wiping it out. What it does not protect against is a loss larger than the one planned, when a market gaps through a stop or several positions that move together lose at once, and it does nothing to make a losing strategy profitable. The <a href=\"/tools/position-size\">position size calculator</a> shows the arithmetic, and the <a href=\"/labs/risk-room\">Risk Room</a> shows what a run of losses does at different percentages."
+        },
+        {
+          "kind": "other",
+          "find": "This is particularly important around major news events and over weekends.",
+          "with": "This is particularly important around major news events and over weekends, which are also the times a stop is least dependable: an ordinary stop loss becomes a market order when it is triggered, so in a gap or a fast market it can be filled at a worse price than the one set."
+        },
+        {
+          "kind": "prescription",
+          "find": "Before entering any trade, ensure your profit target is at least twice the distance of your stop loss. A 1:2 risk-reward ratio means that even if you win only 40% of your trades, the arithmetic is still positive before costs.",
+          "with": "A convention many traders use is to take a trade only when the profit target is at least twice the distance of the stop loss. With a 1:2 risk-reward ratio, a trader who wins only 40% of trades still has positive arithmetic before costs."
+        },
+        {
+          "kind": "prescription",
+          "find": "(4 x 2R wins = 8R minus 6 x 1R losses = 6R, net = +2R).</p>",
+          "with": "(4 x 2R wins = 8R minus 6 x 1R losses = 6R, net = +2R).</p>\n<p>The ratio describes a plan, not a result. A distant target is reached less often than a near one, so a higher ratio usually comes with a lower win rate, and the arithmetic says nothing about whether a strategy will achieve either number. The 1:2 figure is an example, not a recommendation. The <a href=\"/tools/risk-reward\">risk-reward calculator</a> shows the break-even win rate for any ratio.</p>"
+        },
+        {
+          "kind": "prescription",
+          "find": "If the market does not offer at least a 1:2 setup, skip the trade — there will always be another opportunity.",
+          "with": "Under this convention, a setup that does not offer at least 1:2 is passed over."
+        },
+        {
+          "kind": "prescription",
+          "find": "Before adding a new trade, check the correlation with your existing positions. If correlation exceeds 70%, either reduce position sizes or choose one over the other.",
+          "with": "Before adding a new trade, many traders check its correlation with their existing positions. A threshold often quoted is 70% (a coefficient of 0.7): above it, two positions are treated as largely one, and sizes are reduced or one of the two is dropped. The figure is a rule of thumb, not a boundary. Correlation is measured over a past window, it changes, and it tends to rise in stressed markets, which is when it matters most. The <a href=\"/labs/risk-room\">Risk Room</a> shows how holdings that move together add up."
+        },
+        {
+          "kind": "other",
+          "find": "Combined, they create a framework that protects your capital during inevitable losing streaks and allows your edge to compound over time. Risk management is not exciting — it is the foundation upon which every successful trading career is built.",
+          "with": "Combined, they form a framework that limits the damage a losing streak can do. They cannot create an edge where there is none, and they do not remove the risk of loss."
+        }
+      ]
+    },
+    "gold-trading-strategies-xauusd": {
+      "note": "A “never risk more than 1%” instruction was reframed as a convention and an example, and a sentence saying that a trailing stop “locks in profits” was corrected.",
+      "replace": [
+        {
+          "kind": "prescription",
+          "find": "Use wider stop losses (at least 100-200 pips) and correspondingly smaller position sizes. Never risk more than 1% of your account on a single gold trade.",
+          "with": "Traders commonly respond with wider stop losses (100-200 pips is often quoted) and correspondingly smaller position sizes. A convention many of them use is to keep the planned loss on a single trade to about 1% of the account. It is an example, not a recommendation, and in a fast market a stop on gold can be filled beyond its level, so the loss can exceed the plan. The <a href=\"/tools/position-size\">position size calculator</a> shows how a wider stop shrinks the position."
+        },
+        {
+          "kind": "other",
+          "find": "Consider using trailing stops once a gold trade moves in your favor by 100+ pips. This locks in profits while allowing the trade room to run.",
+          "with": "Some traders use trailing stops once a gold trade has moved in their favor by 100 pips or more. A trailing stop moves the exit along behind the price; it does not guarantee the price at which the trade is closed."
+        }
+      ]
+    },
+    "golden-ratio-transforms-forex-trading": {
+      "note": "Statements that Fibonacci levels are “powerful” or give “stronger signals” were attributed to the traders who use them, and the article now says that the evidence for their predictive value is weak and disputed.",
+      "replace": [
+        {
+          "kind": "effectiveness",
+          "find": "While retracements help identify entry points, Fibonacci extensions project where a trend might reach after a pullback completes.",
+          "with": "Where retracements are used to mark possible entry areas, Fibonacci extensions mark levels beyond the prior swing that a trend may or may not reach after a pullback."
+        },
+        {
+          "kind": "effectiveness",
+          "find": "The 161.8% extension is widely regarded as the primary profit target for swing trades.",
+          "with": "Many chartists use the 161.8% extension as a reference for a profit target; that is a convention, not evidence that price will get there."
+        },
+        {
+          "kind": "effectiveness",
+          "find": "While less commonly used than retracements and extensions, time zones can add a valuable temporal dimension to your analysis.",
+          "with": "Time zones are less commonly used than retracements and extensions. They mark dates in the way the other tools mark prices, and the evidence that they anticipate turning points is weak."
+        },
+        {
+          "kind": "effectiveness",
+          "find": "The golden ratio is most powerful when it confluences with other technical signals.",
+          "with": "Practitioners generally give a Fibonacci level more weight when it coincides with other technical signals."
+        },
+        {
+          "kind": "effectiveness",
+          "find": "Combine Fibonacci with volume analysis for stronger signals.",
+          "with": "Combine Fibonacci with volume analysis, which some traders treat as added confirmation."
+        },
+        {
+          "kind": "effectiveness",
+          "find": "The golden ratio bridges the gap between mathematical theory and practical trading.",
+          "with": "The golden ratio gives these tools their arithmetic. Whether the levels have predictive value is a separate question: the evidence for it is weak and disputed, and part of what is seen near a level may simply be that many traders are watching the same lines. The levels are reference points, not forecasts."
+        }
+      ]
+    },
+    "japanese-candlestick-patterns-guide": {
+      "note": "Patterns described as “reliable” or as signals that “confirm” a reversal are now described as what their users read them to mean, and the article says that the evidence that candlestick patterns predict prices is weak and disputed.",
+      "replace": [
+        {
+          "kind": "effectiveness",
+          "find": "(long lower wick, signaling bullish reversal) and gravestone doji (long upper wick, signaling bearish reversal)",
+          "with": "(long lower wick, read as a bullish sign) and gravestone doji (long upper wick, read as a bearish sign)"
+        },
+        {
+          "kind": "effectiveness",
+          "find": "It is a bullish reversal signal.",
+          "with": "It is read as a bullish reversal signal."
+        },
+        {
+          "kind": "effectiveness",
+          "find": "It signals a bearish reversal.",
+          "with": "It is read as a bearish reversal signal."
+        },
+        {
+          "kind": "effectiveness",
+          "find": "This pattern at the bottom of a downtrend is a strong bullish reversal signal. The larger the engulfing candle relative to the first, the stronger the signal.",
+          "with": "This pattern at the bottom of a downtrend is read as a bullish reversal signal. By convention, the larger the engulfing candle relative to the first, the more weight the pattern is given."
+        },
+        {
+          "kind": "effectiveness",
+          "find": "At the top of an uptrend, this signals bearish reversal.",
+          "with": "At the top of an uptrend, this is read as a bearish reversal signal."
+        },
+        {
+          "kind": "effectiveness",
+          "find": "closes well into the first candle's body, confirming the reversal.",
+          "with": "closes well into the first candle's body, which the pattern’s users take as confirmation."
+        },
+        {
+          "kind": "effectiveness",
+          "find": "This pattern signals strong bullish momentum and is most reliable after a period of consolidation or decline.",
+          "with": "This pattern is read as strong bullish momentum, and is conventionally given most weight after a period of consolidation or decline."
+        },
+        {
+          "kind": "effectiveness",
+          "find": "This signals strong bearish momentum.",
+          "with": "This is read as strong bearish momentum."
+        },
+        {
+          "kind": "effectiveness",
+          "find": "Candlestick patterns are most reliable when they appear at key technical levels",
+          "with": "Candlestick patterns are conventionally given more weight when they appear at key technical levels"
+        },
+        {
+          "kind": "effectiveness",
+          "find": "Always confirm candlestick signals with volume (where available) and other indicators. Use higher timeframes (4-hour and daily) for the most reliable signals.",
+          "with": "Practitioners usually look for confirmation from volume (where available) and other indicators, and many prefer higher timeframes (4-hour and daily), where there is less noise. None of this makes a pattern a forecast: a candle records what buyers and sellers did in one period, and the evidence that the named patterns predict what happens next is weak and disputed."
+        }
+      ]
+    },
+    "position-sizing-secret-weapon": {
+      "note": "The 1% to 2% figure is now described as a convention with its limits stated, and a sentence saying that volatility-based sizing “ensures” a stop is always appropriate was corrected.",
+      "replace": [
+        {
+          "kind": "prescription",
+          "find": "creating a natural compounding effect during winning streaks and a protective drawdown reduction during losing streaks.</p>",
+          "with": "creating a natural compounding effect during winning streaks and a protective drawdown reduction during losing streaks.</p>\n<p>The 1% to 2% figure is a convention many traders use, given here as an example and not as a recommendation. It limits what a run of ordinary losses can take from an account. It does not limit a loss that overshoots a stop in a gap, and it does not make a strategy profitable. The <a href=\"/tools/position-size\">position size calculator</a> shows the arithmetic, and the <a href=\"/labs/risk-room\">Risk Room</a> shows what a run of losses does at different percentages.</p>"
+        },
+        {
+          "kind": "other",
+          "find": "This method ensures that your stop loss is always appropriate for the current volatility environment.",
+          "with": "This method sets the stop loss in proportion to recent volatility; it does not ensure that the stop is in the right place."
+        }
+      ]
+    },
+    "fibonacci-extensions-profit-targets": {
+      "note": "Statements that extensions show where price “is likely to go”, and that the 161.8% level “stands alone in importance”, were attributed to the traders who use them; the article now says that the evidence for the predictive value of Fibonacci levels and Elliott wave counts is weak and disputed.",
+      "replace": [
+        {
+          "kind": "effectiveness",
+          "find": "but fewer understand how to use Fibonacci extensions to project where price is likely to go after a pullback completes. Extensions answer the critical question: \"Where should I take profits?\"",
+          "with": "but fewer are familiar with Fibonacci extensions, which mark levels beyond the prior swing that price may or may not reach after a pullback. Traders use them as one way of answering the question: \"Where should I take profits?\""
+        },
+        {
+          "kind": "effectiveness",
+          "find": "A conservative first target for taking partial profits.",
+          "with": "Often used as a first reference for taking partial profits."
+        },
+        {
+          "kind": "effectiveness",
+          "find": "The most important extension level and the primary profit target for swing trades.",
+          "with": "The extension level its users watch most, and a common reference for a swing-trade target."
+        },
+        {
+          "kind": "effectiveness",
+          "find": "Among all extension levels, 161.8% stands alone in importance. It is the golden ratio, the mathematical constant that appears throughout nature, art, and architecture.",
+          "with": "Among all extension levels, 161.8% is the one given most attention. It is the golden ratio, a mathematical constant often said to appear in nature, art, and architecture. That says nothing about markets: the evidence that prices respect Fibonacci levels more than any other level is weak and disputed."
+        },
+        {
+          "kind": "effectiveness",
+          "find": "Professional traders often set their primary profit target",
+          "with": "Some traders set their primary profit target"
+        },
+        {
+          "kind": "effectiveness",
+          "find": "In a five-wave impulse structure, wave 3 — the strongest and longest wave — typically extends to 161.8% of wave 1. Wave 5 often reaches 100% or 127.2% of wave 1. Understanding these relationships helps wave traders project price targets and validate wave counts.",
+          "with": "In a five-wave impulse structure, Elliott Wave practitioners expect wave 3 to extend to about 161.8% of wave 1, and wave 5 to reach 100% or 127.2% of wave 1. Wave traders use these relationships to project targets and to check their wave counts. Counting waves is subjective, and the evidence that it predicts prices is weak and disputed."
+        }
+      ]
+    },
+    "top-10-forex-trading-mistakes": {
+      "note": "A sentence that implied gains would come with time (“let compounding do its work”) was replaced.",
+      "replace": [
+        {
+          "kind": "other",
+          "find": "Set realistic goals, focus on consistent execution, and let compounding do its work over years, not days.",
+          "with": "Set realistic goals and focus on consistent execution. Trading for longer does not, on its own, turn losses into gains."
+        }
+      ]
+    }
+  },
+  "lessons": {
+    "candlestick-patterns-masterclass": {
+      "note": "Patterns described as giving “stronger signals” or as “confirming” a move are now described as what their users read them to mean, and the lesson says that the evidence that candlestick patterns predict prices is weak and disputed.",
+      "replace": [
+        {
+          "kind": "effectiveness",
+          "find": "Two-candle chart patterns provide stronger signals by showing a shift in momentum:",
+          "with": "Two-candle chart patterns are read as stronger signals, because they show a shift in momentum over two periods:"
+        },
+        {
+          "kind": "effectiveness",
+          "find": "completely engulfs the previous red candle, signaling a strong reversal.",
+          "with": "completely engulfs the previous red candle, which is read as a sign of reversal."
+        },
+        {
+          "kind": "effectiveness",
+          "find": "signaling a top and potential downtrend reversal.",
+          "with": "read as a possible top."
+        },
+        {
+          "kind": "effectiveness",
+          "find": "Three consecutive long-bodied candles in the same direction, confirming strong momentum.",
+          "with": "Three consecutive long-bodied candles in the same direction, read as strong momentum."
+        },
+        {
+          "kind": "effectiveness",
+          "find": "For the best results with price action trading, always confirm candlestick signals with support and resistance levels, volume analysis, and other technical indicators. Patterns that form at key levels carry significantly more weight than those appearing in the middle of a range.",
+          "with": "Practitioners usually look for confirmation of candlestick signals from support and resistance levels, volume analysis, and other technical indicators. Patterns that form at key levels carry significantly more weight than those appearing in the middle of a range. That weight is a convention among the traders who use them: a pattern describes what buyers and sellers did in the candles that formed it, and the evidence that it predicts what comes next is weak and disputed."
+        }
+      ]
+    },
+    "support-and-resistance-levels": {
+      "note": "The statement that a level “becomes stronger” each time it holds was qualified, and the lesson now says that levels are a matter of judgement and do not say where price must turn.",
+      "replace": [
+        {
+          "kind": "effectiveness",
+          "find": "The more times a support level is tested and holds, the stronger it becomes.",
+          "with": "A level that has been tested and has held several times is watched by more traders, although a level can also give way after many tests."
+        },
+        {
+          "kind": "effectiveness",
+          "find": "(daily, weekly) for stronger signals.",
+          "with": "(daily, weekly), which more traders watch."
+        },
+        {
+          "kind": "effectiveness",
+          "find": "Combine these levels with candlestick patterns and momentum indicators.",
+          "with": "Combine these levels with candlestick patterns and momentum indicators. Levels are drawn from past prices and are a matter of judgement; they mark where traders are watching, not where price must turn."
+        }
+      ]
+    },
+    "moving-averages-strategy": {
+      "note": "Moving averages and their crossovers were described as “reliable”; the lesson now says what a crossover is, that it arrives after the move has begun, and that the evidence that it predicts what follows is weak and disputed.",
+      "replace": [
+        {
+          "kind": "effectiveness",
+          "find": "making it a smooth and reliable trend indicator that reacts gradually to price changes.",
+          "with": "making it a smooth trend indicator that reacts gradually to price changes."
+        },
+        {
+          "kind": "effectiveness",
+          "find": "This bullish signal suggests the beginning of a long-term uptrend.",
+          "with": "It is read as a bullish signal that may mark the beginning of a long-term uptrend."
+        },
+        {
+          "kind": "effectiveness",
+          "find": "These crossover signals are most reliable on daily and weekly charts. On lower timeframes, they can generate false signals due to market noise.",
+          "with": "These crossover signals are generally given more weight on daily and weekly charts. On lower timeframes, they generate more false signals due to market noise. On any timeframe a moving average is built from past prices, so a crossover arrives after the move has begun, and the evidence that crossovers predict what follows is weak and disputed."
+        },
+        {
+          "kind": "effectiveness",
+          "find": "Enter trades when all three align in the same direction for stronger trend confirmation.",
+          "with": "The rule enters trades when all three align in the same direction, which its users read as stronger trend confirmation."
+        },
+        {
+          "kind": "effectiveness",
+          "find": "Experiment with different settings on historical data to find the optimal configuration for your forex strategy.",
+          "with": "Settings can be compared on historical data, but a configuration chosen because it fitted the past best will not necessarily fit what comes next."
+        }
+      ]
+    },
+    "fibonacci-retracement-guide": {
+      "note": "Fibonacci levels were described as “reliable” and “accurate”; the lesson now attributes their significance to the traders who use them and says that the evidence that they predict where price will turn is weak and disputed.",
+      "replace": [
+        {
+          "kind": "effectiveness",
+          "find": "This is often the last line of defense before a trend reversal.",
+          "with": "Its users treat it as the last line of defense before a trend reversal."
+        },
+        {
+          "kind": "effectiveness",
+          "find": "Drawing Fibonacci retracement correctly is essential for accurate technical analysis:",
+          "with": "How the tool is drawn decides where its levels fall:"
+        },
+        {
+          "kind": "effectiveness",
+          "find": "Use significant swing points visible on higher timeframes for the most reliable levels.",
+          "with": "Use significant swing points visible on higher timeframes, which more traders are likely to have drawn from."
+        },
+        {
+          "kind": "effectiveness",
+          "find": "Practitioners usually combine Fibonacci retracement with candlestick patterns, moving averages, and support/resistance levels.",
+          "with": "Practitioners usually combine Fibonacci retracement with candlestick patterns, moving averages, and support/resistance levels. The levels are a widely shared convention, which is part of why prices sometimes react near them; the evidence that they predict where price will turn is weak and disputed."
+        }
+      ]
+    },
+    "rsi-and-macd-strategies": {
+      "note": "Statements that the indicators “identify” reversals, “excel” or are “most reliable” were reworded as what the indicators measure and how traders read them, and the lesson now says where their signals fail.",
+      "replace": [
+        {
+          "kind": "effectiveness",
+          "find": "When used correctly, these forex indicators help identify trend direction, momentum strength, and potential reversal points.",
+          "with": "Traders use these forex indicators to describe trend direction and momentum strength, and to look for potential reversal points."
+        },
+        {
+          "kind": "effectiveness",
+          "find": "Divergence signals are most reliable on higher timeframes (4-hour, daily) and when they occur at significant support or resistance levels.",
+          "with": "Divergence signals are conventionally given more weight on higher timeframes (4-hour, daily) and when they occur at significant support or resistance levels. They also fail often: in a strong trend the RSI can stay overbought or oversold, and diverge from price, for a long time, and the evidence that divergence predicts reversals is weak and disputed."
+        },
+        {
+          "kind": "effectiveness",
+          "find": "This indicator excels at revealing changes in trend momentum.",
+          "with": "This indicator is designed to show changes in trend momentum."
+        },
+        {
+          "kind": "effectiveness",
+          "find": "When the MACD line crosses above or below zero, it confirms a change in trend direction.",
+          "with": "When the MACD line crosses above or below zero, the 12-period average has crossed the 26-period average, which is read as a change in trend direction."
+        },
+        {
+          "kind": "effectiveness",
+          "find": "is read by some traders as confirmation.",
+          "with": "is read by some traders as confirmation. Both indicators are calculated from the same past prices, so their agreement is not independent evidence, and neither says what price will do next."
+        }
+      ]
+    },
+    "bollinger-bands-trading": {
+      "note": "The statement that a move beyond the bands “often precedes a reversal”, and the description of the bands as an “excellent” indicator, were reworded as what the bands measure.",
+      "replace": [
+        {
+          "kind": "effectiveness",
+          "find": "When price moves beyond the bands, it signals an extreme condition that often precedes a reversal or acceleration.",
+          "with": "When price moves beyond the bands, it is unusually far from its recent average. That can be followed by a reversal or by a continuation, and the bands do not say which."
+        },
+        {
+          "kind": "effectiveness",
+          "find": "This makes Bollinger Bands an excellent volatility indicator for gauging current market conditions.",
+          "with": "This makes Bollinger Bands a direct picture of recent volatility."
+        },
+        {
+          "kind": "effectiveness",
+          "find": "like a ball bouncing between a floor and ceiling.",
+          "with": "like a ball bouncing between a floor and ceiling. The difficulty is that a range is only known to have ended after price has left it."
+        }
+      ]
+    },
+    "trading-the-news": {
+      "note": "A “never risk more than 1-2%” instruction was reframed as a convention and an example, with the reason it protects less than usual around a release.",
+      "replace": [
+        {
+          "kind": "prescription",
+          "find": "<li>Never risk more than 1-2% of your account on any single news trade.</li>",
+          "with": "<li>A convention many traders use is to keep the planned loss on any single trade to 1-2% of the account. It is an example, not a recommendation, and around a release it protects less than usual, because slippage can carry a stop well past its level. The <a href=\"/tools/position-size\">position size calculator</a> shows the arithmetic.</li>"
+        }
+      ]
+    },
+    "risk-reward-ratio-explained": {
+      "note": "The 1:2 minimum was presented as a rule to be obeyed. It is now described as a convention and an example, with what the arithmetic does not show.",
+      "replace": [
+        {
+          "kind": "prescription",
+          "find": "<h2 id=\"the-expectancy-formula\">",
+          "with": "<p>These figures are arithmetic, not a recommendation. The 1:2 minimum is a convention: it shows how a ratio and a win rate offset each other, but a more distant target is reached less often, so raising the ratio usually lowers the win rate, and neither number is known in advance. The <a href=\"/tools/risk-reward\">risk-reward calculator</a> shows the break-even win rate for any ratio, and the <a href=\"/labs/risk-room\">Risk Room</a> shows what a run of losses does to an account.</p>\n<h2 id=\"the-expectancy-formula\">"
+        },
+        {
+          "kind": "prescription",
+          "find": "Only take trades that offer a minimum of 1:2 risk reward ratio.",
+          "with": "Under the 1:2 convention, a trade that offers less than that ratio is passed over. This is an example of a rule, not a recommendation."
+        }
+      ]
+    },
+    "position-sizing-strategies": {
+      "note": "The 1-2% guideline and the widely quoted sizing rules are now described as conventions and examples, with what they do and do not protect against.",
+      "replace": [
+        {
+          "kind": "prescription",
+          "find": "A common guideline is to risk no more than 1-2% of the account per trade.",
+          "with": "A common guideline is to risk no more than 1-2% of the account per trade. It is a convention, given here as an example and not as a recommendation: it limits what a run of ordinary losses can cost, but not a loss that overshoots a stop in a gap, and it does not make a strategy profitable. The <a href=\"/tools/position-size\">position size calculator</a> shows the arithmetic, and the <a href=\"/labs/risk-room\">Risk Room</a> shows what a run of losses does at different percentages."
+        },
+        {
+          "kind": "other",
+          "find": "your position sizes decrease, providing automatic protection against account depletion.",
+          "with": "your position sizes decrease, which slows the depletion of the account but does not prevent it."
+        }
+      ],
+      "append": "<p>These are conventions, quoted here as examples and not as recommendations. Each caps the loss that is planned. The loss that happens can be larger when a stop is filled beyond its level, and positions that move together can breach a portfolio limit at the same moment.</p>"
+    },
+    "managing-trading-psychology": {
+      "note": "The phrase “a proven strategy” was changed to “a well-tested strategy”: no strategy is proven.",
+      "replace": [
+        {
+          "kind": "other",
+          "find": "Even with a proven strategy and sound risk management",
+          "with": "Even with a well-tested strategy and sound risk management"
+        }
+      ]
+    }
+  },
+  "companions": [
+    {
+      "file": "src/data/academy-story.ts",
+      "lesson": "candlestick-patterns-masterclass",
+      "was": "Two-candle chart patterns provide stronger signals by showing a shift in momentum.",
+      "now": "Two-candle chart patterns are read as stronger signals, because they show a shift in momentum over two periods."
+    },
+    {
+      "file": "src/data/academy-story.ts",
+      "lesson": "rsi-and-macd-strategies",
+      "was": "This indicator excels at revealing changes in trend momentum.",
+      "now": "This indicator is designed to show changes in trend momentum."
+    },
+    {
+      "file": "src/data/academy-story.ts",
+      "lesson": "managing-trading-psychology",
+      "was": "Even with a proven strategy and sound risk management, forex emotions can derail your trading results.",
+      "now": "Even with a well-tested strategy and sound risk management, forex emotions can derail your trading results."
+    }
+  ],
+  "ownerQuestions": [
+    "Is the ECN commission of “$3.50 per lot” (src/data/accounts.ts) charged per side or per round trip? The previous site’s article said “per standard lot per side”; that sentence was removed in the first audit as unverifiable. Until this is settled, no total cost for the ECN account can be stated.",
+    "The order execution policy (routing, counterparty, pricing sources, fill and slippage handling) is not published. The ECN article now says so and links to /trust/transparency."
+  ]
+}

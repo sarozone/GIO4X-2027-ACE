@@ -11,6 +11,7 @@ import type { MilestoneData } from "@/data/milestones";
 import { isRateCurrency } from "@/lib/rates";
 import { DeskTransfer } from "./DeskTransfer";
 import { InstallApp } from "./InstallApp";
+import { Journey } from "./Journey";
 import { Constellation } from "@/components/play/Extras";
 import { Passport } from "@/components/play/Passport";
 import { Milestones } from "./Milestones";
@@ -662,6 +663,15 @@ export function Desk({ data }: { data: DeskData }) {
 
       <Block id="learning" title="Learning" lead="Glossary questions answered and Academy lessons completed.">
         <Learning data={data} />
+      </Block>
+
+      <Block
+        id="path"
+        title="A path through it"
+        tinted
+        lead="An optional exercise in eight steps, from understanding leverage to reviewing a journal, made of pages the site already has. A step is ticked only where this browser already holds a record that shows it. Nothing extra is stored for it."
+      >
+        <Journey />
       </Block>
 
       <Block id="milestones" title="Milestones" lead="Badges for glossary questions answered, lessons completed and the tour, read from the same record as Learning above. Nothing more is stored for them.">

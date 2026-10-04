@@ -370,10 +370,20 @@ export function ToolLayout({ meta, children, steps, assumptions }: { meta: ToolM
   );
 }
 
+/** Anchors inside a tool. Below `lg` the inputs and the result are a screen or more apart, so each links to the other. */
+export const TOOL_INPUTS_ID = "tool-inputs";
+export const TOOL_RESULT_ID = "tool-result";
+const HOP = "link inline-flex min-h-[2.75rem] items-center text-sm";
+
 export function Inputs({ children, legend = "Your figures" }: { children: ReactNode; legend?: string }) {
   return (
-    <fieldset className="min-w-0">
+    <fieldset id={TOOL_INPUTS_ID} className="min-w-0 scroll-mt-[var(--header-h)]">
       <legend className="label">{legend}</legend>
+      <p className="lg:hidden">
+        <a href={`#${TOOL_RESULT_ID}`} className={HOP}>
+          Result <span aria-hidden>&nbsp;↓</span>
+        </a>
+      </p>
       <div className="mt-13 grid gap-x-21 gap-y-13 sm:grid-cols-2">{children}</div>
     </fieldset>
   );
@@ -382,7 +392,12 @@ export function Inputs({ children, legend = "Your figures" }: { children: ReactN
 /** The result region. Announced politely; always the same shape, so typing never moves the page. */
 export function Outcome({ children, title = "Result" }: { children: ReactNode; title?: string }) {
   return (
-    <section className="mt-21 border-t border-line-strong pt-21" aria-label={title}>
+    <section id={TOOL_RESULT_ID} className="mt-21 scroll-mt-[var(--header-h)] border-t border-line-strong pt-21" aria-label={title}>
+      <p className="-mt-13 mb-8 lg:hidden">
+        <a href={`#${TOOL_INPUTS_ID}`} className={HOP}>
+          Back to inputs <span aria-hidden>&nbsp;↑</span>
+        </a>
+      </p>
       {children}
     </section>
   );

@@ -4,6 +4,7 @@
  * index all read the same thing and a page cannot be left out of one of them.
  * A new entry in any of these data modules appears in all three by itself.
  */
+import { CASE_STUDIES } from "@/data/case-studies";
 import { CHART_PATTERNS } from "@/data/chart-patterns";
 import { LESSONS as CHART_LESSONS } from "@/data/chart-school";
 import { COMPARISONS } from "@/data/comparisons";
@@ -22,6 +23,7 @@ const pages = (base: string, kind: string, words: string[], list: readonly Entry
 
 export const SECTION_PAGES: readonly SectionPage[] = [
   ...pages("/investing", "Investing", ["investing", "invest", "long term"], INVESTING),
+  ...pages("/investing/case-studies", "Case study", ["investor", "case study", "investing philosophy"], CASE_STUDIES),
   ...pages("/money", "Calculator", ["calculator", "personal finance", "money"], MONEY),
   ...pages("/chart-school", "Indicator", ["indicator", "technical analysis", "chart"], CHART_LESSONS),
   ...pages("/chart-school/patterns", "Chart pattern", ["chart pattern", "technical analysis", "pattern"], CHART_PATTERNS),

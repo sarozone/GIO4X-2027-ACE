@@ -35,7 +35,7 @@ export const STAMPS: { id: string; name: string; href: string; test: RegExp }[] 
   { id: "cinema", name: "The Screening Room", href: "/labs/cinema", test: /^\/labs\/cinema$/ },
   { id: "mind", name: "The Mind Room", href: "/labs/mind", test: /^\/labs\/mind$/ },
   { id: "bench", name: "Rule bench", href: "/labs/rule-bench", test: /^\/labs\/rule-bench$/ },
-  { id: "risk", name: "The Risk Room", href: "/labs/risk-room", test: /^\/labs\/risk-room$/ },
+  { id: "riskroom", name: "The Risk Room", href: "/labs/risk-room", test: /^\/labs\/risk-room$/ },
   { id: "verse", name: "The Verse Room", href: "/verse", test: /^\/verse$/ },
   // not earned by a visit: stamped when all five hidden riddles have been solved (store.noteHunt)
   { id: "hunt", name: "The riddle hunt", href: "/verse#hunt", test: /^$/ },

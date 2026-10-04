@@ -12,7 +12,40 @@
  * for each dated event, joined into a curve that shows the rise and the fall.
  * It is an illustrative shape, not market data, and is labelled so wherever
  * it is drawn. `start` is where the curve stands before the first event.
+ *
+ * `documents` names the public documents behind an account: title, author or
+ * issuing body, date, and what it supports. One is listed only where its
+ * title and date are certain; there are no web addresses, because they change.
+ *
+ * `junctures` is the "what was knowable then?" exercise: a few moments on the
+ * timeline, each with this site's own summary of what had been made public by
+ * then (written afterwards; not a contemporary document, and nothing in it is
+ * later than the moment), a hypothetical question and three choices. No choice
+ * is marked right. Each note says what the choice would have meant and how it
+ * could have turned out otherwise. `seat` is the imagined position.
  */
+export type SourceDocument = {
+  title: string;
+  /** the author or the body that issued it */
+  by: string;
+  date: string;
+  /** one line: what in the account it supports */
+  supports: string;
+};
+
+export type Choice = { label: string; note: string };
+
+export type Juncture = {
+  /** index into `events`: the last event that was public at this moment */
+  at: number;
+  /** what had been made public by then, in this site's words */
+  known: string;
+  ask: string;
+  choices: readonly [Choice, Choice, Choice];
+  /** what came next, where the next event's own text would give away more than the next step; `to` is the event the curve then runs to */
+  next?: { when: string; text: string; to: number };
+};
+
 export type Moment = {
   /** the date as it is shown, short enough for a label */
   when: string;
@@ -49,6 +82,12 @@ export type Episode = {
   caution: string;
   /** the kinds of source the account rests on, in words */
   sources: string;
+  /** the named public documents the account rests on */
+  documents: readonly SourceDocument[];
+  /** the imagined position in the exercise, one sentence */
+  seat: string;
+  /** the moments of the "what was knowable then?" exercise, in order */
+  junctures: readonly Juncture[];
   terms: readonly string[];
   faq: readonly { q: string; a: string }[];
 };
@@ -95,6 +134,45 @@ export const HISTORY: readonly Episode[] = [
     caution:
       "The scale of tulip mania is disputed. The dramatic version, with ruined families and a wrecked economy, comes mainly from moralising pamphlets of the time and from Charles Mackay’s popular account of 1841. Historians who have gone through the notarial and court archives find that the trade involved a fairly small number of merchants and craftsmen, that few bankruptcies can be traced to it, and that the Dutch economy was not visibly harmed. Price records are patchy and come mostly from the very end of the boom, so no reliable price series exists and none is given here. Even the date of the first failed sale is traditional rather than certain.",
     sources: "Modern archival histories of the tulip trade, economic historians’ studies of the surviving contract prices, and the seventeenth-century pamphlets themselves, read with care.",
+    documents: [
+      { title: "Tulipmania: Money, Honor, and Knowledge in the Dutch Golden Age", by: "Anne Goldgar (University of Chicago Press)", date: "2007", supports: "The finding from town and notarial archives that the trade involved a fairly small circle of merchants and craftsmen, and that few bankruptcies can be traced to it." },
+      { title: "Tulipmania", by: "Peter M. Garber, in the Journal of Political Economy", date: "1989", supports: "The study of the surviving contract prices, and how patchy and late those records are." },
+      { title: "Memoirs of Extraordinary Popular Delusions", by: "Charles Mackay", date: "1841", supports: "The popular retelling from which the dramatic version mostly comes. It is listed as the source of the legend, not as evidence for it." },
+    ],
+    seat: "Suppose someone has agreed in a tavern to buy bulbs that are still in the ground, with payment due after flowering.",
+    junctures: [
+      {
+        at: 3,
+        known: "Contract prices have been rising steeply since late 1636, for common varieties sold by weight as well as for rare ones. The contracts are for bulbs still in the ground, with payment due the following summer, and many have been sold on several times. Neither the bulbs nor the agreed sums have yet changed hands.",
+        ask: "The contract could be kept until summer or sold on to another buyer this week. Which?",
+        choices: [
+          { label: "Keep the contract", note: "Prices had risen week after week and nothing public said they would stop. Keeping the contract meant staying tied to a price that nobody had yet paid in money. Had the rise run on into spring, as it had run all winter, the holder would have been glad of it." },
+          { label: "Sell it on", note: "Selling on passed the promise to the next buyer at a higher figure. Whether that difference was ever collected depended on a chain of promises being honoured in summer, which nobody could know in winter. Had prices kept rising, it also meant giving up the rest of the rise." },
+          { label: "Not enough to go on", note: "The trade was in promises, with no public record of prices and no test yet of whether a court would enforce them. That was a fair description of what was known. It did not remove a contract already agreed." },
+        ],
+        next: { when: "3 Feb 1637", to: 4, text: "In Haarlem a routine tavern sale finds no buyers at the expected prices. Word spreads from town to town over the following days." },
+      },
+      {
+        at: 4,
+        known: "In Haarlem on 3 February a routine tavern sale has found no buyers at the expected prices. Word of it is passing from town to town. Elsewhere sales are still being arranged, and it is not clear whether one failed sale in one town means anything for the rest.",
+        ask: "With that news from Haarlem and nothing else, what would the holder of a contract do?",
+        choices: [
+          { label: "Keep the contract", note: "One failed sale in one tavern was thin evidence. Two days later an auction at Alkmaar still fetched very high prices, so for a moment keeping looked sound. The news from Haarlem could have turned out to be a local pause." },
+          { label: "Try to sell it on", note: "Selling meant finding a buyer who had not yet heard, or who did not believe it. At Alkmaar buyers were still paying; in Haarlem they were not. Whether a sale could be made, and whether the new buyer would later pay, was unknown." },
+          { label: "Not enough to go on", note: "Nobody then could tell a pause from a turn. Even the date of the first failed sale is traditional and not certain, which shows how little was written down at the time." },
+        ],
+      },
+      {
+        at: 6,
+        known: "Buyers have stopped appearing and the trade has halted. Delegates of the growers, meeting in Amsterdam, have proposed that the most recent contracts could be cancelled for a fraction of the agreed price. It is a proposal: no court or authority has ruled on whether the contracts must be honoured.",
+        ask: "A buyer bound by a winter contract could offer the fraction now, or wait to see whether the contract is enforced. Which?",
+        choices: [
+          { label: "Offer the fraction now", note: "Paying the fraction ended the matter at a known cost, if the seller accepted it. Had the authorities later cancelled the contracts outright, that money would have been paid for nothing. Had they enforced them in full, it would have been a cheap way out." },
+          { label: "Wait for a ruling", note: "Waiting kept the money in hand and the dispute open. The provincial authorities then declined to rule and sent disputes back to the towns, so the waiting lasted into 1638. They could equally have ordered the contracts honoured." },
+          { label: "Not enough to go on", note: "The proposal bound nobody, and nothing public showed how the towns or the courts would treat the contracts. Saying so was accurate. The contract and the seller were still there." },
+        ],
+      },
+    ],
     terms: ["futures", "derivative", "liquidity", "volatility"],
     faq: [
       { q: "Did tulip mania ruin the Dutch economy?", a: "The evidence says no. Historians working from town and court archives find few bankruptcies linked to tulips and no sign of a wider slump. The picture of national ruin comes from satirical pamphlets of the time and from much later popular retellings." },
@@ -144,6 +222,55 @@ export const HISTORY: readonly Episode[] = [
     caution:
       "Dates here are in the Old Style calendar that Britain used in 1720, so they differ by eleven days from the same events dated on the Continent. The share prices given are the commonly cited round figures from contemporary price lists; sources differ by a few pounds and on the exact day of the peak, partly because the company’s transfer books were closed for part of the summer. The story that Isaac Newton lost a fortune is well attested in outline, but the sum is uncertain and the remark usually attributed to him has no reliable contemporary source.",
     sources: "The House of Commons committee reports of 1721, contemporary London price lists, and modern economic histories of the scheme.",
+    documents: [
+      { title: "The reports of the Committee of Secrecy on the South Sea Company", by: "House of Commons", date: "1721", supports: "The findings of bribery of ministers and members of Parliament, on which the punishments of 1721 rested." },
+      { title: "The Course of the Exchange", by: "John Castaing, London (a twice-weekly printed price list)", date: "Issues of 1720", supports: "The contemporary record of South Sea share prices from which the commonly cited round figures come." },
+      { title: "The South Sea Bubble", by: "John Carswell", date: "1960", supports: "The narrative of the scheme, the summer of 1720 and the parliamentary inquiry." },
+      { title: "The First Crash: Lessons from the South Sea Bubble", by: "Richard Dale (Princeton University Press)", date: "2004", supports: "The modern economic account of the instalment subscriptions and the loans made against the company’s own shares." },
+    ],
+    seat: "Suppose someone holds South Sea shares bought before the scheme of 1720.",
+    junctures: [
+      {
+        at: 2,
+        known: "The company has proposed to take over a large part of the national debt, and the Bank of England has made a rival offer. The two are bidding against each other. South Sea shares stand at under £130. The company’s trade with Spanish America has proved far smaller than hoped; its business is holding government debt.",
+        ask: "Parliament has not yet decided. What would a holder of the shares do?",
+        choices: [
+          { label: "Hold the shares", note: "Holding was a view that Parliament would choose the company and that the exchange of debt for shares would be worth something. Parliament did pass the scheme in April. It could have chosen the Bank of England’s offer, or neither." },
+          { label: "Sell part", note: "Selling part took some money out of a contest whose result was unknown. With the scheme passed and the price rising through the spring, it meant holding less of that rise. With the scheme rejected, it would have meant holding less of the disappointment." },
+          { label: "Not enough to go on", note: "The terms were still being bid and the company’s trade earned little. What the shares would be worth under either outcome was a guess, and saying so was fair." },
+        ],
+      },
+      {
+        at: 3,
+        known: "Parliament has passed the scheme. The company is selling new shares in a series of subscriptions, payable by instalments, and is lending money against its own shares so that buyers can buy more. The price has risen a long way since January. Nothing has changed in what the company earns.",
+        ask: "What would a holder do now?",
+        choices: [
+          { label: "Hold the shares", note: "The price was rising and the company had every reason to keep it rising. By the summer the shares reached about £1,000, so holding through these months was, on paper, richly rewarded. Nothing public guaranteed that: a subscription that failed to fill could have turned the price in the spring." },
+          { label: "Sell part", note: "Selling part took a gain at a price already far above January’s. It also meant watching the shares go on to several times that price over the summer. A person who sold here was early by months, and could not have known by how many." },
+          { label: "Not enough to go on", note: "A price that moves with no change in earnings gives nothing to measure it against. That was as true in April as it was in the summer." },
+        ],
+      },
+      {
+        at: 4,
+        known: "The Bubble Act now requires a royal charter or an act of Parliament for a joint-stock company, which bears on the company’s rivals for investors’ money. South Sea shares have reached about £1,000. Many holders bought by instalments or with money lent against the shares, and further instalments fall due later in the year.",
+        ask: "With the shares at about £1,000, what would a holder do?",
+        choices: [
+          { label: "Hold the shares", note: "Holding was a view that the price, having risen roughly tenfold, would stay up or rise further. By September it was falling rapidly as instalments fell due. At the time the Act could be read as sending money from rival ventures towards the company." },
+          { label: "Sell part", note: "Selling here was close to the highest prices of the year, which nobody could know then. It needed a buyer, and for part of the summer the company’s transfer books were closed. Had the price gone on rising, it would have looked like timidity." },
+          { label: "Not enough to go on", note: "There was still no measure of what the shares were worth, only what the last buyer had paid. The same could have been said at every stage of the rise." },
+        ],
+      },
+      {
+        at: 5,
+        known: "The price is falling rapidly as instalments fall due and holders sell. The Sword Blade Company, the South Sea Company’s banker, has failed. Parliament is not sitting and no rescue has been announced.",
+        ask: "In the middle of the fall, what would a holder do?",
+        choices: [
+          { label: "Hold the shares", note: "Holding was a view that the fall had gone too far, or that something would be arranged. By December the shares were back near where they began the year. A reconstruction of the company’s finances did follow in 1721; it did not bring the summer’s prices back." },
+          { label: "Sell part", note: "Selling in September took a price far below the summer’s and still above December’s. Anyone who had borrowed against the shares may have had no choice. Had Parliament stepped in at once with support, the sale would have come just before a recovery." },
+          { label: "Not enough to go on", note: "With the banker failed and no statement from Parliament, nobody could say what would be done. That uncertainty was a reason for the selling as much as a reason to wait." },
+        ],
+      },
+    ],
     terms: ["leverage", "margin", "liquidity", "volatility"],
     faq: [
       { q: "What did the South Sea Company actually do?", a: "Its trade with South America was small. Its main business was financial: it held British government debt, which it had acquired by giving the holders its own shares, and received interest on it from the government. The 1720 scheme was a much larger version of the same exchange." },
@@ -195,6 +322,57 @@ export const HISTORY: readonly Episode[] = [
     caution:
       "The crash and the Great Depression are linked in memory, but economists do not agree that the first caused the second. Most accounts give more weight to the bank failures of 1930 to 1933, the contraction of money and credit, and the working of the international gold standard, with the crash as the opening shock. The stories of financiers jumping from windows in October 1929 are largely legend. The index figures given are closing levels of the Dow Jones Industrial Average as published by its compiler.",
     sources: "The Federal Reserve’s own history pages, the published record of the Dow Jones Industrial Average, the United States Senate’s banking inquiry of 1932 to 1934, and contemporary newspaper accounts.",
+    documents: [
+      { title: "Stock Exchange Practices: Report of the Committee on Banking and Currency", by: "United States Senate (Senate Report No. 1455, 73rd Congress)", date: "1934", supports: "The evidence on banking and stock exchange practices from the Senate inquiry of 1932 to 1934, on which the new laws were built." },
+      { title: "Banking Act of 1933", by: "United States Congress", date: "16 June 1933", supports: "The separation of commercial from investment banking and the creation of federal deposit insurance." },
+      { title: "Securities Exchange Act of 1934", by: "United States Congress", date: "6 June 1934", supports: "The creation of the Securities and Exchange Commission, and the Federal Reserve’s power to set margin requirements." },
+      { title: "A Monetary History of the United States, 1867–1960", by: "Milton Friedman and Anna Jacobson Schwartz", date: "1963", supports: "The weight that most accounts give to the bank failures of 1930 to 1933 and the contraction of money and credit." },
+      { title: "Stock Market Crash of 1929", by: "Federal Reserve History (an essay on the Federal Reserve’s history pages)", date: "2013", supports: "The discount rate rise of August 1929 and the order of the days in October." },
+    ],
+    seat: "Suppose someone holds shares, part of them bought on margin.",
+    junctures: [
+      {
+        at: 1,
+        known: "Share prices have risen through the decade. Buying on margin has spread, and loans to brokers have grown year after year. In August 1929 the Federal Reserve Bank of New York raises its discount rate from 5% to 6%, with lending for speculation in mind.",
+        ask: "After the rate rise, what would such a holder do?",
+        choices: [
+          { label: "Hold the shares", note: "Holding was a view that a rise of a decade would not be ended by one percentage point on a lending rate. Prices did go on to a record close on 3 September. A higher rate could as well have bitten at once, since so much buying was on borrowed money." },
+          { label: "Pay down the loan", note: "Selling enough to reduce the margin loan lowered the amount that a fall could take, and gave up part of any further rise. For some weeks after August it looked like money left on the table." },
+          { label: "Not enough to go on", note: "A central bank had signalled its unease, and prices had gone on rising. Nothing public said which of the two would give way." },
+        ],
+        next: { when: "3 Sept 1929", to: 2, text: "The Dow Jones Industrial Average closes at 381.17, the highest close it has yet recorded." },
+      },
+      {
+        at: 3,
+        known: "The Dow closed at a record 381.17 on 3 September and has slipped since. On Thursday 24 October there is heavy selling at the opening on record volume. Leading bankers meet opposite the Exchange and agree to buy, and prices recover much of the day’s loss.",
+        ask: "On Thursday evening, what would such a holder do?",
+        choices: [
+          { label: "Hold the shares", note: "The bankers’ buying had steadied the day, and holding trusted it to last. On Monday no support appeared and the Dow fell by nearly 13%. Had the bankers kept buying, Thursday might now be remembered as the low." },
+          { label: "Pay down the loan", note: "Selling into Thursday’s recovery lowered the loan before the next margin call. It meant selling well below September’s prices, on a day when the most powerful buyers in the market had just said they were buying." },
+          { label: "Not enough to go on", note: "Whether a few bankers’ willingness would outlast the weekend was not something anyone outside the room could know." },
+        ],
+      },
+      {
+        at: 5,
+        known: "On Monday 28 October the Dow fell by nearly 13%, and on Tuesday 29 October by nearly 12% more, on about 16 million shares. Brokers are calling for more margin, and holders who cannot find it are being sold out.",
+        ask: "For a holder who still has shares after the margin calls, what now?",
+        choices: [
+          { label: "Hold what is left", note: "Holding after a fall of that size was a view that the forced selling would burn itself out. The Dow reached its low for the year on 13 November and a partial recovery followed. The forced selling could as easily have fed on itself for weeks more." },
+          { label: "Sell part", note: "Selling on those days meant selling to the few buyers there were, at prices set by forced sales. It would have looked poor during the recovery that followed. It would have looked prudent had the margin calls gone on." },
+          { label: "Not enough to go on", note: "Two such days together gave little to reason from. What the banks, the brokers and the Federal Reserve would do next had not been said." },
+        ],
+      },
+      {
+        at: 6,
+        known: "The Dow reached its low for the year on 13 November, close to half its September level. Since then prices have recovered part of the fall, into the spring of 1930.",
+        ask: "After that partial recovery, what would a holder do?",
+        choices: [
+          { label: "Hold the shares", note: "The recovery looked convincing at the time. Holding from here meant sitting through two more years of falling prices and waves of bank failures, to a close of 41.22 on 8 July 1932. The bank failures could not be read from share prices in the spring of 1930." },
+          { label: "Sell part", note: "Selling into the recovery meant accepting prices far below September 1929 just as things seemed to be mending. As it turned out, those prices were not seen again for many years. Had the recovery continued, the seller would have fixed the loss for nothing." },
+          { label: "Not enough to go on", note: "Whether the crash was an event in the share market or the start of something wider was the open question. Economists still weigh it differently." },
+        ],
+      },
+    ],
     terms: ["margin", "margin-call", "leverage", "index", "recession"],
     faq: [
       { q: "How much did the stock market fall in the 1929 crash?", a: "The Dow Jones Industrial Average fell by nearly 13% on Monday 28 October 1929 and by nearly 12% on Tuesday 29 October. From its peak close of 381.17 on 3 September 1929 to its low of 41.22 on 8 July 1932, it lost about 89%." },
@@ -244,6 +422,45 @@ export const HISTORY: readonly Episode[] = [
     caution:
       "The cause is still argued over. The Brady report gave a large part to portfolio insurance and index arbitrage; other studies put more weight on the news of the preceding week, on overseas selling, or on the market simply having risen too far. The figures given for the day, 508 points and 22.6%, are not in dispute.",
     sources: "The report of the Presidential Task Force on Market Mechanisms of January 1988, the Federal Reserve’s history pages, and the published record of the Dow Jones Industrial Average.",
+    documents: [
+      { title: "Report of the Presidential Task Force on Market Mechanisms (the Brady report)", by: "Presidential Task Force on Market Mechanisms", date: "January 1988", supports: "The part played by portfolio insurance and index arbitrage, the finding that shares, futures and options are one market, and the recommendation of co-ordinated trading halts." },
+      { title: "The October 1987 Market Break", by: "Division of Market Regulation, Securities and Exchange Commission", date: "February 1988", supports: "The regulator’s own account of the trading of 19 and 20 October and of the order systems that fell behind." },
+      { title: "Statement by the Chairman of the Board of Governors of the Federal Reserve System", by: "Federal Reserve", date: "20 October 1987", supports: "The statement, made before the opening, that the Federal Reserve stood ready to supply liquidity." },
+      { title: "A Brief History of the 1987 Stock Market Crash with a Discussion of the Federal Reserve Response", by: "Mark Carlson, Finance and Economics Discussion Series 2007-13, Board of Governors of the Federal Reserve System", date: "November 2006", supports: "The order of events on 19 and 20 October, the strain on clearing arrangements and the central bank’s response." },
+    ],
+    seat: "Suppose someone holds a broad spread of American shares.",
+    junctures: [
+      {
+        at: 1,
+        known: "The Dow peaked in late August after a strong rise since the start of the year. From Wednesday 14 to Friday 16 October prices in New York have fallen three days running, after disappointing trade figures and news of a proposed tax change affecting takeovers. Interest rates are rising and the dollar is under pressure.",
+        ask: "On Friday evening, what would such a holder do?",
+        choices: [
+          { label: "Hold the shares", note: "Three falling days after a strong year were not unusual in themselves, and the news behind them was ordinary. Holding over the weekend was a view that Monday would be another day. It could have been: nothing public pointed to a fall of the size that came." },
+          { label: "Sell part", note: "Selling on Friday took money out before the weekend, at prices already well below August’s. Had Monday opened calmly, it would have been a sale at the bottom of a three-day dip." },
+          { label: "Not enough to go on", note: "How much automatic selling was still waiting was known to the institutions concerned and not to the public. On what was published, there was little to tell a dip from something worse." },
+        ],
+      },
+      {
+        at: 2,
+        known: "It is Monday 19 October. Markets in Asia and then Europe have fallen before New York opens. At the opening in New York, sell orders are so heavy that many large shares do not begin trading for an hour or more.",
+        ask: "During that morning, what would a holder do?",
+        choices: [
+          { label: "Hold the shares", note: "Holding meant not joining a queue of sell orders that could not yet be matched. By the close the Dow was down 22.6%. At midday a rally in the afternoon was as easy to imagine as a further fall." },
+          { label: "Sell at the market", note: "A market order that morning was filled at whatever price existed when its turn came, with order systems running far behind. The price received could be far from the price last seen. As the day went, the index was lower still at the close." },
+          { label: "Not enough to go on", note: "With many large shares not yet open, there was no reliable price to act on. For an hour or more that was literally so." },
+        ],
+      },
+      {
+        at: 3,
+        known: "The Dow has closed down 508 points, a fall of 22.6% in one day. Share-index futures in Chicago have fallen further still, and order systems have run far behind. No statement has yet come from the Federal Reserve.",
+        ask: "On Monday night, what would a holder plan for Tuesday?",
+        choices: [
+          { label: "Hold the shares", note: "Holding overnight was a view that the worst was done, or simply that there was no sensible price to sell at. On Tuesday the Federal Reserve said it stood ready to supply liquidity, and prices turned up after midday. Around midday trading in many shares all but stopped, and it could have gone the other way." },
+          { label: "Sell part", note: "Selling on Tuesday morning meant selling into a market that nearly ceased to function before it turned. Had clearing arrangements failed, as some came close to doing, being out would have mattered a great deal." },
+          { label: "Not enough to go on", note: "Nobody outside knew on Monday night how sound the brokers and clearing arrangements were. That was the real question, and it could not be answered from published prices." },
+        ],
+      },
+    ],
     terms: ["liquidity", "volatility", "index", "futures", "hedging", "slippage"],
     faq: [
       { q: "How much did the market fall on Black Monday 1987?", a: "The Dow Jones Industrial Average fell 508 points on 19 October 1987, which was 22.6% of its value. It is the largest one-day percentage fall in the index’s history." },
@@ -295,6 +512,45 @@ export const HISTORY: readonly Episode[] = [
     caution:
       "The interest rates, dates and the ERM central rate are a matter of public record. The cost of the day’s intervention is an estimate and depends on how it is counted, so no figure is given here. Much is written about the profits of particular funds; those accounts are not needed to understand what happened and are left out. Whether leaving the ERM was a disaster or a release is a matter of opinion: the economy recovered in the years that followed, and the political cost to the government of the day was severe.",
     sources: "Bank of England and Treasury accounts of the episode, including Treasury papers released later, and contemporary newspaper reports.",
+    documents: [
+      { title: "Statement by the Chancellor of the Exchequer on the suspension of sterling’s membership of the Exchange Rate Mechanism", by: "HM Treasury", date: "16 September 1992", supports: "The suspension of sterling’s membership, announced that evening." },
+      { title: "Letter from the Chancellor of the Exchequer to the Chairman of the Treasury and Civil Service Committee", by: "HM Treasury", date: "8 October 1992", supports: "The adoption of a published inflation target as the new basis for monetary policy." },
+      { title: "Bank of England Act 1998", by: "United Kingdom Parliament", date: "1998", supports: "The legal basis for the operational independence announced in May 1997, and for the Monetary Policy Committee." },
+      { title: "The cost of Black Wednesday reconsidered", by: "HM Treasury (an internal paper, released later under freedom of information)", date: "1997, released in 2005", supports: "The Treasury’s own later estimate of what the defence cost. This page gives no figure, because it depends on how the cost is counted." },
+    ],
+    seat: "Suppose a firm holds pounds that it must turn into German marks in a few weeks’ time.",
+    junctures: [
+      {
+        at: 3,
+        known: "Sterling joined the ERM in 1990 at 2.95 marks to the pound, with a band of 6% either side. Danish voters rejected the Maastricht Treaty in June, and a French referendum on it is due on 20 September. Finland abandoned its currency’s link on 8 September, and at the weekend of 12 and 13 September Italy devalued the lira within the ERM. Sterling has fallen to the bottom of its band.",
+        ask: "With sterling on its floor, what would the firm do with its pounds?",
+        choices: [
+          { label: "Leave them in pounds", note: "The band was a commitment by a government with reserves and the power to set interest rates, and until that week it had held. Leaving the pounds alone was a view that it would hold again. The lira had just stayed in the mechanism only by being devalued." },
+          { label: "Convert part now", note: "Converting at the floor meant accepting the worst rate the band allowed, in exchange for depending on the band less. Had the defence succeeded and the pound risen off its floor, this would have been the dearest moment to convert." },
+          { label: "Not enough to go on", note: "Whether a government in recession would pay the price of a defence was a political question. The market was guessing at it too." },
+        ],
+      },
+      {
+        at: 4,
+        known: "It is Wednesday 16 September. The Bank of England has been buying sterling heavily. Late in the morning the government announces a rise in interest rates from 10% to 12%. The pound has not moved off its floor.",
+        ask: "After the first rate rise, what would the firm do?",
+        choices: [
+          { label: "Leave them in pounds", note: "A rise of two points in a morning was a strong signal of intent, and intent was what the market doubted. It could have turned the day. It did not: a second rise was announced that afternoon and the selling continued." },
+          { label: "Convert part now", note: "The Bank was still buying pounds at the floor, so the floor rate was there for anyone selling. Converting used it while it lasted. Had the rise worked, the firm would have sold at the bottom of the band on the day the pound recovered." },
+          { label: "Not enough to go on", note: "A rate rise that fails to move the price can mean that a defence is working slowly or not at all. From outside, at midday, the two looked the same." },
+        ],
+      },
+      {
+        at: 5,
+        known: "A second rise in interest rates, to 15%, has been announced, to take effect the following day. Selling continues and the pound is still on its floor.",
+        ask: "After the second rise, what would the firm do?",
+        choices: [
+          { label: "Leave them in pounds", note: "Holding the pounds now rested on the government keeping rates at 15% in a recession. That evening it suspended membership and the pound fell. A devaluation inside the mechanism, as Italy had made days before, was another outcome that could be imagined that afternoon." },
+          { label: "Convert part now", note: "Converting that afternoon was at the floor rate, on the last day it was on offer. That is known now. At the time it meant selling at the bottom of the band hours after two rate rises meant to lift it." },
+          { label: "Not enough to go on", note: "Two rises in one day were extraordinary, which made them evidence of resolve and of desperation at once. Both readings were open that afternoon." },
+        ],
+      },
+    ],
     terms: ["central-bank", "monetary-policy", "interest-rate", "inflation", "volatility", "gap"],
     faq: [
       { q: "What happened on Black Wednesday?", a: "On 16 September 1992 sterling came under heavy selling and fell to the floor of its band in the European Exchange Rate Mechanism. The Bank of England bought pounds and the government announced interest rate rises from 10% to 12% and then to 15%. Neither worked, and that evening the government suspended sterling’s membership of the mechanism." },
@@ -346,6 +602,46 @@ export const HISTORY: readonly Episode[] = [
     caution:
       "The dates of the floats and the agreements are a matter of record. The causes are argued over: some accounts stress weak banks, poor supervision and bad lending inside the countries; others stress a panic among foreign lenders that would have damaged even sound economies. The effects of the International Monetary Fund’s conditions, and of Malaysia’s capital controls, are also still debated. Figures for the size of the rescue programmes and the depth of the currency falls vary with the dates chosen and are not given here.",
     sources: "International Monetary Fund histories and its independent evaluation of the programmes, central bank accounts from the region, and contemporary newspaper reports.",
+    documents: [
+      { title: "The IMF and Recent Capital Account Crises: Indonesia, Korea, Brazil", by: "Independent Evaluation Office of the International Monetary Fund", date: "2003", supports: "The Fund’s own evaluation of its programmes, which accepted part of the criticism made of them." },
+      { title: "IMF-Supported Programs in Indonesia, Korea, and Thailand: A Preliminary Assessment", by: "Timothy Lane and others, International Monetary Fund Occasional Paper 178", date: "1999", supports: "The order of the programmes for the three countries and the conditions attached to them." },
+      { title: "The East Asian Financial Crisis: Diagnosis, Remedies, Prospects", by: "Steven Radelet and Jeffrey Sachs, in the Brookings Papers on Economic Activity", date: "1998", supports: "The reading of the crisis that stresses a panic among foreign lenders, one side of the argument described above." },
+      { title: "The Joint Ministerial Statement of the ASEAN + 3 Finance Ministers Meeting", by: "Finance ministers of the ASEAN countries, China, Japan and South Korea, at Chiang Mai", date: "6 May 2000", supports: "The Chiang Mai Initiative: the network of currency swap arrangements between the region’s central banks." },
+    ],
+    seat: "Suppose a company in the region has a short-term loan in US dollars and earns its income in a local currency that is held steady against the dollar.",
+    junctures: [
+      {
+        at: 1,
+        known: "For years the baht has been held steady against the dollar, and banks and companies have borrowed short-term in dollars. Thailand runs a large current-account deficit, its property market has turned down and finance companies have begun to fail. In May 1997 the baht comes under heavy selling, and the Bank of Thailand defends the rate.",
+        ask: "For a Thai company with such a loan, what now?",
+        choices: [
+          { label: "Leave the loan as it is", note: "The link to the dollar had held for years and the central bank was defending it. Leaving the loan uncovered cost nothing while that lasted. On 2 July the baht was floated and fell at once. How much of the reserves had already been promised in forward contracts was not public in May." },
+          { label: "Buy dollars forward", note: "Covering the loan fixed its cost in baht, at a price. Had the defence held, it would have been money spent on insurance that was not needed." },
+          { label: "Not enough to go on", note: "The published reserves looked adequate. The usable reserves were another matter, and nobody outside the central bank could see the difference." },
+        ],
+        next: { when: "2 July 1997", to: 2, text: "Thailand floats the baht, which falls at once." },
+      },
+      {
+        at: 2,
+        known: "Thailand has floated the baht, which fell at once. The currencies of the Philippines, Malaysia and Indonesia are still being held.",
+        ask: "For a company with the same kind of loan in one of those neighbouring countries, what now?",
+        choices: [
+          { label: "Leave the loan as it is", note: "Each country’s position differed from Thailand’s. Leaving the loan uncovered was a view that the trouble was Thai. The Philippines let the peso float on 11 July, Malaysia stopped defending the ringgit on 14 July and Indonesia floated the rupiah on 14 August." },
+          { label: "Buy dollars forward", note: "Covering fixed the loan’s cost before the neighbouring currencies went, at whatever price cover could then be had. Had the trouble stayed in Thailand, it would have been an expense with nothing to show for it." },
+          { label: "Not enough to go on", note: "Whether a crisis spreads depends on what lenders decide to believe about similar places. That could not be read from any one country’s figures." },
+        ],
+      },
+      {
+        at: 5,
+        known: "Since July the baht, the peso, the ringgit and the rupiah have all been let go, and the International Monetary Fund has approved a programme for Thailand. In late October Hong Kong’s share market falls sharply as its dollar link is defended with very high overnight interest rates, and on 27 October the Dow falls 554 points. South Korea’s won has not been floated.",
+        ask: "For a South Korean company with a short-term dollar loan, what now?",
+        choices: [
+          { label: "Leave the loan as it is", note: "South Korea was a far larger industrial economy than those that had floated, and could be seen as a different case. Leaving the loan uncovered rested on that. South Korea asked the Fund for help in late November, and the won was floated on 16 December." },
+          { label: "Buy dollars forward", note: "Covering in late October fixed the loan’s cost before the won went, at a price. Hong Kong’s link, defended at the same moment, held. The won’s might have held too." },
+          { label: "Not enough to go on", note: "The question was whether foreign lenders would renew their short-term loans. They did not publish their intentions." },
+        ],
+      },
+    ],
     terms: ["central-bank", "liquidity", "leverage", "volatility", "interest-rate", "hedging"],
     faq: [
       { q: "What started the Asian financial crisis?", a: "The event usually named is Thailand’s decision on 2 July 1997 to stop defending the baht’s link to the US dollar, after its reserves had been largely committed to the defence. The underlying conditions were pegged currencies, heavy short-term borrowing in dollars and weak banks, in Thailand and in several neighbours." },
@@ -397,6 +693,46 @@ export const HISTORY: readonly Episode[] = [
     caution:
       "The index levels are the Nasdaq Composite’s published closing values. The peak during the trading day on 10 March 2000 was higher than the closing figure given here. What ended the boom is not agreed: rising interest rates, a run of poor results, a court ruling against a large software company in early April 2000 and plain exhaustion of new buyers are all cited. No single trigger is established.",
     sources: "The published record of the Nasdaq Composite index, Federal Reserve and Securities and Exchange Commission records, and the business-cycle dates published by the National Bureau of Economic Research.",
+    documents: [
+      { title: "Sarbanes–Oxley Act of 2002 (Public Law 107-204)", by: "United States Congress", date: "30 July 2002", supports: "The personal certification of accounts by chief executives and finance directors, the tighter rules for auditors and the public body that oversees them." },
+      { title: "Selective Disclosure and Insider Trading (the final rule adopting Regulation FD)", by: "Securities and Exchange Commission", date: "August 2000", supports: "The rule that important information must be released to all investors at once." },
+      { title: "The global research analyst settlement", by: "Announced jointly by the Securities and Exchange Commission, the New York Attorney General, NASD, the New York Stock Exchange and state securities regulators", date: "28 April 2003", supports: "The settlement over conflicts of interest in the banks’ share research, and the separation of research from the business of selling flotations." },
+      { title: "Announcements of the Business Cycle Dating Committee", by: "National Bureau of Economic Research", date: "26 November 2001 and 17 July 2003", supports: "The dating of the United States recession from March to November 2001." },
+    ],
+    seat: "Suppose someone holds a fund of technology shares.",
+    junctures: [
+      {
+        at: 2,
+        known: "It is the start of 2000. Flotations of internet companies have multiplied, many of them with no profits. The Nasdaq Composite rose by more than 85% in 1999 alone. The Federal Reserve has been raising interest rates since June 1999.",
+        ask: "After a year like 1999, what would such a holder do?",
+        choices: [
+          { label: "Hold the fund", note: "The internet was changing business, as its believers said, and the index had rewarded holders for years. Holding was a view that this would continue. The Nasdaq went on to a record close of 5,048.62 on 10 March 2000. Rising interest rates could have ended the rise months earlier, or not at all." },
+          { label: "Sell part", note: "Selling part after a year of 85% took a gain and gave up whatever came next. In the weeks that followed, that meant watching the index reach a new record." },
+          { label: "Not enough to go on", note: "With no earnings to value, the new yardsticks could justify almost any price. There was no agreed way to say what was too high." },
+        ],
+        next: { when: "10 March 2000", to: 3, text: "The Nasdaq Composite closes at 5,048.62, a record." },
+      },
+      {
+        at: 4,
+        known: "The Nasdaq closed at a record 5,048.62 on 10 March. In April technology shares have fallen heavily, with the worst of it in the week ending 14 April. Companies that had relied on raising new money are finding that they cannot.",
+        ask: "After April’s fall, what would a holder do?",
+        choices: [
+          { label: "Hold the fund", note: "Holding was a view that April was a sharp interruption in a rise that had further to go. The decline in fact continued, and the economy was in recession from March 2001. In April 2000 a rebound to new records was as easy to argue for." },
+          { label: "Sell part", note: "Selling in April meant selling well below March’s prices after a month’s fall. It left less exposed to what followed. Had the index turned up in May, it would have been a sale near a low." },
+          { label: "Not enough to go on", note: "No single cause for the turn was established then, and none has been since. A fall without an agreed reason is hard to judge." },
+        ],
+      },
+      {
+        at: 6,
+        known: "The United States economy was in recession from March to November 2001. Accounting scandals have come to light at several large listed companies, and in July 2002 Congress passes the Sarbanes–Oxley Act. The Nasdaq stands far below its level of March 2000.",
+        ask: "More than two years into the fall, what would a holder do?",
+        choices: [
+          { label: "Hold the fund", note: "After more than two years of falling prices, holding was a view that most of the damage was done. The index fell further, to 1,114.11 on 9 October 2002, and then stopped falling. More scandals, or a second recession, were live possibilities that summer." },
+          { label: "Sell part", note: "Selling in July 2002 avoided the last part of the fall to October. It also meant being out when the index turned, unless the seller chose to come back, which is a second decision as hard as the first." },
+          { label: "Not enough to go on", note: "How many more companies’ accounts could not be trusted was exactly what nobody knew. The Act was a response to that doubt, not an answer to it." },
+        ],
+      },
+    ],
     terms: ["index", "volatility", "interest-rate", "recession", "liquidity"],
     faq: [
       { q: "When did the dot-com bubble burst?", a: "The Nasdaq Composite index reached its peak close of 5,048.62 on 10 March 2000 and fell heavily in April 2000. The decline continued for two and a half years, to a low of 1,114.11 on 9 October 2002." },
@@ -449,6 +785,56 @@ export const HISTORY: readonly Episode[] = [
     caution:
       "The dates and the official actions are a matter of public record. The causes are weighted differently by different inquiries: lending standards, securitisation, credit ratings, bank leverage, regulation, monetary policy and global flows of savings each have their advocates, and the official United States inquiry itself did not reach a unanimous view. Whether Lehman Brothers could or should have been rescued is still argued over. Estimates of the total cost vary widely with what is counted and are not given here.",
     sources: "Central bank histories, including the Federal Reserve’s and the Bank of England’s, the report of the United States Financial Crisis Inquiry Commission, and the public record of legislation.",
+    documents: [
+      { title: "The Financial Crisis Inquiry Report", by: "National Commission on the Causes of the Financial and Economic Crisis in the United States", date: "January 2011", supports: "The official United States account of the causes. It was published with dissenting statements, which is why this page says the inquiry was not unanimous." },
+      { title: "Press release on the temporary suspension of three funds", by: "BNP Paribas Investment Partners", date: "9 August 2007", supports: "The suspension of three funds whose mortgage securities the bank said it could not value." },
+      { title: "Press release on lending to American International Group", by: "Board of Governors of the Federal Reserve System", date: "16 September 2008", supports: "The authorisation for the Federal Reserve Bank of New York to lend up to $85 billion to AIG." },
+      { title: "Emergency Economic Stabilization Act of 2008", by: "United States Congress", date: "3 October 2008", supports: "The $700 billion programme created by the revised rescue bill." },
+      { title: "Basel III: A global regulatory framework for more resilient banks and banking systems", by: "Basel Committee on Banking Supervision", date: "December 2010", supports: "The higher capital and liquidity requirements for banks agreed after the crisis." },
+    ],
+    seat: "Suppose someone holds a broad fund of shares.",
+    junctures: [
+      {
+        at: 1,
+        known: "House prices in the United States have stopped rising and begun to fall, defaults on subprime mortgages are climbing and specialist lenders have started to fail. On 9 August 2007 the French bank BNP Paribas suspends three funds, saying it cannot value their mortgage securities. Lending between banks seizes up and central banks supply emergency cash.",
+        ask: "In August 2007, what would such a holder do?",
+        choices: [
+          { label: "Hold the fund", note: "Central banks had acted at once, and the losses appeared to sit in one part of one country’s mortgage market. Holding was a view that they would stay there. Share prices went on to a peak in October 2007. Which institutions held the losses was not known." },
+          { label: "Sell part", note: "Selling part in August 2007 was early by more than a year, and for some months it looked mistaken as shares rose. It left less exposed to 2008. Had the problem proved as contained as it first looked, it would simply have been an exit before a rise." },
+          { label: "Not enough to go on", note: "A bank saying that it could not value its own funds was information of an unusual kind. What it implied for other banks was the open question." },
+        ],
+      },
+      {
+        at: 3,
+        known: "Northern Rock has been supported by the Bank of England and then, in February 2008, nationalised. In March 2008 the investment bank Bear Stearns runs out of funding and is sold to JPMorgan Chase, with financing from the Federal Reserve Bank of New York.",
+        ask: "After the sale of Bear Stearns, what would a holder do?",
+        choices: [
+          { label: "Hold the fund", note: "A large firm had run out of funding and the authorities had arranged its sale within days. Holding could rest on that: it suggested that failures would be managed. Six months later Lehman Brothers was not rescued, which could not be known in March." },
+          { label: "Sell part", note: "Selling after Bear Stearns meant selling below the previous autumn’s prices. It left less exposed to September. Had the sale of Bear Stearns marked the turn, it would have been a sale near the low." },
+          { label: "Not enough to go on", note: "The rescue showed what the authorities would do for one firm. It did not say whether they would, or could, do it for the next." },
+        ],
+      },
+      {
+        at: 5,
+        known: "The United States government took control of Fannie Mae and Freddie Mac on 7 September. On 15 September Lehman Brothers files for bankruptcy, the largest filing in United States history. On the same day Merrill Lynch agrees to be bought by Bank of America.",
+        ask: "On the day of the bankruptcy, what would a holder do?",
+        choices: [
+          { label: "Hold the fund", note: "A large firm had been allowed to fail, and it was not yet clear what that would do to the rest. Holding was a view that the system would absorb it, or that governments would now act. They did act: the next day the Federal Reserve lent $85 billion to AIG. Whether that would be enough was unknown." },
+          { label: "Sell part", note: "Selling that week was into a falling market, with funding leaving firms within days. It left less exposed to what followed. A swift and general rescue was possible that week, and would have made it a sale at the worst moment." },
+          { label: "Not enough to go on", note: "Nobody knew who was owed what by Lehman Brothers. That uncertainty, more than the losses themselves, is what stops lending." },
+        ],
+      },
+      {
+        at: 8,
+        known: "The Federal Reserve has lent $85 billion to AIG. The House of Representatives rejected the rescue bill on 29 September, when the Dow fell 777 points, and a revised bill creating a $700 billion programme became law on 3 October. On 8 October six central banks cut interest rates together by half a percentage point, and the British government announces a plan to put public capital into its banks.",
+        ask: "With governments and central banks now acting together, what would a holder do?",
+        choices: [
+          { label: "Hold the fund", note: "Governments and central banks were acting on a scale not seen before. Holding was a view that this would be enough. The S&P 500 went on falling to 676.53 on 9 March 2009, and then turned. The measures could have worked at once, or failed altogether." },
+          { label: "Sell part", note: "Selling in October 2008 avoided the further fall to March 2009, at prices already far below 2007. It also left the seller out at the low unless they came back, which is a separate decision and no easier." },
+          { label: "Not enough to go on", note: "Whether public money would restore trust between banks had not been tested on this scale. There was no close precedent to point to." },
+        ],
+      },
+    ],
     terms: ["leverage", "liquidity", "central-bank", "monetary-policy", "recession", "derivative", "index"],
     faq: [
       { q: "What caused the 2008 financial crisis?", a: "The immediate cause was a fall in United States house prices, which produced losses on mortgage loans that had been packaged into securities and sold to banks worldwide. Banks held those securities with little capital and short-term funding, so the losses turned into a general loss of trust between banks. Inquiries differ on how to weigh lending standards, ratings, regulation and other factors." },
@@ -501,6 +887,46 @@ export const HISTORY: readonly Episode[] = [
     caution:
       "The times, the size of the sell program and the count of cancelled trades come from the regulators’ joint report. All times are Eastern Time. The report’s emphasis on the one large sell order has been challenged by other studies, which give more weight to the fragile state of the market that afternoon and to the behaviour of fast-trading firms. In 2015 the American authorities also brought a case against an individual trader for placing and cancelling orders to mislead the market; how much that contributed on the day is disputed.",
     sources: "The joint report of the staffs of the Commodity Futures Trading Commission and the Securities and Exchange Commission, published on 30 September 2010, and the regulators’ later rule filings.",
+    documents: [
+      { title: "Findings Regarding the Market Events of May 6, 2010", by: "The staffs of the Commodity Futures Trading Commission and the Securities and Exchange Commission, reporting to the Joint Advisory Committee on Emerging Regulatory Issues", date: "30 September 2010", supports: "The times, the 75,000-contract sell program, the five-second pause and the count of cancelled trades." },
+      { title: "Preliminary Findings Regarding the Market Events of May 6, 2010", by: "The same two staffs", date: "18 May 2010", supports: "The regulators’ first account of the day, published twelve days after it." },
+      { title: "Recommendations Regarding Regulatory Responses to the Market Events of May 6, 2010", by: "Joint CFTC-SEC Advisory Committee on Emerging Regulatory Issues", date: "18 February 2011", supports: "The advisory committee’s proposals for changes to the rules after the event." },
+      { title: "The Flash Crash: High-Frequency Trading in an Electronic Market", by: "Andrei Kirilenko, Albert S. Kyle, Mehrdad Samadi and Tugkan Tuzun, in the Journal of Finance", date: "2017", supports: "A later study of how fast-trading firms behaved during the fall, one of those that weigh the day differently from the joint report." },
+    ],
+    seat: "Suppose someone holds American shares, with a stop order resting some way below the market.",
+    junctures: [
+      {
+        at: 0,
+        known: "It is the early afternoon of 6 May. Markets are worried about the debts of the Greek government and the stability of the euro. Share prices have fallen through the day, volatility is high, and those who supply prices are quoting in smaller sizes.",
+        ask: "On a nervous afternoon, what would such a holder do with the stop order?",
+        choices: [
+          { label: "Leave the stop in place", note: "A stop is placed for a day like this, and leaving it was consistent. Once its level is reached it becomes a market order, filled at whatever price exists. On an ordinary bad afternoon that price is near the level set." },
+          { label: "Cancel the stop and hold", note: "Cancelling removed the chance of being sold in a thin market at a poor price. It also removed the protection on a day when the news was bad and could have got worse: a lasting fall would then have run with nothing to limit it." },
+          { label: "Not enough to go on", note: "It was a nervous day of a familiar kind. Nothing visible set it apart from other nervous days." },
+        ],
+        next: { when: "2:32 to 2:44 pm", to: 2, text: "At 2:32 pm a large investment firm starts a computer program to sell 75,000 E-mini futures contracts. Nobody outside knew that at the time: it became public in the regulators’ report that September. What could be seen was the price, which fell quickly from about 2:41 pm." },
+      },
+      {
+        at: 2,
+        known: "It is about 2:44 pm. The price of the E-mini futures contract has fallen quickly in the last few minutes and share prices are following. No news has been published that explains it.",
+        ask: "With prices falling fast and no explanation, what would the holder do?",
+        choices: [
+          { label: "Leave the stop in place", note: "A stop reached in those minutes did what it was set to do: it sold, at whatever price was there. For some shares that price was soon a penny. That evening trades more than 60% away from the earlier level were cancelled; trades inside that limit stood, however unfavourable." },
+          { label: "Cancel the stop and hold", note: "Holding without a stop meant sitting through a fall with no known cause. Most prices were back near their earlier levels by about 3:00 pm. Had the fall been the first sign of news not yet published, nothing would have limited the loss." },
+          { label: "Not enough to go on", note: "There was no public explanation. A fall without news can be a fault in the market, or news that has not yet arrived, and the two look alike while it is happening." },
+        ],
+      },
+      {
+        at: 4,
+        known: "E-mini trading was paused for five seconds at 2:45 pm and the futures price has steadied. In the share market many firms have withdrawn. Some shares and exchange-traded funds are trading at a penny and others at $100,000, and the Dow has been nearly 1,000 points below the previous close.",
+        ask: "For a holder who still has the shares, what now?",
+        choices: [
+          { label: "Hold and send no order", note: "Sending no order kept the holder out of prices that plainly made no sense. Most prices were back near their earlier levels by about 3:00 pm, and the Dow ended the day about 3% lower. Nobody watching at 2:50 pm could be sure they would come back." },
+          { label: "Sell at the market", note: "A market order in those minutes was filled at whatever price was there, and for some shares that was a penny. Whether such a trade would later be cancelled was settled that evening, by a threshold nobody knew in advance. Had the fall been lasting, selling would have been the cautious act." },
+          { label: "Not enough to go on", note: "Prices of a penny and of $100,000 said nothing about the companies. They said that the market had stopped working, and nobody could say for how long." },
+        ],
+      },
+    ],
     terms: ["liquidity", "slippage", "stop-loss", "volatility", "futures", "index", "gap", "liquidity-provider"],
     faq: [
       { q: "What caused the flash crash of 2010?", a: "The regulators’ joint report traced it to a large automated order to sell 75,000 E-mini S&P 500 futures contracts, begun at 2:32 pm Eastern Time in an already nervous market, and to the reaction of fast-trading firms, which first bought and then sold on. Other studies give more weight to the thin state of the market that afternoon. The causes are still debated." },
@@ -553,6 +979,47 @@ export const HISTORY: readonly Episode[] = [
     caution:
       "The dates, the 1.20 minimum rate and the interest rates are from the Swiss National Bank’s own announcements. How far the euro fell at the extreme is uncertain: so few trades took place in the first minutes that different banks and platforms recorded different lows, and no figure is given here. Accounts of individual brokers’ losses are left out; the general outcome is a matter of record.",
     sources: "The Swiss National Bank’s press releases of 6 September 2011, 18 December 2014 and 15 January 2015, the European Securities and Markets Authority’s published measures of 2018, and contemporary newspaper reports.",
+    documents: [
+      { title: "Swiss National Bank sets minimum exchange rate at CHF 1.20 per euro", by: "Swiss National Bank (press release)", date: "6 September 2011", supports: "The minimum rate of 1.20 and the statement that the bank was prepared to buy foreign currency in unlimited quantities." },
+      { title: "Swiss National Bank introduces negative interest rates", by: "Swiss National Bank (press release)", date: "18 December 2014", supports: "The interest rate of −0.25% on deposits that banks hold with it." },
+      { title: "Swiss National Bank discontinues minimum exchange rate and lowers interest rate to –0.75%", by: "Swiss National Bank (press release)", date: "15 January 2015", supports: "The end of the minimum rate and the cut in the deposit rate, announced together." },
+      { title: "ECB announces expanded asset purchase programme", by: "European Central Bank (press release)", date: "22 January 2015", supports: "The programme of government bond purchases announced a week later." },
+      { title: "Decision (EU) 2018/796 of the European Securities and Markets Authority", by: "European Securities and Markets Authority", date: "22 May 2018", supports: "The restrictions on contracts for difference for retail clients that applied from 1 August 2018: leverage limits, a margin close-out rule and protection against negative balances." },
+    ],
+    seat: "Suppose someone holds euros against Swiss francs a little above 1.20, with leverage, and a stop order just below 1.20.",
+    junctures: [
+      {
+        at: 2,
+        known: "Since 6 September 2011 the Swiss National Bank has set a minimum exchange rate of 1.20 francs to the euro, and has said it will buy foreign currency in unlimited quantities to hold it. The floor has held. The rate sits a little above 1.20 for long periods, and the bank’s foreign currency reserves have grown very large.",
+        ask: "With the floor holding year after year, what would such a holder do?",
+        choices: [
+          { label: "Hold the position", note: "A central bank can always create its own currency to sell, so this was a floor it could hold, and it had held it for years. Holding the position was a view that the policy would continue. The risk was not the market breaking the floor; it was the bank choosing to end it." },
+          { label: "Reduce the leverage", note: "A smaller position, or less leverage, lowered what a change of policy could cost, and lowered what the position earned while the floor stood. For three years that was caution with no visible reward." },
+          { label: "Not enough to go on", note: "The calm above 1.20 described the policy. What the rate would be without the policy could not be observed while the policy was in force." },
+        ],
+      },
+      {
+        at: 3,
+        known: "The floor has held for more than three years. On 18 December 2014 the Swiss National Bank announces an interest rate of −0.25% on deposits that banks hold with it, to discourage holding francs. Markets expect the European Central Bank to begin buying government bonds, which would weaken the euro.",
+        ask: "After the negative rate is announced, what would the holder do?",
+        choices: [
+          { label: "Hold the position", note: "A negative rate was a new measure taken in defence of the floor, and could be read as renewed commitment. Holding rested on that reading. The same step could be read as a sign that holding the floor was becoming harder." },
+          { label: "Reduce the leverage", note: "Reducing after the December announcement lowered the exposure four weeks before the floor went. Nothing in the announcement said the floor would go. Had it stood for another year, this would have been caution with a cost." },
+          { label: "Not enough to go on", note: "One announcement supported two opposite readings. The public record did not choose between them." },
+        ],
+      },
+      {
+        at: 4,
+        known: "It is early January 2015. Markets expect the European Central Bank to announce bond purchases. Swiss National Bank officials publicly reaffirm the floor.",
+        ask: "After that reassurance, what would the holder do?",
+        choices: [
+          { label: "Hold the position", note: "Officials had just restated the policy in public, and holding took them at their word, as there was every ordinary reason to do. A bank that intends to end such a floor cannot say so beforehand, so the reassurance was not evidence either way." },
+          { label: "Reduce the leverage", note: "Reducing against a fresh official reassurance needed a reason that was not in the public record. With leverage, the move that came exceeded many deposits, and stop orders were filled far from their levels or not filled. Had the floor stood, the reduction would have changed nothing but the return." },
+          { label: "Not enough to go on", note: "It could not be known. The decision was made without warning because any warning would itself have ended the floor." },
+        ],
+        next: { when: "15 Jan 2015, 10:30", to: 6, text: "The Swiss National Bank announces that it is discontinuing the minimum exchange rate, and lowers its deposit rate to −0.75%. Within minutes the euro falls far below 1.20 francs, and for a time there are almost no prices at all." },
+      },
+    ],
     terms: ["safe-haven", "central-bank", "negative-balance", "leverage", "stop-loss", "slippage", "gap", "stop-out", "liquidity"],
     faq: [
       { q: "What happened to the Swiss franc on 15 January 2015?", a: "At 10:30 am Zurich time the Swiss National Bank announced that it was ending its minimum exchange rate of 1.20 francs to the euro, in place since 6 September 2011, and cut its deposit rate to −0.75%. The franc rose very sharply against the euro and other currencies within minutes." },
@@ -605,6 +1072,58 @@ export const HISTORY: readonly Episode[] = [
     caution:
       "The dates, the central bank decisions and the circuit-breaker halts are a matter of public record, as is the oil settlement price of 20 April 2020. The index figures are the published closing levels of the S&P 500 and the Dow Jones Industrial Average. How much of the recovery was owed to central bank action, to government spending or to the outlook for the virus itself is a matter of judgement, and economists weigh them differently.",
     sources: "Federal Reserve and Bank of England announcements, the World Health Organization’s published timeline, the Financial Stability Board’s review of the March 2020 market turmoil, and exchange records.",
+    documents: [
+      { title: "Statements of the Federal Open Market Committee", by: "Federal Reserve", date: "3 March and 15 March 2020", supports: "The half-point cut at an unscheduled meeting, and the cut to a range of 0% to 0.25% with bond purchases." },
+      { title: "Federal Reserve announces extensive new measures to support the economy", by: "Board of Governors of the Federal Reserve System (press release)", date: "23 March 2020", supports: "Bond purchases with no set limit, and the new lending programmes." },
+      { title: "WHO Director-General’s opening remarks at the media briefing on COVID-19", by: "World Health Organization", date: "11 March 2020", supports: "The declaration that the outbreak was a pandemic." },
+      { title: "Holistic Review of the March Market Turmoil", by: "Financial Stability Board", date: "17 November 2020", supports: "The strain in government bond markets and the withdrawals from money-market funds in March 2020." },
+      { title: "Interim Staff Report: Trading in NYMEX WTI Crude Oil Futures Contract Leading up to, on, and around April 20, 2020", by: "Staff of the Commodity Futures Trading Commission", date: "23 November 2020", supports: "The trading of the expiring crude oil contract on the day it settled below zero." },
+    ],
+    seat: "Suppose someone holds a broad fund of shares.",
+    junctures: [
+      {
+        at: 1,
+        known: "The S&P 500 closed at a record high on 19 February. In the week of 24 to 28 February outbreaks in Italy and elsewhere show the virus spreading beyond Asia, and United States shares have their worst week since 2008.",
+        ask: "At the end of that week, what would such a holder do?",
+        choices: [
+          { label: "Hold the fund", note: "Until that week markets had treated the virus mainly as a regional problem, and it might have remained one. Holding was a view that the week was a scare. Nobody had a model for governments closing large parts of their economies." },
+          { label: "Sell part", note: "Selling after the worst week since 2008 meant selling well below the record of nine days before. It left less exposed to March. Had the outbreaks been contained, it would have been a sale into a brief scare." },
+          { label: "Not enough to go on", note: "How far the virus would spread and what governments would do about it were questions for doctors and ministers, and neither had answered." },
+        ],
+      },
+      {
+        at: 3,
+        known: "The Federal Reserve cut interest rates by half a percentage point at an unscheduled meeting on 3 March. On 9 March the oil price falls steeply after talks between oil-producing countries break down, and in New York a market-wide circuit breaker halts trading, for the first time since 1997.",
+        ask: "On the day of the first halt, what would a holder do?",
+        choices: [
+          { label: "Hold the fund", note: "The central bank had already acted, and the halt had given the market time to steady. Holding was a view that policy would catch up with events. Prices went on falling after the halt: a circuit breaker pauses trading and does not set a floor." },
+          { label: "Sell part", note: "Selling on 9 March was at prices far below February’s and above those of the following week. It also raised the question of when, if ever, to come back, which was no easier to answer." },
+          { label: "Not enough to go on", note: "Two shocks had arrived together, one from the virus and one from oil. Nobody could say how long either would last." },
+        ],
+      },
+      {
+        at: 5,
+        known: "The World Health Organization declared a pandemic on 11 March, and trading in New York was halted again on 12 March. On Sunday 15 March the Federal Reserve cuts rates to a range of 0% to 0.25% and announces bond purchases. On Monday 16 March trading is halted a third time and the Dow falls 12.9%, its largest one-day percentage fall since 1987.",
+        ask: "After the largest one-day fall since 1987, what would a holder do?",
+        choices: [
+          { label: "Hold the fund", note: "The central bank had cut rates to near zero and shares had fallen anyway. Holding was a view that prices already allowed for a great deal. The index fell for another week. In 2008 the falls had run on for months after the first rescues, and that was the comparison people had." },
+          { label: "Sell part", note: "Selling on 16 March meant selling on the worst day since 1987. It avoided the further fall of the following week. Whole industries had no revenue and no date for its return, so a much longer decline was plausible." },
+          { label: "Not enough to go on", note: "Even the market for United States government bonds was under strain that month. When the easiest asset to sell is hard to sell, ordinary reasoning about prices has little to hold on to." },
+        ],
+        next: { when: "23 March 2020", to: 6, text: "The S&P 500 closes about 34% below its February peak. The Federal Reserve announces that its bond purchases will have no set limit, and new lending programmes." },
+      },
+      {
+        at: 6,
+        known: "On 23 March the S&P 500 closes about 34% below its February peak. The Federal Reserve announces that its bond purchases will have no set limit, and new lending programmes. Countries remain shut down.",
+        ask: "On 23 March, what would a holder do?",
+        choices: [
+          { label: "Hold the fund", note: "Holding at this point was a view that policy on this scale would work, or that selling so far down made little sense. The index was at a new record by 18 August. In 2008 the low had come months after the largest rescues, and a second fall was a reasonable fear." },
+          { label: "Sell part", note: "Selling on 23 March was, as it turned out, at the lowest close. Nobody could know that on the day: the shutdowns had no end date and the news was still worsening. Had the fall continued, the same sale would be remembered as prudent." },
+          { label: "Not enough to go on", note: "The speed of the fall was new, and so was the scale of the response. Neither pace could have been known in advance." },
+        ],
+        next: { when: "27 March to 18 August 2020", to: 9, text: "The United States enacts the CARES Act on 27 March, a relief package of about $2.2 trillion. The S&P 500 closes at a new record on 18 August, six months after the last one." },
+      },
+    ],
     terms: ["volatility", "liquidity", "central-bank", "monetary-policy", "futures", "index", "safe-haven", "recession"],
     faq: [
       { q: "How much did the stock market fall in March 2020?", a: "The S&P 500 fell about 34% from its record close on 19 February 2020 to its low on 23 March 2020. On 16 March the Dow Jones Industrial Average fell 12.9%, its largest one-day percentage fall since 1987." },

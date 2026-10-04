@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { MachinePage } from "@/components/labs/MachinePage";
 import { Correlation, LosingStreaks, Recovery, RiskOfRuin, SizingLadder } from "@/components/labs/risk/Machines";
+import { PortfolioBuilder } from "@/components/labs/risk/Portfolio";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { DataNote } from "@/components/ui/Page";
 import { educationalNote } from "@/config/legal";
@@ -8,15 +9,18 @@ import { pageMeta } from "@/lib/meta";
 import { faqSchema } from "@/lib/schema";
 
 /**
- * The Risk Room: five machines about how an account is lost and how slowly it
- * comes back. The rule the page keeps: every figure is a simulation on
- * invented odds or arithmetic on the visitor's own inputs, the model
- * (independent trades of fixed odds) is stated, and so is the fact that real
- * trading is not like that. It explains; it never says what size to trade.
+ * The Risk Room: six machines about how an account is lost and how slowly it
+ * comes back, the sixth about building a portfolio (weights, rebalancing and
+ * its cost, a currency, stress, borrowed money). The rule the page keeps:
+ * every figure is a simulation on invented odds or arithmetic on the
+ * visitor's own inputs, the model (independent trades of fixed odds; invented
+ * holdings of fixed character) is stated, and so is the fact that real
+ * trading is not like that. It explains; it never says what size to trade,
+ * what to hold or whether to borrow.
  */
 
 const DESCRIPTION =
-  "Five machines about risk: a risk of ruin simulator, one run of trades replayed at five position sizes, the exact chance of a losing streak, how correlation changes the swing of a portfolio, and the gain needed to recover a loss. Simulations on invented figures; nothing is stored.";
+  "Six machines about risk: a risk of ruin simulator, one run of trades replayed at five position sizes, the exact chance of a losing streak, how correlation changes the swing of a portfolio, the gain needed to recover a loss, and a portfolio builder with weights, rebalancing costs, a currency holding, a stress stretch and borrowed money. Simulations on invented figures; nothing is stored.";
 
 export const metadata = pageMeta({ title: "The Risk Room: risk of ruin, losing streaks and drawdown recovery", description: DESCRIPTION, path: "/labs/risk-room" });
 
@@ -27,6 +31,9 @@ const model = [
   { t: "The risk is a share of the account as it stands.", d: "Each trade risks the same percentage of the current balance, so the amount shrinks after a loss and grows after a gain. Ruin is counted the first time a run is the chosen percentage below where it began, and the run stops there." },
   { t: "The streak figure is exact; the fan is a count.", d: "The chance of a losing streak is computed in full by dynamic programming, with the method stated beside it. The risk of ruin is the share of 240 simulated runs that hit the level: another 240 would give a slightly different share." },
   { t: "The holdings are bell-curve steps.", d: "Each invented holding moves by a random step with a fixed swing, and every pair shares one correlation. The combined swing is the standard formula for the standard deviation of a weighted sum." },
+  { t: "The portfolio is three invented holdings over 120 months.", d: "In the sixth machine each holding has a made-up average return and swing that never change, and every pair shares one correlation. Money paid in is split at the target weights, money taken out comes from each holding in proportion, and rebalancing costs the rate you set on the value bought and sold. Nothing else is charged." },
+  { t: "The stress stretch and the exchange rate are assumptions.", d: "For a marked run of months the model raises every correlation to 0.9 and doubles every swing, because it was told to, not because anything was measured. The exchange rate is one more invented path, independent of the holdings." },
+  { t: "Borrowed money is a fixed loan that ends at zero.", d: "The leveraged comparison borrows once at the start, lets the loan grow by the financing cost, and stops for good the first month the exposure is worth no more than the loan. A real lender would usually act before that point; that is not modelled." },
 ];
 
 const differs = [
@@ -50,6 +57,10 @@ const faq = [
     a: "More likely than most people expect, and more likely the more trades are taken. For independent trades the chance can be worked out exactly. Three fair coin flips give three tails one time in eight, yet across a hundred trades with a 45% win rate, six losses in a row somewhere is more likely than not. The machine works out the figure for the numbers you choose.",
   },
   {
+    q: "What does rebalancing a portfolio do, and what does it cost?",
+    a: "Rebalancing sells some of what has grown and buys some of what has shrunk, so that each holding is back at its chosen share of the whole. It keeps the mix from drifting towards whichever holding has risen most. Every such trade has a cost, so rebalancing more often costs more. The sixth machine on this page runs the same invented paths with and without rebalancing, with a cost you set, and shows the end value, the deepest fall and the total cost side by side. It also shows the same exposure held with borrowed money, which can be wiped out by a fall the unleveraged portfolio survives.",
+  },
+  {
     q: "Can this page tell me my own risk of ruin?",
     a: "No. It models independent trades with fixed odds and losses that are never larger than planned. Real trading has none of those properties, and a person’s true win rate is not known. The page shows how the arithmetic behaves, which is worth understanding, but its figures are not a measurement of any real account or method.",
   },
@@ -61,7 +72,7 @@ export default function Page() {
       path="/labs/risk-room"
       title="The Risk Room"
       description={DESCRIPTION}
-      lead="Five machines about how an account is lost and how slowly it comes back. Each is a simulation on invented figures, or arithmetic you can check, and each says what it leaves out."
+      lead="Six machines about how an account is lost and how slowly it comes back, the last about how a portfolio is put together. Each is a simulation on invented figures, or arithmetic you can check, and each says what it leaves out."
       eyebrow="GIO4X Labs · Simulation"
       punch="small"
       machines={[
@@ -70,6 +81,7 @@ export default function Page() {
         { id: "streaks", eyebrow: "Losing streaks", title: "A long run of losses is ordinary.", lead: "For a win rate and a number of trades, the exact chance of at least so many losses in a row, and one simulated run with its longest streak marked.", go: { href: "/labs/mind", label: "The Mind Room" }, body: <LosingStreaks /> },
         { id: "correlation", eyebrow: "Correlation of a portfolio", title: "Several holdings, or one in disguise?", lead: "Two to four invented holdings in equal shares. Move the slider to set how closely they move together, and compare the combined swing with the average of the parts.", go: { href: "/labs/engine-room", label: "The Engine Room" }, body: <Correlation /> },
         { id: "recovery", eyebrow: "Recovery arithmetic", title: "The way back is longer than the way down.", lead: "A loss of x needs a gain of x ÷ (1 − x) to undo it. The bar falls and must climb back; the curve shows how fast the climb grows.", go: { href: "/tools/compound-growth", label: "Tool: Compound Growth" }, body: <Recovery /> },
+        { id: "portfolio", eyebrow: "Building a portfolio", title: "Weights, rebalancing, and what borrowing changes.", lead: "Three invented holdings at weights you set, money paid in or taken out each month, and rebalancing that costs something. Switch on a stress stretch, an exchange rate, or the same exposure with borrowed money, and compare the result with never rebalancing and with equal weights on the same paths.", go: { href: "/investing", label: "Investing explained" }, body: <PortfolioBuilder /> },
       ]}
       after={
         <>
@@ -90,7 +102,7 @@ export default function Page() {
                   tool.
                 </p>
                 <div className="mt-21 grid gap-8">
-                  <DataNote status="simulation">Invented odds, invented holdings and example accounts. {educationalNote}</DataNote>
+                  <DataNote status="simulation">Invented odds, invented holdings, an invented exchange rate and example accounts. {educationalNote}</DataNote>
                 </div>
               </div>
               <ol className="border-t border-line">

@@ -22,7 +22,7 @@ import { pageMeta } from "@/lib/meta";
 import { webPageSchema } from "@/lib/schema";
 import "@/components/knowledge/knowledge.css";
 
-const description = "GIO4X Academy: lessons on how markets, leverage, charts and risk work, organised from beginner to professional concepts. No certificates and no promises of trading success.";
+const description = "GIO4X Academy: lessons on how markets, leverage, charts and risk work, organised from beginner to professional concepts. A printable record of questions answered, which is not a qualification, and no promise that study leads to profit.";
 
 export const metadata = pageMeta({ title: "Academy", description, path: "/academy" });
 
@@ -111,7 +111,7 @@ export default function AcademyPage() {
         crumbs={[{ name: "Academy", href: "/academy" }]}
         eyebrow="GIO4X Academy"
         title="Learn how markets work, in order."
-        lead="Mechanics and concepts, taught responsibly: from what a currency pair is to how professionals size risk. No certificates, no streaks, and no promise that study leads to profit."
+        lead="Mechanics and concepts, taught responsibly: from what a currency pair is to how professionals size risk. You can print a record that the questions were answered. It is not a qualification, a licence or evidence of trading ability, and nothing here promises that study leads to profit."
         aside={
           <aside aria-labelledby="start-here" className="border-t-2 border-ink pt-13" data-tour="academy">
             <div className="flex items-baseline justify-between gap-13">
@@ -163,7 +163,7 @@ export default function AcademyPage() {
             <p className="eyebrow">Curriculum</p>
             <h2 id="curriculum-title" className="h2 mt-13 max-w-[22ch]">{`${cap(count(academyLevels.filter((lv) => modulesByLevel(lv.level).length > 0).length))} levels, ${count(modules.length)} modules.`}</h2>
             <p className="lead mt-13 max-w-[58ch]">
-              {lessons.length} lessons are published. Where a module has no lesson yet, it says so and shows its outline instead.
+              {lessons.length} lessons are published. Where a module has no lesson yet, it says so and shows its outline instead. Where other pages of this site cover a module’s subjects, the module links to them.
             </p>
             {/* rendered only after mount, and only when this browser holds a completed lesson */}
             <AcademyProgress slugs={lessons.map((l) => l.slug)} className="mt-13 max-w-[58ch]" />
@@ -223,6 +223,8 @@ export default function AcademyPage() {
                   <div className="grid gap-34">
                     {mods.map((m) => {
                       const list = lessonsOf(m);
+                      // pages elsewhere on this site that already cover the module's subjects
+                      const elsewhere = m.elsewhere ?? [];
                       return (
                         <article key={m.key} aria-labelledby={`m-${m.key}`}>
                           <div className="flex flex-wrap items-baseline justify-between gap-x-21 gap-y-3">
@@ -234,7 +236,7 @@ export default function AcademyPage() {
                                 {list.length} {list.length === 1 ? "lesson" : "lessons"}
                               </span>
                             ) : (
-                              <span className="state state-off">Outline only</span>
+                              <span className="state state-off">{elsewhere.length > 0 ? "Covered elsewhere" : "Outline only"}</span>
                             )}
                           </div>
                           <p className="mt-5 max-w-measure text-sm text-ink-2">{m.summary}</p>
@@ -263,6 +265,23 @@ export default function AcademyPage() {
                             <div className="mt-13 border-y border-line py-13">
                               <p className="text-sm text-ink-3">Lessons for this module are not yet published. Its outline:</p>
                               <p className="mt-5 text-sm text-ink-2">{m.topics.join(" · ")}</p>
+                            </div>
+                          )}
+                          {elsewhere.length > 0 && (
+                            <div className="mt-13">
+                              <h5 id={`m-${m.key}-elsewhere`} className="label">
+                                Covered elsewhere on this site
+                              </h5>
+                              <ul aria-labelledby={`m-${m.key}-elsewhere`} className="mt-5 grid gap-x-21 sm:grid-cols-2">
+                                {elsewhere.map((e) => (
+                                  <li key={e.href} className="border-b border-line">
+                                    <Link href={e.href} className="group flex min-h-[2.75rem] flex-col justify-center py-8">
+                                      <span className="text-sm font-medium text-ink transition-colors duration-fast group-hover:text-accent">{e.label}</span>
+                                      {e.note && <span className="mt-2 block text-xs text-ink-3">{e.note}</span>}
+                                    </Link>
+                                  </li>
+                                ))}
+                              </ul>
                             </div>
                           )}
                         </article>
@@ -363,7 +382,15 @@ export default function AcademyPage() {
             ]}
           />
           <p className="mt-34 max-w-measure text-sm text-ink-3">
-            The Academy explains how things work. It does not issue certificates, grade you, or suggest that finishing it makes trading profitable: most of what is here is about cost, mechanics and risk. The questions at the end of a lesson are a self-check, and which lessons you have completed is kept in your browser only. Modules listed: {modules.length}; lessons published: {lessons.length}.
+            The Academy explains how things work. It does not suggest that finishing it makes trading profitable: most of what is here is about cost, mechanics and risk. The questions at the end of a lesson are a self-check, and which lessons you have completed is kept in your browser only. The{" "}
+            <Link href="/academy/practice#certificate" className="link">
+              practice room
+            </Link>{" "}
+            and the{" "}
+            <Link href="/academy/exams" className="link">
+              level exams
+            </Link>{" "}
+            each offer a certificate to print. It is a record that the Academy’s questions were answered on this website: it is not a qualification, not a licence and not evidence of an ability to trade, and nobody verifies it. Modules listed: {modules.length}; lessons published: {lessons.length}.
           </p>
         </div>
       </section>
