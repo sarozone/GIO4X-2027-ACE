@@ -1,4 +1,5 @@
 import { PLAYBOOK } from "@/data/playbook";
+import { SECTION_PAGES } from "@/data/sections";
 import { nav, secondaryNav } from "@/config/nav";
 import { articles } from "@/data/articles";
 import { lessons } from "@/data/academy";
@@ -32,7 +33,8 @@ export function sitemapEntries(name: SitemapName): SitemapEntry[] {
     .map((path) => ({ path, lastmod: CONTENT_REVISED }));
   switch (name) {
     case "pages":
-      return fromNav;
+      // with the pages generated from data in the newer sections (investing, chart school, history and the rest)
+      return [...fromNav, ...SECTION_PAGES.map((p) => ({ path: p.href, lastmod: CONTENT_REVISED }))];
     case "markets":
       return [
         ...fromNav,
@@ -55,7 +57,7 @@ export function sitemapEntries(name: SitemapName): SitemapEntry[] {
         ...articles.map((a) => ({ path: `/intelligence/${a.slug}`, lastmod: a.updated ?? a.published })),
       ];
     case "academy":
-      return [{ path: "/academy", lastmod: CONTENT_REVISED }, { path: "/academy/books", lastmod: CONTENT_REVISED }, { path: "/academy/practice", lastmod: CONTENT_REVISED }, { path: "/academy/first-trade", lastmod: CONTENT_REVISED }, { path: "/academy/leverage-story", lastmod: CONTENT_REVISED }, { path: "/academy/cheat-sheets", lastmod: CONTENT_REVISED }, ...PLAYBOOK.map((p) => ({ path: `/playbook/${p.slug}`, lastmod: CONTENT_REVISED })), ...lessons.map((l) => ({ path: `/academy/${l.slug}`, lastmod: l.updated ?? l.published }))];
+      return [{ path: "/academy", lastmod: CONTENT_REVISED }, { path: "/academy/books", lastmod: CONTENT_REVISED }, { path: "/academy/practice", lastmod: CONTENT_REVISED }, { path: "/academy/first-trade", lastmod: CONTENT_REVISED }, { path: "/academy/leverage-story", lastmod: CONTENT_REVISED }, { path: "/academy/cheat-sheets", lastmod: CONTENT_REVISED }, { path: "/academy/exams", lastmod: CONTENT_REVISED }, { path: "/academy/trader-type", lastmod: CONTENT_REVISED }, ...PLAYBOOK.map((p) => ({ path: `/playbook/${p.slug}`, lastmod: CONTENT_REVISED })), ...lessons.map((l) => ({ path: `/academy/${l.slug}`, lastmod: l.updated ?? l.published }))];
     case "blog":
       // the list page only: the posts are rows in the database and are added by /sitemap-blog.xml itself
       return [{ path: "/intelligence/blog", lastmod: CONTENT_REVISED }];

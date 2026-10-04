@@ -38,6 +38,8 @@ export function SiteFooter() {
         { label: "When this happens", href: "/playbook#situations" },
         { label: "Cheat sheets", href: "/academy/cheat-sheets" },
         { label: "Fun@Finance", href: "/fun" },
+        { label: "Send your EA or indicator", href: "/labs/rule-bench#send" },
+        { label: "A to Z index", href: "/a-z" },
       ],
     },
   ];

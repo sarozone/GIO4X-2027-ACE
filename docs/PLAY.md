@@ -95,3 +95,31 @@ A mood (accent) now tints the page's materials as well as what is drawn on it (`
 `/labs/rule-bench` lets a visitor build a trading rule from parts (an entry, a stop, a target, a risk per trade) and test it on invented prices. The engine is `src/components/labs/bench/strategy.ts`, a pure module proved by `node scripts/test-bench.mjs`; the page's moving part is `RuleBench.tsx` beside it. There is one invented market for each kind of instrument the site describes. After the one test it shows, the bench runs the same rule on forty other market numbers and draws all forty results: the prices are a random walk, no rule has an edge on them, and the page says so. It is not a strategy tester: MQL runs only in MetaTrader and Pine Script only in TradingView, and nothing a visitor sends is ever run. Nothing is stored.
 
 On the same page a visitor can send the source of an EA, an indicator or a script (`FileForm.tsx`). The file is read as text in the browser (`.mq4`, `.mq5`, `.mqh`, `.pine`, `.txt`, up to 150 KB; a compiled file is refused), posted to `/api/trader-file` and stored in `trader_files` (migration `0030`). The public cannot read any file back. Staff read them at `/control/content/files` (`content.read`), open one to see its text or download it as plain text, and mark it read or put it away (`content.publish`). No e-mail address is asked for, so nobody is contacted. The limits shared by the form, the endpoint and the console are in `src/lib/trader-file.ts`; the database states them again and has the final say.
+
+## The sections added on 4 October 2026
+
+Twelve sections that widen the site from trading to finance and investing. All follow the rules above: nothing fabricated is presented as real, every chart is invented or illustrative and says so, pages explain and never instruct, and nothing is stored except the journal.
+
+| Section | Routes | Words and data | Moving parts |
+|---|---|---|---|
+| Investing | `/investing`, `/investing/[slug]` (7) | `src/data/investing.ts` | `src/components/investing/` |
+| Money calculators | `/money`, `/money/[slug]` (7) | `src/data/money.ts` | `src/components/money/` (arithmetic in `math.ts`) |
+| Chart school | `/chart-school`, `/chart-school/[slug]` (8 indicators) | `src/data/chart-school.ts` | `src/components/chart-school/` (arithmetic in `indicators.ts`) |
+| Chart patterns | `/chart-school/patterns`, `…/[slug]` (16) | `src/data/chart-patterns.ts` | `src/components/chart-patterns/` |
+| Strategy library | `/strategies`, `/strategies/[slug]` (12) | `src/data/strategies.ts` | `src/components/strategies/` |
+| Side by side | `/side-by-side`, `/side-by-side/[slug]` (6) | `src/data/comparisons.ts` | `src/components/compare/` |
+| Market history | `/history`, `/history/[slug]` (11) | `src/data/history.ts` | `src/components/history/` |
+| Scam school | `/scam-school`, `/scam-school/[slug]` (12) | `src/data/scams.ts` | `src/components/scams/` |
+| Trading journal | `/journal` | | `src/components/journal/` |
+| The Risk Room | `/labs/risk-room` | | `src/components/labs/risk/` |
+| Level exams, trader type | `/academy/exams`, `/academy/trader-type` | `src/data/trader-type.ts` | `src/components/academy/exams/` |
+| Region guides, downloads | `/guides`, `/guides/[slug]` (8), `/downloads` | `src/data/guides.ts` | `src/components/guides/`, `src/components/downloads/` |
+| A to Z index | `/a-z` | `src/data/az-extra.ts` | `src/components/az/` |
+
+`src/data/sections.ts` lists every page generated from these data modules once; the sitemap, the search index and the A to Z index all read it, so a new entry in a data module appears in all three. The comparisons live at `/side-by-side` because `/compare` is an old redirect to `/platforms/compare` (`src/config/redirects.json`).
+
+The strategy library opens the Rule bench with a rule already set, through the query string the bench reads on arrival (`RuleBench.tsx`): `?entry=cross|breakout|rsi&fast=&slow=&dir=&fade=&stop=&target=&risk=&market=`. Every value passes through `tidy()`.
+
+The journal is the one part that stores anything: `gx:journal` in `localStorage`, listed in `LOCAL_KEYS`, in the privacy controls and in the Cookie & Storage Notice (version 1.8), and removed by the privacy reset.
+
+Market history is the section where a wrong fact would matter most. Its figures were chosen to be the famous, well-documented ones and each page's curve is labelled an illustrative shape, not market data. A date that accounts give differently is stated loosely (the growers' meeting of late February 1637).

@@ -65,7 +65,7 @@ export default function Page() {
       <PunchLine k="academy" />
       <NextSteps
         items={[
-          { kind: "Academy", label: "Lesson: candlestick patterns", href: "/academy/candlestick-patterns", note: "The full lesson, with its questions." },
+          { kind: "Academy", label: "Lesson: candlestick patterns", href: "/academy/candlestick-patterns-masterclass", note: "The full lesson, with its questions." },
           { kind: "Labs", label: "Build a candle", href: "/labs/workshop#build", note: "Four handles, one shape, and its name." },
           { kind: "Academy", label: "Cheat sheets", href: "/academy/cheat-sheets", note: "Three pages to print." },
           { kind: "Glossary", label: "The glossary", href: "/glossary", note: "Every term on these pages." },

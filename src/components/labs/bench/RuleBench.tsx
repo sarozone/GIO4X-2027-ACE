@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { clamp, lerp, rgba, type FigureDraw } from "@/components/figures/Figure";
 import { ALERT, Note, Slider, Stage } from "@/components/labs/kit";
 import { BENCH, DEFAULT_RULE, ENTRIES, LIMITS, MARKETS, inWords, makeBars, marketOf, others, runTest, sma, tidy, type Direction, type EntryKey, type MarketKey, type Rule, type Trade } from "./strategy";
@@ -40,6 +40,33 @@ export function RuleBench() {
   /** rises on every change, so the chart is drawn again from the left */
   const [run, setRun] = useState(0);
   const playFrom = useRef(-1);
+
+  // A link can open the bench with a rule already set (the strategy library does):
+  // /labs/rule-bench?entry=cross&fast=10&slow=30&dir=both&fade=0&stop=2&target=0&risk=1&market=pair#bench
+  // Every value passes through tidy(), so nothing outside the bench's own limits can be set this way.
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    if (![...q.keys()].length) return;
+    const num = (k: string, d: number) => (q.has(k) && Number.isFinite(Number(q.get(k))) ? Number(q.get(k)) : d);
+    const entry = q.get("entry");
+    const dir = q.get("dir");
+    setRule(
+      tidy({
+        entry: ENTRIES.some((e) => e.key === entry) ? (entry as EntryKey) : DEFAULT_RULE.entry,
+        fast: num("fast", entry === "rsi" ? 14 : DEFAULT_RULE.fast),
+        slow: num("slow", DEFAULT_RULE.slow),
+        direction: dir === "long" || dir === "short" ? dir : "both",
+        fade: q.get("fade") === "1",
+        stopAtr: num("stop", DEFAULT_RULE.stopAtr),
+        targetR: num("target", DEFAULT_RULE.targetR),
+        riskPct: num("risk", DEFAULT_RULE.riskPct),
+      }),
+    );
+    const mk = q.get("market");
+    if (MARKETS.some((x) => x.key === mk)) setMarket(mk as MarketKey);
+    playFrom.current = -1;
+    setRun((n) => n + 1);
+  }, []);
 
   const change = (patch: Partial<Rule>) => {
     setRule((r) => tidy({ ...r, ...patch }));

@@ -5,6 +5,9 @@
  * A new entry goes at the top.
  */
 export const RELEASES: readonly { id: string; title: string; href: string }[] = [
+  { id: "2026-10-04f", title: "Investing, money calculators, chart school and more", href: "/a-z" },
+  { id: "2026-10-04e", title: "Trading journal: a private log in your browser", href: "/journal" },
+  { id: "2026-10-04d", title: "Send us your EA or indicator", href: "/labs/rule-bench#send" },
   { id: "2026-10-04c", title: "Rule bench: build a rule and test it", href: "/labs/rule-bench" },
   { id: "2026-10-04b", title: "Nice & Need: the best free resources", href: "/nice-and-need" },
   { id: "2026-10-04a", title: "The Playbook: patterns and situations", href: "/playbook" },

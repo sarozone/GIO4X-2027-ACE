@@ -4,6 +4,7 @@ import { articles } from "@/data/articles";
 import { glossary } from "@/data/glossary";
 import { assetClasses, instrumentHref, instruments } from "@/data/instruments";
 import { centralBanks, currencies, econEvents } from "@/data/knowledge";
+import { SECTION_PAGES } from "@/data/sections";
 import { tools } from "@/data/tools";
 import type { SearchEntry, SearchGroup } from "@/lib/search";
 
@@ -58,6 +59,9 @@ export function buildSearchIndex(): SearchEntry[] {
   }
   for (const l of lessons) {
     add({ t: l.title, d: l.description, h: `/academy/${l.slug}`, g: "Academy", k: [l.level.toLowerCase(), "lesson"], w: 0.9 });
+  }
+  for (const p of SECTION_PAGES) {
+    add({ t: p.label, d: p.description.length > 240 ? `${p.description.slice(0, 237).replace(/\s+\S*$/, "")}…` : p.description, h: p.href, g: p.kind === "Calculator" ? "Tools" : "Academy", k: [p.kind.toLowerCase(), ...p.words], w: 0.9 });
   }
   for (const s of nav) {
     const g = groupOfSection[s.key] ?? "Company";

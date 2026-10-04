@@ -508,6 +508,10 @@ const LOCAL_KEY_PURPOSE: Record<(typeof LOCAL_KEYS)[number], { holds: string; wh
     holds: "The last day you answered the daily riddle correctly and your run of days in a row; your best score in the Workshop game “Sixty seconds”, in pips of an invented price; which of the five hidden riddles you have solved; the newest “recently added” notice you have put away with “Got it”; and, once you have started the passport on My desk, the short names of the stamps you have collected. No addresses, no times and nothing about you.",
     why: "So the riddle can show your run, the game can show your best, and My desk can show your passport. Each part is written only by something you do: answering a riddle, finishing a round, or pressing “Start my passport”. Handing the passport back deletes its stamps.",
   },
+  "gx:journal": {
+    holds: "The trades you have written into the Trading journal, up to 500: for each, the date, the instrument, the side, the size, the entry, exit and optional stop prices, the result you typed, your two notes, a mood and whether you followed your plan.",
+    why: "So your journal is still there the next time you open the page in this browser. It is written only when you add, change, import or delete a trade, it is never sent anywhere, and the key is removed when the journal is empty. The journal’s own CSV export is the backup.",
+  },
   "gx:sim": {
     holds: "The state of the Practice desk simulation in Labs: its invented prices, the example account, example positions and orders, and the newest journal entries. No real prices, no real account and nothing about you.",
     why: "So a practice session survives a reload. Written only if you tick “Keep this practice session in this browser” on that page, which is off by default; unticking it deletes the key.",
@@ -521,8 +525,8 @@ const cookies: LegalDoc = {
   short: "Cookie Notice",
   category: "Privacy",
   summary: "Everything this website stores in your browser, key by key, and how to clear it. There are no advertising or analytics cookies; page views are counted as daily totals without a cookie or an identifier, and that can be switched off.",
-  version: "1.7",
-  updated: "3 October 2026",
+  version: "1.8",
+  updated: "4 October 2026",
   origin: "new",
   keywords: ["cookies", "local storage", "offline", "service worker", "cache storage", "tracking", "analytics", "advertising", "preferences", "consent"],
   sections: [
