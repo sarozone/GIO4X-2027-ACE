@@ -69,7 +69,7 @@ export default function ExamsPage() {
 
       <section id="exam" className="section scroll-mt-[var(--header-h)] print:p-0" aria-labelledby="exam-h">
         <div className="wrap">
-          <div className="max-w-[44rem] print:hidden">
+          <div className="max-w-measure print:hidden">
             <p className="eyebrow">The exam room</p>
             <h2 id="exam-h" className="h2 mt-13">
               {levels.length === 1 ? "One level, one paper." : `${levels.length} levels, ${levels.length} papers.`}
@@ -78,7 +78,7 @@ export default function ExamsPage() {
               A paper asks up to {EXAM_LENGTH} questions and is passed at ten of twelve. Check each answer to see the reason, then go on. At the end you are shown what was missed and which lesson teaches it.
             </p>
           </div>
-          <div className="mt-34 max-w-[52rem] print:mt-0">
+          <div className="mt-34 max-w-measure print:mt-0">
             <ExamRoom levels={levels} />
           </div>
         </div>

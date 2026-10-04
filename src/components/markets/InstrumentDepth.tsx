@@ -110,8 +110,8 @@ export function InstrumentDepth({ depth, name, costHref }: { depth: Depth; name:
         <div className="mt-34 border-t border-line pt-21">
           <h3 className="h4">What would a trade in it cost?</h3>
           <p className="mt-8 max-w-measure text-ink-2">
-            The cost of a trade is the spread, any commission, and financing for each night it is held. The Cost Lab works the three out for a day trade, an overnight position and a longer hold, from figures you enter. A complete total needs the
-            commission basis and the swap rates, which are not yet published; the Lab shows which input is missing instead of a total that only looks complete.
+            The cost of a trade is the spread, any commission, and financing for each night it is held. The Cost Lab works the three out for a day trade, an overnight position and a longer hold, from figures you enter. A complete total also needs the
+            swap rates, which are not yet published; the Lab shows which input is missing instead of a total that only looks complete.
           </p>
           <Link href={costHref} className="go mt-13">
             Work it out in the Cost Lab

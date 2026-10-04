@@ -43,7 +43,7 @@ export default function AccountsPage() {
             <h2 id="explore" className="h2 mt-13 max-w-[22ch]">
               Choose by how you pay.
             </h2>
-            <p className="lead mt-13 max-w-[58ch]">Select an account to read its character. The worked example beneath keeps all three in view.</p>
+            <p className="lead mt-13 max-w-measure">Select an account to read its character. The worked example beneath keeps all three in view.</p>
             <Link href="/trading/accounts/choose" className="go mt-13 min-h-[2.75rem]">
               Not sure which? Answer four questions
             </Link>
@@ -210,7 +210,7 @@ export default function AccountsPage() {
       <section className="section hairline relative" aria-labelledby="ready">
         <Backdrop variant="orbits" />
         <div className="wrap flex flex-col gap-34 md:flex-row md:items-end md:justify-between">
-          <div className="max-w-[40rem]">
+          <div className="max-w-measure">
             <h2 id="ready" className="h2">
               When you are ready, not before.
             </h2>

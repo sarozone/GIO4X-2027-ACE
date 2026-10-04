@@ -42,7 +42,7 @@ export default function Page() {
             <h2 id={`${g.id}-h`} className="h2 mt-13 max-w-[24ch]">
               {g.title}
             </h2>
-            <p className="lead mt-13 max-w-[44rem]">{g.lead}</p>
+            <p className="lead mt-13 max-w-measure">{g.lead}</p>
             <ul className="mt-34 grid gap-13 sm:grid-cols-2 lg:grid-cols-3">
               {PLAYBOOK.filter((p) => p.kind === g.kind).map((p) => (
                 <li key={p.slug}>

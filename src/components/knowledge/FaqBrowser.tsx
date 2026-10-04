@@ -57,7 +57,7 @@ export function FaqBrowser({ categories, items }: { categories: FaqCategory[]; i
 
   return (
     <div className="wrap section-quiet">
-      <div className="field max-w-[52rem]">
+      <div className="field max-w-measure">
         <label htmlFor={inputId}>Search the answers</label>
         <input id={inputId} type="search" className="input !h-[3.4375rem] !text-lg" placeholder="For example: margin, swap, identity, deposit currencies" value={q} onChange={(e) => setQ(e.target.value)} autoComplete="off" enterKeyHint="search" />
         <p className="field-hint" aria-live="polite">

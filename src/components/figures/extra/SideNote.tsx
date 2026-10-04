@@ -9,7 +9,7 @@ import type { ReactNode } from "react";
  */
 export function SideNote({ figure, label, children, className = "" }: { figure: ReactNode; label?: string; children: ReactNode; className?: string }) {
   return (
-    <aside className={`mt-34 flex max-w-[44rem] flex-col gap-13 sm:flex-row sm:items-center sm:gap-21 ${className}`}>
+    <aside className={`mt-34 flex max-w-measure flex-col gap-13 sm:flex-row sm:items-center sm:gap-21 ${className}`}>
       <div className="flat w-full max-w-[19rem] shrink-0 rounded-[8px] border border-line bg-surface/60 p-13">{figure}</div>
       <div className="min-w-0">
         {label ? <p className="eyebrow">{label}</p> : null}

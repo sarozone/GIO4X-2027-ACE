@@ -113,7 +113,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
 
       <section id="cs-try" data-machine className="section scroll-mt-[var(--header-h)]" aria-labelledby="cs-try-h">
         <div className="wrap">
-          <div className="max-w-[44rem]">
+          <div className="max-w-measure">
             <p className="eyebrow">{cs.machine.eyebrow}</p>
             <h2 id="cs-try-h" className="h2 mt-13">
               {cs.machine.title}

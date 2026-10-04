@@ -41,7 +41,7 @@ export default function Page() {
           <h2 id="line-h" className="h2 mt-13 max-w-[22ch]">
             Four centuries, eleven stops.
           </h2>
-          <p className="lead mt-13 max-w-[44rem]">Step along the line, or press Play. Each stop names an episode and links to its page.</p>
+          <p className="lead mt-13 max-w-measure">Step along the line, or press Play. Each stop names an episode and links to its page.</p>
           <div className="mt-34 min-w-0">
             <CenturyLine stops={stops} />
           </div>

@@ -69,7 +69,7 @@ export default function Page() {
           <h2 id="check-h" className="h2 mt-13 max-w-[22ch]">
             {CHECKS.length} questions to put to any offer.
           </h2>
-          <p className="lead mt-13 max-w-[44rem]">Each “yes” is a warning sign. The gauge fills as you tick, and a sentence says how many are present and which matter most. It does not decide anything for you.</p>
+          <p className="lead mt-13 max-w-measure">Each “yes” is a warning sign. The gauge fills as you tick, and a sentence says how many are present and which matter most. It does not decide anything for you.</p>
           <div className="mt-34">
             <OfferCheck questions={QUESTIONS} />
           </div>
@@ -84,7 +84,7 @@ export default function Page() {
               <h2 id={`${g.id}-h`} className="h2 mt-13 max-w-[24ch]">
                 {g.title}
               </h2>
-              <p className="lead mt-13 max-w-[44rem]">{g.lead}</p>
+              <p className="lead mt-13 max-w-measure">{g.lead}</p>
               <ul className="mt-34 grid gap-13 sm:grid-cols-2 lg:grid-cols-4">
                 {SCAMS.filter((s) => s.group === g.key).map((s) => (
                   <li key={s.slug}>

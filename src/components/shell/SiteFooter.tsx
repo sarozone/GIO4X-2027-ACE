@@ -2,7 +2,7 @@ import { FooterMotto } from "@/components/play/Guided";
 import Link from "next/link";
 import { nav, secondaryNav } from "@/config/nav";
 import { site } from "@/config/site";
-import { SocialLinks, socialEntries } from "@/components/shell/SocialLinks";
+import { SocialLinks, socialEntries, socialSlots } from "@/components/shell/SocialLinks";
 import { companyLine, riskWarning } from "@/config/legal";
 import { restrictedJurisdictions } from "@/data/accounts";
 import { Logo } from "@/components/brand/Logo";
@@ -16,7 +16,8 @@ import { Backdrop } from "@/components/figures/Backdrop";
  */
 export function SiteFooter() {
   const year = new Date().getFullYear();
-  const social = socialEntries();
+  const social = socialSlots();
+  const linked = socialEntries().length;
   // The directory is the navigation's own groups, laid out as twelve blocks of a similar
   // length (two rows of six on a wide screen). Nothing is listed here by hand, so a page
   // cannot appear twice or be forgotten: it is in the footer because it is in config/nav.ts.
@@ -139,7 +140,7 @@ export function SiteFooter() {
 
       {social.length > 0 && (
         <div className="wrap relative flex flex-wrap items-center gap-x-21 gap-y-8 border-t border-night-line py-21">
-          <p className="label">Official channels</p>
+          <p className="label">{linked ? "Official channels" : "Social channels: links to follow"}</p>
           <SocialLinks names />
           <Link href="/trust/verify" className="link-quiet ml-auto text-xs">
             Verify a GIO4X link

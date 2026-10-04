@@ -84,7 +84,7 @@ export default function Page() {
           <h2 id="disclosure-h" className="h2 mt-13 max-w-[24ch]">
             What public disclosure shows, and what it does not.
           </h2>
-          <p className="lead mt-13 max-w-[46rem]">In several countries large investment managers must publish periodic reports of some of their holdings. These reports are the basis of every list of “what the famous investors own”. It is worth knowing what kind of document they are before reading anything into one.</p>
+          <p className="lead mt-13 max-w-measure">In several countries large investment managers must publish periodic reports of some of their holdings. These reports are the basis of every list of “what the famous investors own”. It is worth knowing what kind of document they are before reading anything into one.</p>
 
           <div className="mt-34 grid gap-21 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.618fr)] lg:gap-34">
             <div className="min-w-0">
@@ -131,7 +131,7 @@ export default function Page() {
           <h2 id="studies-h" className="h2 mt-13 max-w-[22ch]">
             Five ways of thinking, one page each.
           </h2>
-          <p className="lead mt-13 max-w-[44rem]">Four are about people whose ideas are in print under their own names. The fifth is about the process inside large institutions, and names no firm.</p>
+          <p className="lead mt-13 max-w-measure">Four are about people whose ideas are in print under their own names. The fifth is about the process inside large institutions, and names no firm.</p>
           <ul className="mt-34 grid gap-13 sm:grid-cols-2 lg:grid-cols-3">
             {CASE_STUDIES.map((c, i) => (
               <li key={c.slug}>

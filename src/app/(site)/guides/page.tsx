@@ -62,7 +62,7 @@ export default function Page() {
           <h2 id="dial-h" className="h2 mt-13 max-w-[24ch]">
             The day on a dial.
           </h2>
-          <p className="lead mt-13 max-w-[44rem]">One turn is one day. The rings are the four FX windows, the thin arcs are the exchanges, and the hand is the present moment, read from your device. Set it to UTC or to your own clock.</p>
+          <p className="lead mt-13 max-w-measure">One turn is one day. The rings are the four FX windows, the thin arcs are the exchanges, and the hand is the present moment, read from your device. Set it to UTC or to your own clock.</p>
           <div className="mt-34">
             <DayDial zones={[{ tz: "UTC", city: "UTC" }]} />
           </div>

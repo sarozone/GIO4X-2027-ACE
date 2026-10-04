@@ -162,11 +162,11 @@ export default function AcademyPage() {
           <div>
             <p className="eyebrow">Curriculum</p>
             <h2 id="curriculum-title" className="h2 mt-13 max-w-[22ch]">{`${cap(count(academyLevels.filter((lv) => modulesByLevel(lv.level).length > 0).length))} levels, ${count(modules.length)} modules.`}</h2>
-            <p className="lead mt-13 max-w-[58ch]">
+            <p className="lead mt-13 max-w-measure">
               {lessons.length} lessons are published. Where a module has no lesson yet, it says so and shows its outline instead. Where other pages of this site cover a module’s subjects, the module links to them.
             </p>
             {/* rendered only after mount, and only when this browser holds a completed lesson */}
-            <AcademyProgress slugs={lessons.map((l) => l.slug)} className="mt-13 max-w-[58ch]" />
+            <AcademyProgress slugs={lessons.map((l) => l.slug)} className="mt-13 max-w-measure" />
           </div>
           <div className="mt-55 border-t border-line-strong">
             {academyLevels.map((lv, i) => {
@@ -177,10 +177,10 @@ export default function AcademyPage() {
                   <div className="lg:sticky lg:top-[calc(var(--header-h)+1.3125rem)] lg:self-start">
                     <p className="num text-xs font-semibold tracking-[0.1em] text-ink-3">Level {String(i + 1).padStart(2, "0")}</p>
                     <h3 className="h3 mt-8">{lv.level}</h3>
-                    <p className="mt-13 max-w-[38ch] text-ink-2">{lv.line}</p>
+                    <p className="mt-13 max-w-measure text-ink-2">{lv.line}</p>
                     <LessonsCount slugs={mods.flatMap((m) => lessonsOf(m).map((l) => l.slug))} className="mt-13" />
                     {lv.level === "Beginner" && (
-                      <p className="mt-21 hidden max-w-[38ch] text-sm leading-relaxed text-ink-3 lg:block">
+                      <p className="mt-21 hidden max-w-measure text-sm leading-relaxed text-ink-3 lg:block">
                         New to currency markets? Begin with the{" "}
                         <Link href={`/academy/${first.slug}`} className="link">
                           first lesson
@@ -207,7 +207,7 @@ export default function AcademyPage() {
                       </FigureNote>
                     )}
                     {lv.level === "Professional concepts" && (
-                      <p className="mt-21 hidden max-w-[38ch] text-sm leading-relaxed text-ink-3 lg:block">
+                      <p className="mt-21 hidden max-w-measure text-sm leading-relaxed text-ink-3 lg:block">
                         To work the arithmetic yourself: the{" "}
                         <Link href="/tools/position-size" className="link">
                           position size calculator
@@ -307,7 +307,7 @@ export default function AcademyPage() {
                 <h3 id={`p-${p.key}`} className="h3">
                   {p.title}
                 </h3>
-                <p className="mt-8 max-w-[52ch] text-ink-2">{p.summary}</p>
+                <p className="mt-8 max-w-measure text-ink-2">{p.summary}</p>
                 <LessonsCount slugs={[...new Set(p.steps.flatMap((s) => s.lessons))].filter((slug) => getLesson(slug) !== undefined)} className="mt-13" />
                 <PathSteps path={p} />
                 {p.key === startHere.key && longer && meet && meet.shared > 0 && (
@@ -316,7 +316,7 @@ export default function AcademyPage() {
                       <TwoRoutes routes={meet.routes} lessons={meet.lessons} />
                     </div>
                     <p className="eyebrow mt-13">Where they meet</p>
-                    <p className="mt-5 max-w-[58ch] text-sm leading-relaxed text-ink-3">
+                    <p className="mt-5 max-w-measure text-sm leading-relaxed text-ink-3">
                       {meet.shared === 1 ? "One lesson appears" : `${cap(count(meet.shared))} lessons appear`} in both paths: the ringed dots.
                       {meet.onlyB > 0 && ` ${longer.title} adds ${count(meet.onlyB)} that ${startHere.title} does not include`}
                       {meet.onlyB > 0 && (meet.emptyB > 0 ? `, and ${count(meet.emptyB)} of its steps ${meet.emptyB === 1 ? "has" : "have"} no lesson published yet.` : ".")}

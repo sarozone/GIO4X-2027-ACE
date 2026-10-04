@@ -115,7 +115,7 @@ export function PlatformsChapter() {
             <div>
               <p className="label">The GIO4X flagship</p>
               <h3 className="h2 mt-13">777 Raptor</h3>
-              <p className="mt-13 max-w-[38ch] text-on-night-2">Built for the market. A multi-asset workspace on web, desktop and mobile, designed around how a trading day actually unfolds: see, organise, analyse, act, monitor.</p>
+              <p className="mt-13 max-w-measure text-on-night-2">Built for the market. A multi-asset workspace on web, desktop and mobile, designed around how a trading day actually unfolds: see, organise, analyse, act, monitor.</p>
             </div>
             <Link href="/platforms/raptor" className="btn btn-primary self-start">
               Explore Raptor
@@ -125,7 +125,7 @@ export function PlatformsChapter() {
             <div>
               <p className="label">The established standard</p>
               <h3 className="h2 mt-13">MetaTrader 5</h3>
-              <p className="mt-13 max-w-[38ch] text-on-night-2">Global markets, familiar workflow. The multi-asset platform from MetaQuotes that many traders already know, with its charting, order types and automated trading through Expert Advisors.</p>
+              <p className="mt-13 max-w-measure text-on-night-2">Global markets, familiar workflow. The multi-asset platform from MetaQuotes that many traders already know, with its charting, order types and automated trading through Expert Advisors.</p>
             </div>
             <Link href="/platforms/metatrader-5" className="btn btn-ghost self-start">
               Explore MT5

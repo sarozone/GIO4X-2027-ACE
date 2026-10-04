@@ -21,7 +21,9 @@ import { MODES, execute, formatBp, formatMinor, openLedger, parseBp, parseMinor,
  */
 
 /** Example choices only. They are not GIO4X's permitted leverage values. */
-const EXAMPLE_LEVERAGE = [10, 20, 50, 100] as const;
+// Provisional (owner's decision of 4 October 2026): the leverage steps most brokers offer up to the
+// site's published ceiling of 1:500, and a minimum equal to the lowest published minimum deposit.
+const EXAMPLE_LEVERAGE = [50, 100, 200, 500] as const;
 /** The position used to show what leverage does to margin: 10,000.00, in cents. */
 const EXAMPLE_POSITION = 1_000_000;
 
@@ -40,7 +42,7 @@ const PRESETS: [number, number][] = [
   [25, 75],
 ];
 
-const Example = ({ children }: { children?: ReactNode }) => <span className="text-xs font-medium text-prestige-ink">{children ?? "Example value, not a GIO4X condition"}</span>;
+const Example = ({ children }: { children?: ReactNode }) => <span className="text-xs font-medium text-prestige-ink">{children ?? "Provisional value, in line with common practice. It may change."}</span>;
 
 function TextField({ id, label, value, onChange, parsed, unit, hint, example = true, maxLength = 18, decimal = true }: { id: string; label: string; value: string; onChange: (v: string) => void; parsed?: Parsed; unit?: string; hint?: ReactNode; example?: boolean; maxLength?: number; decimal?: boolean }) {
   const error = parsed && !parsed.ok ? parsed.error : null;
@@ -66,7 +68,7 @@ export function AllocationDemo() {
   const uid = useId();
   const [stage, setStage] = useState<Stage4>("accounts");
   const [choice, setChoice] = useState<Choice>("both");
-  const [setup, setSetup] = useState<PerAccount<Setup>>({ mt5: { nick: "", leverage: 50, min: "100.00" }, raptor: { nick: "", leverage: 20, min: "100.00" } });
+  const [setup, setSetup] = useState<PerAccount<Setup>>({ mt5: { nick: "", leverage: 100, min: "150.00" }, raptor: { nick: "", leverage: 100, min: "150.00" } });
   const [gross, setGross] = useState("1000.00");
   const [fee, setFee] = useState("0.00");
   const [convert, setConvert] = useState(false);
@@ -341,7 +343,7 @@ export function AllocationDemo() {
                         At 1:{s.leverage}, a position worth {formatMinor(EXAMPLE_POSITION)} needs {formatMinor(EXAMPLE_POSITION / s.leverage)} of margin ({formatMinor(EXAMPLE_POSITION)} ÷ {s.leverage}).
                       </p>
                     </div>
-                    <TextField id={id(`min-${k}`)} label="Minimum funding amount" value={s.min} onChange={(v) => patch({ min: v })} parsed={pMin[k]} hint={<Example>Example value you set, not a GIO4X condition</Example>} />
+                    <TextField id={id(`min-${k}`)} label="Minimum funding amount" value={s.min} onChange={(v) => patch({ min: v })} parsed={pMin[k]} hint={<Example>Provisional: the lowest published minimum deposit. You can change it for the demonstration.</Example>} />
                   </div>
                 </fieldset>
               );

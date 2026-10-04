@@ -141,7 +141,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
           <h2 id="dial-h" className="h2 mt-13 max-w-[24ch]">
             The day on a dial.
           </h2>
-          <p className="lead mt-13 max-w-[44rem]">One turn is one day on the clock you choose: {cities}, or your own. The rings are the four FX windows, the thin arcs are the exchanges, and the hand is the present moment, read from your device.</p>
+          <p className="lead mt-13 max-w-measure">One turn is one day on the clock you choose: {cities}, or your own. The rings are the four FX windows, the thin arcs are the exchanges, and the hand is the present moment, read from your device.</p>
           <div className="mt-34">
             <DayDial zones={guide.zones.map((z) => ({ tz: z.tz, city: z.city }))} region={guide.name} />
           </div>
@@ -150,7 +150,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
 
       <Part id="hours" quiet eyebrow="In local time" title="The four sessions and the main exchanges.">
         <Prose items={guide.day} />
-        <div className={`mt-34 grid grid-cols-[minmax(0,1fr)] gap-34 ${tables.length > 1 ? "xl:grid-cols-2" : "max-w-[44rem]"}`}>
+        <div className={`mt-34 grid grid-cols-[minmax(0,1fr)] gap-34 ${tables.length > 1 ? "xl:grid-cols-2" : "max-w-measure"}`}>
           {tables.map((t) => (
             <div key={t.zone.tz} className="min-w-0">
               <h3 className="h4">On a {t.zone.city} clock</h3>
@@ -214,7 +214,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
             "When two windows are open together, the dealers of two financial centres are at their desks at once. More participants usually means more trading, though not on every day and not in every instrument, and it says nothing about which way a price will move.",
           ]}
         />
-        <div className={`mt-34 grid grid-cols-[minmax(0,1fr)] gap-34 ${tables.length > 1 ? "xl:grid-cols-2" : "max-w-[44rem]"}`}>
+        <div className={`mt-34 grid grid-cols-[minmax(0,1fr)] gap-34 ${tables.length > 1 ? "xl:grid-cols-2" : "max-w-measure"}`}>
           {tables.map((t) => {
             const same = t.seasons.every((s) => s.week.opens.day === t.seasons[0].week.opens.day && s.week.opens.minutes === t.seasons[0].week.opens.minutes);
             const week = (s: (typeof t.seasons)[number]) => `opens on ${DAY_NAMES[s.week.opens.day]} at ${clock(s.week.opens.minutes)} and closes on ${DAY_NAMES[s.week.closes.day]} at ${clock(s.week.closes.minutes)}`;

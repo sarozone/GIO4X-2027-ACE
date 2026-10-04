@@ -93,7 +93,7 @@ export default function TraderTypePage() {
 
       <section id="quiz" className="section hairline scroll-mt-[var(--header-h)]" aria-labelledby="quiz-h">
         <div className="wrap">
-          <div className="max-w-[44rem]">
+          <div className="max-w-measure">
             <p className="eyebrow">The style dial</p>
             <h2 id="quiz-h" className="h2 mt-13">
               Ten answers, five spokes.
@@ -108,7 +108,7 @@ export default function TraderTypePage() {
 
       <section className="section hairline bg-paper" aria-labelledby="styles-h">
         <div className="wrap">
-          <div className="max-w-[44rem]">
+          <div className="max-w-measure">
             <p className="eyebrow">The five styles</p>
             <h2 id="styles-h" className="h2 mt-13">
               Told apart by how long a position is held.

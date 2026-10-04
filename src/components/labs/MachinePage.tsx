@@ -52,7 +52,7 @@ export function MachinePage({
       {machines.map((m, i) => (
         <section key={m.id} id={m.id} data-machine className={`section scroll-mt-[var(--header-h)] ${i ? "hairline" : ""} ${i % 2 ? "bg-paper" : ""}`} aria-labelledby={`${m.id}-h`}>
           <div className={m.wide ? "wrap" : "wrap phi phi-r items-start"}>
-            <div className={m.wide ? "max-w-[44rem]" : "lg:sticky lg:top-[calc(var(--header-h)+1.3125rem)]"}>
+            <div className={m.wide ? "max-w-measure" : "lg:sticky lg:top-[calc(var(--header-h)+1.3125rem)]"}>
               <p className="gx-numeral" aria-hidden>
                 {String(i + 1).padStart(2, "0")}
               </p>

@@ -65,8 +65,8 @@ const things = [
 ];
 
 const pendingFacts = [
-  { label: "Permitted leverage", why: "The values that can be chosen for an account on each platform." },
-  { label: "Minimum funding amount", why: "The least a trading account on each platform accepts from the wallet." },
+  { label: "Permitted leverage", why: "The demonstration uses 1:50, 1:100, 1:200 and 1:500, the steps most brokers offer up to GIO4X’s published ceiling. These are provisional until confirmed for each platform." },
+  { label: "Minimum funding amount", why: "The demonstration starts from the lowest published minimum deposit. Whether each platform account has its own minimum is not yet confirmed." },
   { label: "Account types and currencies per platform", why: "Which account types can be opened on which platform, and in which currencies." },
   { label: "Fees and conversion", why: "Any charge for a deposit or a transfer, and how and at what cost one currency becomes another." },
   { label: "Processing times", why: "How long a deposit stays pending, and how long a transfer between the wallet and an account takes." },
@@ -137,7 +137,7 @@ export default function AllocationPage() {
       {/* the demonstration */}
       <section id="demo" data-machine className="section hairline scroll-mt-[var(--header-h)] bg-paper" aria-labelledby="demo-h">
         <div className="wrap">
-          <div className="max-w-[44rem]">
+          <div className="max-w-measure">
             <p className="eyebrow">The demonstration</p>
             <h2 id="demo-h" className="h2 mt-13">
               From a profile to funded accounts.
@@ -289,7 +289,7 @@ export default function AllocationPage() {
             <h2 id="unpublished" className="h2 mt-13">
               What the real journey depends on.
             </h2>
-            <p className="lead mt-21 max-w-measure">The demonstration uses example values because the real ones have not been published for this journey. An example is more honest than a guess presented as a condition.</p>
+            <p className="lead mt-21 max-w-measure">The demonstration uses provisional values, set in line with common practice among brokers, where GIO4X’s own have not been confirmed for this journey. Each is marked provisional and may change.</p>
             <p className="mt-21 max-w-measure text-sm text-ink-2">
               The client portal is a separate application. Its account opening, its payments and its link to each platform’s balances are not described here, and this page does not connect to any of them. The full list of what this site does and does not publish is under{" "}
               <Link href="/trust/transparency" className="link">

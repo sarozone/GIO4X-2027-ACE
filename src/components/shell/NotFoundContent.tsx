@@ -25,7 +25,7 @@ export function NotFoundContent() {
         <div>
           <p className="eyebrow">Error 404</p>
           <h1 className="h1 mt-21">This market doesn&rsquo;t exist.</h1>
-          <p className="lead mt-21 max-w-[46ch]">The page may have moved, expired, or never traded here. Every market has another route.</p>
+          <p className="lead mt-21 max-w-measure">The page may have moved, expired, or never traded here. Every market has another route.</p>
           <NotFoundSuggestions />
           <ul className="mt-34 flex flex-wrap gap-x-21 gap-y-8">
             {routes.map((r) => (

@@ -112,7 +112,7 @@ export default function PartnersPage() {
       <section className="section relative" aria-labelledby="ib-cta">
         <Backdrop variant="sessions" />
         <div className="wrap flex flex-col gap-34 md:flex-row md:items-end md:justify-between">
-          <div className="max-w-[40rem]">
+          <div className="max-w-measure">
             <h2 id="ib-cta" className="h2">
               Start with a conversation.
             </h2>

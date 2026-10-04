@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { accounts, type AccountKey } from "@/data/accounts";
-import { accountCharacter, costExamples, EURUSD_PIP_VALUE } from "@/data/trading";
+import { accountCharacter, costExamples, EURUSD_PIP_VALUE, PROVISIONAL_NOTE } from "@/data/trading";
 
 const usd = (n: number) => `$${n.toFixed(2)}`;
 
@@ -135,7 +135,7 @@ export function AccountExplorer() {
         <p className="mt-13 max-w-measure text-xs text-ink-3">
           Arithmetic on the published “from” figures: spread in pips × ${EURUSD_PIP_VALUE} per pip, plus commission. Spreads are minimums and widen with market conditions, so a real trade will usually cost more than this. The published ECN commission is
           {" "}
-          {accounts.find((x) => x.key === "ecn")?.commission}; whether that is charged once or on both opening and closing is not yet published, and the example counts it once. Overnight swap is not included.
+          {accounts.find((x) => x.key === "ecn")?.commission}: it is charged once on opening and once on closing, so the example counts it twice for the round trip. {PROVISIONAL_NOTE} Overnight swap is not included.
         </p>
         <Link href="/tools/cost-lab" className="go mt-13 min-h-[2.75rem] md:min-h-0">
           Try your own figures in the Cost Lab

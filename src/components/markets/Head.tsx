@@ -36,7 +36,7 @@ export function Head({
         <h2 id={id} className={`${size} ${eyebrow ? "mt-13" : ""} max-w-[22ch]`}>
           {title}
         </h2>
-        {lead && <p className="lead mt-13 max-w-[58ch]">{lead}</p>}
+        {lead && <p className="lead mt-13 max-w-measure">{lead}</p>}
       </div>
       {action && (
         <div className="shrink-0" data-backdrop-hole>

@@ -37,7 +37,7 @@ export default function Page() {
           <h2 id="cmp-all" className="h2 max-w-[24ch]">
             The same questions, asked of each.
           </h2>
-          <p className="lead mt-13 max-w-[44rem]">
+          <p className="lead mt-13 max-w-measure">
             Every page has a table, a paragraph on each item, a way to set any two against each other, and a drawing of how they differ in practice. They describe the general thing, as it works in most markets, and say where practice varies.
           </p>
           <ul className="mt-34 grid gap-13 sm:grid-cols-2 lg:grid-cols-3">

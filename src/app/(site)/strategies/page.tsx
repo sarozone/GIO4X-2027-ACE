@@ -35,7 +35,7 @@ export default function Page() {
 
       <section className="section-quiet" aria-labelledby="lib-read">
         <div className="wrap">
-          <div className="panel max-w-[52rem] p-21">
+          <div className="panel max-w-measure p-21">
             <h2 id="lib-read" className="label">
               Before you read any of them
             </h2>
@@ -56,7 +56,7 @@ export default function Page() {
             <h2 id={`${g.id}-h`} className="h2 mt-13 max-w-[24ch]">
               {g.title}
             </h2>
-            <p className="lead mt-13 max-w-[44rem]">{g.lead}</p>
+            <p className="lead mt-13 max-w-measure">{g.lead}</p>
             <ul className="mt-34 grid gap-13 sm:grid-cols-2 lg:grid-cols-3">
               {STRATEGIES.filter((s) => s.hold === g.key).map((s) => (
                 <li key={s.slug}>

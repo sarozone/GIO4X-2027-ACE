@@ -36,7 +36,7 @@ function BeatText({ beat }: { beat: { n: number; title: string; body: string; li
     <div>
       <p className="num text-xs font-semibold tracking-[0.12em] text-prestige-ink">{String(n).padStart(2, "0")}</p>
       <h3 className="h2 mt-13">{title}</h3>
-      <p className="lead mt-21 max-w-[46ch]">{body}</p>
+      <p className="lead mt-21 max-w-measure">{body}</p>
       {links.length > 0 && (
         <ul className="mt-21 flex flex-wrap gap-x-21 gap-y-8">
           {links.map((l) => (
@@ -127,7 +127,7 @@ export default function RaptorPage() {
                   <br />
                   <span className="text-ink-3">Built for the market.</span>
                 </h1>
-                <p className="lead mt-21 max-w-[52ch]">{p.summary}</p>
+                <p className="lead mt-21 max-w-measure">{p.summary}</p>
                 <div className="mt-34 flex flex-wrap items-center gap-13">
                   <a href="#tour" className="btn btn-primary">
                     Walk around it
@@ -237,7 +237,7 @@ export default function RaptorPage() {
                     <div>
                       <p className="num text-xs font-semibold tracking-[0.12em] text-prestige-ink">{String(monitor.n).padStart(2, "0")}</p>
                       <h3 className="h2 mt-13">{monitor.title}</h3>
-                      <p className="lead mt-21 max-w-[52ch]">{monitor.body}</p>
+                      <p className="lead mt-21 max-w-measure">{monitor.body}</p>
                     </div>
                     <div>
                       {/* beside the chapter on wide screens: what it says is watched, drawn without a figure in it */}
@@ -413,7 +413,7 @@ export default function RaptorPage() {
       {/* technology credit */}
       <section className="on-night gx-breach-band" aria-label="Technology credit">
         <div className="wrap pb-21 pt-55 lg:py-55">
-          <div className="max-w-[40rem] lg:max-w-[min(40rem,46%)]">
+          <div className="max-w-measure lg:max-w-[min(40rem,46%)]">
             <p className="label">Technology</p>
             <p className="h3 mt-8">Technology provided by 777 Raptor.</p>
             <p className="mt-8 text-ink-2">The Raptor platform is built by 777 Raptor and offered to GIO4X clients as the house flagship.</p>

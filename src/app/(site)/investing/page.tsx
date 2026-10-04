@@ -66,7 +66,7 @@ export default function Page() {
           <h2 id="instruments-h" className="h2 mt-13 max-w-[22ch]">
             Seven things, one page each.
           </h2>
-          <p className="lead mt-13 max-w-[44rem]">The first five are what most long-term savings are made of. The last two are contracts built on top of other things; an investor meets them sooner or later, and they behave very differently.</p>
+          <p className="lead mt-13 max-w-measure">The first five are what most long-term savings are made of. The last two are contracts built on top of other things; an investor meets them sooner or later, and they behave very differently.</p>
           <ul className="mt-34 grid gap-13 sm:grid-cols-2 lg:grid-cols-3">
             {INVESTING.map((it, i) => (
               <li key={it.slug}>

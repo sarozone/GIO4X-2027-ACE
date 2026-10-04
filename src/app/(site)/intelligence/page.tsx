@@ -69,7 +69,7 @@ export default function IntelligencePage() {
               <br />
               Intelligence
             </h1>
-            <p className="lead mt-21 max-w-[38ch]">A publication, not a blog. Analysis, explainers and guides for people who take markets seriously, written to explain and never to predict.</p>
+            <p className="lead mt-21 max-w-measure">A publication, not a blog. Analysis, explainers and guides for people who take markets seriously, written to explain and never to predict.</p>
           </div>
           <hr className="dna-rule" />
           <SectionNav />
@@ -145,7 +145,7 @@ export default function IntelligencePage() {
                         {a.title}
                       </Link>
                     </h2>
-                    <p className="mt-13 max-w-[52ch] text-ink-2">{a.excerpt}</p>
+                    <p className="mt-13 max-w-measure text-ink-2">{a.excerpt}</p>
                     <StoryMeta a={a} className="mt-21" />
                   </article>
                 ))}
@@ -233,7 +233,7 @@ export default function IntelligencePage() {
               </div>
               <div className="text-sm text-ink-2">
                 <h2 className="label">How this is written</h2>
-                <p className="mt-13 max-w-[46ch]">Pieces are signed by a desk, never by an invented name. Each carries its publication date and the date of its last revision. Nothing here is a forecast or a recommendation to trade, and nothing is ranked by popularity because reading is not tracked.</p>
+                <p className="mt-13 max-w-measure">Pieces are signed by a desk, never by an invented name. Each carries its publication date and the date of its last revision. Nothing here is a forecast or a recommendation to trade, and nothing is ranked by popularity because reading is not tracked.</p>
                 <p className="mt-5 flex flex-wrap gap-x-21">
                   <Link href="/trust/editorial-standards" className="link inline-flex min-h-[2.75rem] items-center">
                     Editorial standards

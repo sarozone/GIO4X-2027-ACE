@@ -34,7 +34,7 @@ export default function OfflinePage() {
           <h1 id="offline-h" className="h2">
             You are offline.
           </h1>
-          <p className="lead mt-13 max-w-[58ch]">This page is kept in your browser so that something useful is here when there is no connection. The calculators work without one: their arithmetic runs on this device.</p>
+          <p className="lead mt-13 max-w-measure">This page is kept in your browser so that something useful is here when there is no connection. The calculators work without one: their arithmetic runs on this device.</p>
 
           <div className="mt-34">
             <h2 className="h3">Available now</h2>

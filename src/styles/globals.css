@@ -240,7 +240,7 @@
     color: var(--ink-3);
   }
   .prose-gx {
-    max-width: 68ch;
+    max-width: none;
     color: var(--ink-2);
     font-size: 1.0625rem;
     line-height: 1.7;

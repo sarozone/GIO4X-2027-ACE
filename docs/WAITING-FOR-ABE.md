@@ -97,3 +97,19 @@ captioned as a demo-account screenshot. Open points:
 | G2 | The two MetaTrader 5 terminal screenshots are MetaQuotes material | Confirm GIO4X's MetaQuotes licence covers using their screenshots, or replace them with captures of a GIO4X terminal. |
 | G3 | The Raptor workspace screenshot shows a CNBC video tile and a news headline | Third-party marks inside a product screenshot. A capture with that panel closed would be cleaner. |
 | G4 | The EMIL and hedging panels are shown, not described | Section E still applies: Raptor Intelligence is not described until its documentation is approved. The EMIL capture shows a directional lean, a trade plan and a win rate from the demo; the caption says so, but a capture without them would sit better beside "no signals" on `/trust/ai`. |
+
+## H. Set provisionally on 4 October 2026 (owner's instruction: "check other brokers and fill; we will change later")
+
+These are published on the site now, each in line with common practice among brokers, and each is the
+owner's to confirm or change. Changing one is a one-line edit in the file named.
+
+| # | Item | Provisional value | Why this value | Where |
+|---|---|---|---|---|
+| H1 | ECN commission basis | $3.50 per lot **per side** ($7.00 for a round trip) | The most common basis for a raw-spread account with a per-lot commission, and what the earlier GIO4X site's article said | `commission` in `src/data/accounts.ts`; `COMMISSION_SIDES` in `src/data/trading.ts` (the worked totals, the Cost Lab's default and the account chooser follow it) |
+| H2 | Leverage steps in the allocation demonstration | 1:50, 1:100, 1:200, 1:500 | The usual steps up to the published ceiling of 1:500 | `EXAMPLE_LEVERAGE` in `src/components/funding/AllocationDemo.tsx` |
+| H3 | Minimum funding in the allocation demonstration | 150.00, the lowest published minimum deposit | No per-platform minimum has been set | the same file |
+| H4 | Social channels shown without addresses | LinkedIn, X, Facebook, Instagram, YouTube, Telegram, as marks that are not links | The owner asked for them to be displayed; the addresses will follow (B7) | `SHOWN` in `src/components/shell/SocialLinks.tsx`; addresses go in `socials` in `src/config/destinations.ts` |
+
+Not filled from other brokers, and still waiting: anything that is a statement about GIO4X's legal or
+regulatory position (A1, A2, A5), who it accepts (A3), its documents (A8), or a figure that would be
+presented as evidence (A4, section E). Those cannot be borrowed from another firm.

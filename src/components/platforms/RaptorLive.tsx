@@ -618,7 +618,7 @@ export function LayoutChooser() {
   const [auto, setAuto] = useState(true);
   return (
     <div className="grid items-center gap-21 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-55">
-      <div role="img" aria-label={`An illustration of workspace panels arranged as \u201c${LAYOUTS[at].name}\u201d`} className="mx-auto w-full max-w-[44rem]">
+      <div role="img" aria-label={`An illustration of workspace panels arranged as \u201c${LAYOUTS[at].name}\u201d`} className="mx-auto w-full max-w-measure">
         <LayoutMorph at={at} auto={auto} />
       </div>
       <div className="flex flex-wrap gap-8 lg:flex-col" role="group" aria-label="Choose an arrangement">

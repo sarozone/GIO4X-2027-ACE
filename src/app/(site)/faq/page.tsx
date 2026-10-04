@@ -53,7 +53,7 @@ export default async function FaqPage() {
             <h2 id="not-answered" className="h2 mt-13 max-w-[18ch]">
               Ask a person.
             </h2>
-            <p className="lead mt-13 max-w-[52ch]">Account-specific questions, and anything this page marks as not yet published, are best put to us directly.</p>
+            <p className="lead mt-13 max-w-measure">Account-specific questions, and anything this page marks as not yet published, are best put to us directly.</p>
           </div>
           <div className="border-t border-line pt-21 lg:border-l lg:border-t-0 lg:pl-55 lg:pt-0">
             <div className="flex flex-wrap gap-13">

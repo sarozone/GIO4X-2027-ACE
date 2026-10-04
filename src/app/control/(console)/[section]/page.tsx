@@ -35,7 +35,7 @@ export default async function PendingSectionPage({ params }: { params: Promise<{
         }
       />
       {portalUrl && (
-        <div className="gxc-card mt-21 max-w-[46rem]">
+        <div className="gxc-card mt-21 max-w-measure">
           <div className="gxc-card-head">
             <h2 className="gxc-card-title">In the client portal</h2>
             <span className="state state-open">Connected</span>
@@ -51,7 +51,7 @@ export default async function PendingSectionPage({ params }: { params: Promise<{
           </div>
         </div>
       )}
-      <div className="gxc-card mt-21 max-w-[46rem]">
+      <div className="gxc-card mt-21 max-w-measure">
         <div className="gxc-card-head">
           <h2 className="gxc-card-title">What it will do here</h2>
           <span className="state state-pre">Not built</span>

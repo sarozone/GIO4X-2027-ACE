@@ -89,7 +89,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
           <h2 id="machine-h" className="h3 mt-13 max-w-[24ch]">
             {lesson.machine.title}
           </h2>
-          <p className="lead mt-13 max-w-[44rem]">{lesson.machine.lead}</p>
+          <p className="lead mt-13 max-w-measure">{lesson.machine.lead}</p>
           <p className="no-print mt-8 hidden text-xs text-ink-3 lg:block">On a keyboard: with the pointer over the machine, the left and right arrows move its first slider and Enter presses “Another chart”.</p>
           <div className="mt-34" data-machine>
             <IndicatorMachine kind={lesson.slug} />

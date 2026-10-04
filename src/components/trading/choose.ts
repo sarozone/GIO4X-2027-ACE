@@ -141,7 +141,7 @@ function reasonsFor(a: Account, ans: Answers): string[] {
 function weighFor(a: Account, ans: Answers): string[] {
   const w: string[] = [];
   if (a.key === widest.key) w.push(`Its minimum spread, from ${a.spreadFrom}, is the widest of the three.`);
-  if (hasCommission(a)) w.push(`A commission of ${a.commission} is charged in addition to the spread. Whether that is per side or per round turn has not been published.`);
+  if (hasCommission(a)) w.push(`A commission of ${a.commission} is charged in addition to the spread: once on opening and once on closing.`);
   if (ans.n === "yes" && !swapFree(a)) w.push(`Overnight swap is listed as “${a.swap.toLowerCase()}”: positions held past the daily rollover are charged or credited, and the account specification lists no rate.`);
   if (a.extras.length === 0) w.push("No account manager or priority support is listed for it.");
   if (a.key === byDeposit[byDeposit.length - 1].key) w.push(`It carries the highest minimum deposit, ${a.minDeposit}.`);

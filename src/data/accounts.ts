@@ -70,7 +70,7 @@ export const accounts: Account[] = [
     line: "Raw spreads with a fixed commission per lot, for those who measure cost per trade.",
     minDeposit: "$2,000",
     spreadFrom: "0.2 pips",
-    commission: "$3.50 per lot",
+    commission: "$3.50 per lot, per side",
     leverage: "Up to 1:500",
     swap: "Swap-free",
     minTrade: "0.01 lots",

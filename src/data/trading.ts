@@ -68,14 +68,28 @@ export const EURUSD_PIP_VALUE = 10;
 export type CostExample = { key: AccountKey; name: string; pips: number; spreadCost: number; commission: number; total: number };
 
 /**
+ * How many times the per-lot commission is charged on one trade: once on
+ * opening and once on closing. Provisional (owner's decision of 4 October
+ * 2026): set in line with common practice among brokers, where a commission
+ * of this kind is quoted per side, and as the earlier GIO4X site stated it.
+ * Change it here and every worked total on the site follows.
+ */
+export const COMMISSION_SIDES = 2;
+
+/** The sentence shown wherever a provisional condition is used. */
+export const PROVISIONAL_NOTE = "Provisional: set on 4 October 2026 in line with common practice among brokers, and subject to change.";
+
+/**
  * Worked example, computed from the published account figures: the cost of
- * opening one standard lot of EUR/USD at the account's minimum ("from") spread.
+ * one round trip (opening and closing) in one standard lot of EUR/USD at the
+ * account's minimum ("from") spread, with the commission charged per side.
  * It is arithmetic on minimums, not a quote.
  */
 export function costExamples(): CostExample[] {
   return accounts.map((a) => {
     const pips = Number.parseFloat(a.spreadFrom);
-    const commission = /\d/.test(a.commission) ? Number.parseFloat(a.commission.replace(/[^0-9.]/g, "")) : 0;
+    const perSide = /\d/.test(a.commission) ? Number(/\$([\d.]+)/.exec(a.commission)?.[1] ?? 0) : 0;
+    const commission = perSide * COMMISSION_SIDES;
     const spreadCost = pips * EURUSD_PIP_VALUE;
     return { key: a.key, name: a.name, pips, spreadCost, commission, total: spreadCost + commission };
   });
@@ -92,7 +106,6 @@ export const accountEligibility = "You must be at least 18 years old and residen
 export const accountPending: string[] = [
   "Which platforms each account type is offered on",
   "How long verification takes",
-  "Whether the ECN commission is charged per side or per round turn",
   "Demo account terms",
   "Base currencies available for each account",
 ];

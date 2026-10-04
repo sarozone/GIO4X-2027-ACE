@@ -34,7 +34,7 @@ export function Hero() {
 
       <div className="cx-main">
         <div className="cx-statement">
-          <div className="cx-statement-body max-w-[40rem]" data-depth="0.5">
+          <div className="cx-statement-body max-w-measure" data-depth="0.5">
             <p className="eyebrow" style={{ animation: "gx-rise 680ms var(--ease-out) both" }}>
               {site.tagline}
             </p>

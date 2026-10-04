@@ -30,7 +30,8 @@ export function CostLab({ meta, rates }: ToolProps) {
 
   const account = PUBLISHED.find((a) => a.key === calc.accountType) ?? PUBLISHED[0];
   const [over, setOver] = useState<Partial<Record<AccountKey, { spread?: string; commission?: string }>>>({});
-  const [sides, setSides] = useState<Sides>("1");
+  // per side is the published basis (provisional), so the Lab opens on two sides
+  const [sides, setSides] = useState<Sides>("2");
   const [nightsRaw, setNightsRaw] = useState("1");
   const [swapRaw, setSwapRaw] = useState("0");
 
@@ -99,7 +100,7 @@ export function CostLab({ meta, rates }: ToolProps) {
       steps={steps}
       assumptions={[
         "The spread prefilled for each account is the minimum GIO4X publishes (“spread from”). It is a floor, not a typical figure: real spreads are wider and vary by instrument and by the minute, so the real cost is higher than the figure built from it.",
-        "Commission is published as “$3.50 per lot” on the ECN account. Whether that is per side or per round turn is not stated here, so the multiplier is yours to set.",
+        "Commission on the ECN account is $3.50 per lot, per side: charged on opening and again on closing, so the Lab starts on two sides. That basis is provisional and may change; the multiplier can be set to one side to see the difference.",
         "Swap rates are not published on this site. The field starts at zero and takes the rate shown on your platform: a positive number is a charge, a negative number a credit. The ECN account is published as swap-free.",
         "The spread is paid once, on entry, and is the same whether the trade then gains or loses.",
       ]}

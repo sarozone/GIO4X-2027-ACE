@@ -73,6 +73,9 @@ const MARKS: Record<SocialKey, ReactNode> = {
   tiktok: <path d="M11 3.5v9a2.8 2.8 0 1 1-2.8-2.8M11 3.5c.2 2 1.6 3.4 3.6 3.6" />,
 };
 
+/** the channels shown before their addresses have been supplied */
+const SHOWN: SocialKey[] = ["linkedin", "x", "facebook", "instagram", "youtube", "telegram"];
+
 export function socialEntries(): [SocialKey, string][] {
   return ORDER.flatMap((k) => {
     const url = socials[k];
@@ -81,26 +84,42 @@ export function socialEntries(): [SocialKey, string][] {
   });
 }
 
-export function SocialLinks({ names = false, className = "" }: { names?: boolean; className?: string }) {
-  const entries = socialEntries();
-  if (entries.length === 0) return null;
+/**
+ * What the rows show: every channel that has an address, as a link, and the usual channels that do
+ * not have one yet, as a mark that is not a link. At the owner's direction (4 October 2026) the marks
+ * are shown before the addresses are supplied. A mark without an address leads nowhere and says so:
+ * no profile is ever linked from a guess.
+ */
+export function socialSlots(): { key: SocialKey; url: string | null }[] {
+  const linked = new Map(socialEntries());
+  return ORDER.filter((k) => linked.has(k) || SHOWN.includes(k)).map((k) => ({ key: k, url: linked.get(k) ?? null }));
+}
+
+export function SocialLinks({ names = false, className = "", limit }: { names?: boolean; className?: string; limit?: number }) {
+  const slots = socialSlots().slice(0, limit);
+  if (slots.length === 0) return null;
+  const mark = (key: SocialKey) => (
+    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      {MARKS[key]}
+    </svg>
+  );
+  const shape = names ? "link-quiet inline-flex min-h-[2.75rem] items-center gap-8 text-sm" : "btn btn-quiet h-[2.125rem] px-5";
   return (
-    <ul className={`flex flex-wrap items-center ${names ? "gap-x-21 gap-y-8" : "gap-3"} ${className}`} aria-label="GIO4X on social media">
-      {entries.map(([key, url]) => (
+    <ul className={`flex items-center ${names ? "flex-wrap gap-x-21 gap-y-8" : "shrink-0 flex-nowrap gap-0"} ${className}`} aria-label="GIO4X on social media">
+      {slots.map(({ key, url }) => (
         <li key={key}>
-          <a
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer me"
-            aria-label={`GIO4X on ${SOCIAL_LABELS[key]} (opens in a new tab)`}
-            title={names ? undefined : SOCIAL_LABELS[key]}
-            className={names ? "link-quiet inline-flex min-h-[2.75rem] items-center gap-8 text-sm" : "btn btn-quiet h-[2.125rem] px-8"}
-          >
-            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-              {MARKS[key]}
-            </svg>
-            {names && <span>{SOCIAL_LABELS[key]}</span>}
-          </a>
+          {url ? (
+            <a href={url} target="_blank" rel="noopener noreferrer me" aria-label={`GIO4X on ${SOCIAL_LABELS[key]} (opens in a new tab)`} title={names ? undefined : SOCIAL_LABELS[key]} className={shape}>
+              {mark(key)}
+              {names && <span>{SOCIAL_LABELS[key]}</span>}
+            </a>
+          ) : (
+            // no address yet: the mark is shown, and is not a link
+            <span role="img" aria-label={`${SOCIAL_LABELS[key]}: link to follow`} title={`${SOCIAL_LABELS[key]}: link to follow`} className={`${shape} cursor-default opacity-70`}>
+              {mark(key)}
+              {names && <span>{SOCIAL_LABELS[key]}</span>}
+            </span>
+          )}
         </li>
       ))}
     </ul>

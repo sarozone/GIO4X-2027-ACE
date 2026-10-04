@@ -3,8 +3,8 @@
   "date": "2026-10-04",
   "articles": {
     "ecn-vs-standard-forex-accounts": {
-      "note": "The description of ECN accounts was rewritten as the general meaning of the term in the industry, separated from GIO4X, whose order execution policy and commission basis are not yet published; statements that an ECN account is cheaper, or executes faster, were removed.",
-      "briefAppend": "“ECN” is an industry label, not a standard. GIO4X has not yet published its order execution policy, or whether its ECN commission is per side or per round trip, so nothing here describes how GIO4X routes or fills orders.",
+      "note": "The description of ECN accounts was rewritten as the general meaning of the term in the industry, separated from GIO4X, whose order execution policy is not yet published; statements that an ECN account is cheaper, or executes faster, were removed.",
+      "briefAppend": "“ECN” is an industry label, not a standard. GIO4X has not yet published its order execution policy, so nothing here describes how GIO4X routes or fills orders. Its ECN commission is charged per side.",
       "replace": [
         {
           "kind": "ecn",
@@ -14,7 +14,7 @@
         {
           "kind": "ecn",
           "find": "<p>An ECN account connects you directly to a network of liquidity providers — major banks, financial institutions, and other market participants. Instead of the broker setting the spread, you see the raw interbank spread. In exchange for the raw spread, the broker charges a commission per lot traded.</p>",
-          "with": "<p>In the industry, ECN stands for electronic communication network: a venue where orders from many participants, such as banks, other financial institutions and other traders, are matched with one another. An account sold as ECN is generally described as passing on a spread close to the one in that underlying market, instead of a spread set by the broker, with the cost of dealing charged separately as a commission per lot traded.</p>\n<p>The label is not standardised. How orders are routed, who the counterparty to a trade is, and how quickly and at what price orders are filled differ from broker to broker. They are set out in a broker’s order execution policy, not by the name of an account.</p>\n<p>That is the general meaning of the term, and it is not a description of GIO4X. GIO4X has not yet published an order execution policy, so nothing in this article should be read as a statement about how GIO4X routes or fills orders, or about who provides its prices. What GIO4X has and has not published is listed on the <a href=\"/trust/transparency\">transparency page</a>.</p>\n<p>A commission quoted per lot also needs its basis: per side (charged once on opening and again on closing) or per round trip (charged once for both). GIO4X has not yet published the basis of its ECN commission, so a total cost for that account cannot be computed until it does.</p>"
+          "with": "<p>In the industry, ECN stands for electronic communication network: a venue where orders from many participants, such as banks, other financial institutions and other traders, are matched with one another. An account sold as ECN is generally described as passing on a spread close to the one in that underlying market, instead of a spread set by the broker, with the cost of dealing charged separately as a commission per lot traded.</p>\n<p>The label is not standardised. How orders are routed, who the counterparty to a trade is, and how quickly and at what price orders are filled differ from broker to broker. They are set out in a broker’s order execution policy, not by the name of an account.</p>\n<p>That is the general meaning of the term, and it is not a description of GIO4X. GIO4X has not yet published an order execution policy, so nothing in this article should be read as a statement about how GIO4X routes or fills orders, or about who provides its prices. What GIO4X has and has not published is listed on the <a href=\"/trust/transparency\">transparency page</a>.</p>\n<p>A commission quoted per lot also needs its basis: per side (charged once on opening and again on closing) or per round trip (charged once for both). GIO4X’s ECN commission is charged per side, so it is counted on opening and again on closing when a total cost is worked out.</p>"
         },
         {
           "kind": "ecn",
@@ -24,7 +24,7 @@
         {
           "kind": "commission",
           "find": "For active traders and scalpers, ECN accounts are typically cheaper. For less frequent traders, the simplicity of standard accounts may be preferable.",
-          "with": "Neither structure is cheaper by definition. The comparison is a wider spread on one side against a raw spread plus commission on the other, multiplied by how often you trade, and it can only be made once it is known whether the commission is charged per side or per round trip. The <a href=\"/tools/cost-lab\">Cost Lab</a> shows the arithmetic and leaves that multiplier for you to set."
+          "with": "Neither structure is cheaper by definition. The comparison is a wider spread on one side against a raw spread plus commission on the other, multiplied by how often you trade, with the commission counted on both opening and closing where it is charged per side, as GIO4X’s is. The <a href=\"/tools/cost-lab\">Cost Lab</a> shows the arithmetic and leaves that multiplier for you to set."
         },
         {
           "kind": "ecn",
@@ -482,7 +482,7 @@
     }
   ],
   "ownerQuestions": [
-    "Is the ECN commission of “$3.50 per lot” (src/data/accounts.ts) charged per side or per round trip? The previous site’s article said “per standard lot per side”; that sentence was removed in the first audit as unverifiable. Until this is settled, no total cost for the ECN account can be stated.",
+    "Settled provisionally on 4 October 2026: the ECN commission is $3.50 per lot per side (src/data/accounts.ts, COMMISSION_SIDES in src/data/trading.ts), in line with common practice and with the previous site’s article. The owner may revise it.",
     "The order execution policy (routing, counterparty, pricing sources, fill and slippage handling) is not published. The ECN article now says so and links to /trust/transparency."
   ]
 }

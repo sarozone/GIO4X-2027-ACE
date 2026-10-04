@@ -180,7 +180,7 @@ export function Shortcuts({ items }: { items: NavEntry[] }) {
       {open && (
         <div data-gxc-dialog="shortcuts" className="fixed inset-0 z-modal flex items-start justify-center overflow-y-auto px-13 py-[8vh]" role="presentation">
           <div className="fixed inset-0 bg-[rgba(4,10,20,0.5)]" onClick={close} aria-hidden />
-          <div role="dialog" aria-modal="true" aria-labelledby="gxc-shortcuts-title" className="relative w-full max-w-[40rem] rounded-md border border-line-strong bg-paper shadow-3">
+          <div role="dialog" aria-modal="true" aria-labelledby="gxc-shortcuts-title" className="relative w-full max-w-measure rounded-md border border-line-strong bg-paper shadow-3">
             <div className="flex items-center justify-between gap-13 border-b border-line px-21 py-13">
               <h2 id="gxc-shortcuts-title" className="h4">
                 Keyboard shortcuts

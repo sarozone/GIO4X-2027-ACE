@@ -124,7 +124,7 @@ export function SectionHead({
       <div data-reveal>
         {eyebrow && <p className="eyebrow">{eyebrow}</p>}
         <H className={`${as === "h2" ? "h2" : "h3"} ${eyebrow ? "mt-13" : ""} max-w-[22ch]`}>{title}</H>
-        {lead && <p className="lead mt-13 max-w-[58ch]">{lead}</p>}
+        {lead && <p className="lead mt-13 max-w-measure">{lead}</p>}
       </div>
       {action && (
         <div className="shrink-0" data-reveal data-backdrop-hole>

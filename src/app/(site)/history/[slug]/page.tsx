@@ -89,7 +89,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
           <h2 id="mh-steps" className="h2 mt-13 max-w-[22ch]">
             The events, one at a time.
           </h2>
-          <p className="lead mt-13 max-w-[44rem]">Press Next, or Play, to move along the line. The curve above it is an illustrative shape, not market data.</p>
+          <p className="lead mt-13 max-w-measure">Press Next, or Play, to move along the line. The curve above it is an illustrative shape, not market data.</p>
           <div className="mt-34 min-w-0">
             <EpisodeTimeline events={e.events} start={e.start} shape={e.shape} />
           </div>

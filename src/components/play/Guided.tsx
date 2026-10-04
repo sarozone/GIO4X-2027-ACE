@@ -58,9 +58,9 @@ export function FirstTrade() {
         {!done ? (
           <>
             <h2 className="h2">{ROOMS[at].name}</h2>
-            <p className="lead mt-8 max-w-[40rem]">{ROOMS[at].lead}</p>
+            <p className="lead mt-8 max-w-measure">{ROOMS[at].lead}</p>
             {/* the room with a coach beside its chart uses the full column */}
-            <div className={`mt-21 ${"wide" in ROOMS[at] ? "" : "max-w-[52rem]"}`}>{ROOMS[at].body}</div>
+            <div className={`mt-21 ${"wide" in ROOMS[at] ? "" : "max-w-measure"}`}>{ROOMS[at].body}</div>
             <div className="mt-34 flex flex-wrap gap-13 border-t border-line pt-21">
               {at > 0 && (
                 <button type="button" className="btn btn-ghost" onClick={() => go(at - 1)}>
@@ -73,7 +73,7 @@ export function FirstTrade() {
             </div>
           </>
         ) : (
-          <div className="max-w-[40rem]">
+          <div className="max-w-measure">
             <h2 className="h2">That was the whole of it.</h2>
             <p className="lead mt-8">A trade is three decisions made before it is sent, one check, and then the waiting.</p>
             <ol className="mt-21 grid gap-13 border-t border-line pt-21 text-ink-2">

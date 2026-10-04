@@ -132,7 +132,7 @@ export function MonthSummaryView({ month, months, summary, generatedBy }: MonthS
         domain, and this project has none.
       </p>
 
-      <article className="gxc-card gxc-month-sheet mx-auto mt-13 max-w-[52rem] p-21 md:p-34">
+      <article className="gxc-card gxc-month-sheet mx-auto mt-13 max-w-measure p-21 md:p-34">
         <header className="border-b border-line-strong pb-13">
           <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-ink-3">GIO4X · Monthly summary</p>
           <h1 className="h3 mt-5">{month.label}</h1>

@@ -86,7 +86,7 @@ export default function Page() {
           <h2 id="indicators-h" className="h2 mt-13 max-w-[24ch]">
             Eight sums, shown in full.
           </h2>
-          <p className="lead mt-13 max-w-[44rem]">Each page gives the formula step by step, works a small example by hand and then lets you change the settings on an invented chart to see the line respond.</p>
+          <p className="lead mt-13 max-w-measure">Each page gives the formula step by step, works a small example by hand and then lets you change the settings on an invented chart to see the line respond.</p>
           <ul className="mt-34 grid gap-13 sm:grid-cols-2 lg:grid-cols-4">
             {LESSONS.map((l) => (
               <li key={l.slug}>
@@ -114,7 +114,7 @@ export default function Page() {
           <h2 id="patterns-h" className="h2 mt-13 max-w-[24ch]">
             Patterns are read by eye.
           </h2>
-          <p className="lead mt-13 max-w-[44rem]">An indicator is calculated. A pattern is recognised: a shape that a price has drawn, with a name. Two places on this site explain them.</p>
+          <p className="lead mt-13 max-w-measure">An indicator is calculated. A pattern is recognised: a shape that a price has drawn, with a name. Two places on this site explain them.</p>
           <ul className="mt-34 grid gap-13 md:grid-cols-2">
             {elsewhere.map((e) => (
               <li key={e.href}>

@@ -92,7 +92,7 @@ export function TermDiagram({ spec, caption, className = "" }: { spec: DiagramSp
   const drawing = spec && typeof spec === "object" ? body(spec) : null;
   const how = drawing ? TRY[spec.kind] : undefined;
   return (
-    <figure className={`max-w-[40rem] ${className}`}>
+    <figure className={`max-w-measure ${className}`}>
       {drawing}
       <figcaption className={`${drawing ? "mt-8 border-t border-line pt-13" : ""} text-sm leading-relaxed text-ink-2`}>
         {caption}

@@ -104,7 +104,7 @@ export default function Page() {
 
       <section id="journal" className="section hairline scroll-mt-[var(--header-h)] bg-paper print:py-0" aria-labelledby="journal-h">
         <div className="wrap">
-          <div className="max-w-[44rem] print:hidden">
+          <div className="max-w-measure print:hidden">
             <p className="eyebrow">The journal</p>
             <h2 id="journal-h" className="h2 mt-13">
               A trade, written down.

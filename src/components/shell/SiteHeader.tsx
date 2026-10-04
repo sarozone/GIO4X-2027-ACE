@@ -153,7 +153,7 @@ export function SiteHeader() {
           <LensButton />
           <AppearanceButton />
           {/* the official social profiles, once they are entered in config/destinations.ts; nothing until then */}
-          <SocialLinks className="hidden xl:flex" />
+          <SocialLinks limit={5} className="hidden min-[1400px]:flex" />
           <Link href="/sign-in" className="btn btn-quiet btn-sm hidden md:inline-flex">
             Sign in
           </Link>
