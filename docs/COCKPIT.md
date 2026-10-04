@@ -41,7 +41,11 @@ Every instrument is drawn inside a **golden rectangle** (1.618 : 1) and clipped 
 under the headline or off the stage. From 1080px the frame is the right-hand 52% of the content column and
 the statement keeps to the left 46%; below that it stands at the top of the stage and the statement
 begins under it. The engine computes it (`f.box`), draws its champagne hairline, corner marks and the
-golden cut on its long sides, and places the scene's focal point at its centre. A scene cannot move its
+golden cut on its long sides, and places the scene's focal point at its centre. It then centres the
+drawing itself: once for each size of frame, the engine draws the scene's composed still unclipped,
+reads back where the ink is and moves the scene so that the middle of its drawing is the middle of the
+frame (`fit` in `engine.ts`). A scene whose subject sits low, high or to one side is therefore centred
+without a figure kept by hand; the distance moved is published on the canvas as `data-fit`. A scene cannot move its
 own focal point out of the frame. The homepage scene (`scenes/flightdeck.ts`) is `free: true` because
 its stage is taller and its statement larger, but it is framed like the rest: it composes its whole
 instrument inside its own frame, clips it, and hands the rectangle to the engine through `Scene.frame`,

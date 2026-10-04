@@ -18,7 +18,7 @@ export default function RouteError({ error, reset }: { error: Error & { digest?:
   return (
     <section className="wrap grid min-h-[70svh] items-center py-55">
       <div className="max-w-measure">
-        <Rosette size={55} blades={6} className="text-ink-3" />
+        <Rosette size={55} className="text-ink-3" />
         <p className="eyebrow mt-21">Something went wrong</p>
         <h1 className="h1 mt-21">Something failed to execute.</h1>
         <p className="lead mt-21">This page could not be completed. Nothing you entered has been lost to a third party, and the rest of GIO4X is unaffected.</p>

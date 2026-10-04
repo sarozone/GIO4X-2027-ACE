@@ -59,6 +59,7 @@ const ROUTES: [prefix: string, scene: SceneId, ownTag?: string][] = [
   ["/labs/market-day", "clock"],
   ["/labs/trade-anatomy", "trading"],
   ["/labs/simulator", "instrument"],
+  ["/labs/rule-bench", "blueprint"],
   ["/open-account", "threshold"],
   ["/partners/money-managers", "helm"],
   ["/markets/forex", "forex"],

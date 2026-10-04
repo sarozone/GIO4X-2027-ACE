@@ -13,7 +13,8 @@ import { rateLimit, RULES } from "@/lib/server/rate-limit";
 
 export type Gate = { ok: true; body: Record<string, unknown>; ip: string } | { ok: false; response: NextResponse };
 
-export async function openGate(request: Request, endpoint: string): Promise<Gate> {
+/** `maxBytes` is raised only by an endpoint that takes a file's text (see /api/trader-file). */
+export async function openGate(request: Request, endpoint: string, maxBytes: number = MAX_BODY_BYTES): Promise<Gate> {
   if (!isJsonRequest(request)) {
     return { ok: false, response: fail(415, "Send the form as application/json.") };
   }
@@ -27,7 +28,7 @@ export async function openGate(request: Request, endpoint: string): Promise<Gate
     return { ok: false, response: fail(429, GENERIC_RATE_LIMITED, undefined, { "Retry-After": String(attempt.retryAfterSeconds) }) };
   }
 
-  const read = await readBodyCapped(request, MAX_BODY_BYTES);
+  const read = await readBodyCapped(request, maxBytes);
   if (!read.ok) {
     return { ok: false, response: fail(413, "The request is too large.") };
   }

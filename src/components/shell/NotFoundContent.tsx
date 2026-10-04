@@ -38,7 +38,7 @@ export function NotFoundContent() {
           </ul>
         </div>
         <div aria-hidden className="justify-self-center text-ink-3 lg:justify-self-end">
-          <Rosette size={233} blades={7} strokeWidth={1} />
+          <Rosette size={233} strokeWidth={1} />
         </div>
       </div>
     </section>

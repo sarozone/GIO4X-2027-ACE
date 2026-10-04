@@ -26,7 +26,7 @@ has been guessed. Each item says where the answer goes, so supplying it is a con
 | B4 | Account-opening URL | Until supplied, `/open-account` collects a "register your interest" enquiry instead. | env `ACCOUNT_OPENING_URL` |
 | B5 | Hosts those portals live on (e.g. `portal.gio4x.com`) | A destination is only honoured if it is https and on `gio4x.com` or a host listed here. | env `NEXT_PUBLIC_OFFICIAL_PORTAL_HOSTS` |
 | B6 | Platform download links (Raptor desktop/mobile, MT5 server details) | No download links existed on either old site. | `src/data/platforms.ts` |
-| B7 | Official social profiles | Old site: Facebook profile id 61565834445070, LinkedIn company 105476920, a YouTube channel id. Newer site: assumed `/gio4x` handles. Neither set verified, so none is shown. | `socials` in `src/config/destinations.ts` |
+| B7 | Official social profiles | Old site: Facebook profile id 61565834445070, LinkedIn company 105476920, a YouTube channel id. Newer site: assumed `/gio4x` handles. Neither set verified, so none is shown. Since 4 October 2026 the header and the footer both have a row of social marks (`src/components/shell/SocialLinks.tsx`) that appears as soon as the https addresses are entered. | `socials` in `src/config/destinations.ts` |
 
 Since 3 October 2026 the portal is served by this site at `/portal`, so B1–B4 resolve there without any of
 these variables; they are needed only to send a destination to a different address. Still needed from the

@@ -290,6 +290,7 @@ export default function LabsPage() {
               { n: "12", t: "The Screening Room", d: "Six set pieces: a night trading floor whose screens are doors, an order\u2019s journey seen from the order, a canyon between bid and ask, volatility as weather, levels as gravity, and nine towers that light as their exchanges open.", href: "/labs/cinema" },
               { n: "13", t: "The Mind Room", d: "Four games about the person at the screen: coin flips against a real tilt, a trade with only a Close button, six questions that show common leans, and headlines that cut both ways.", href: "/labs/mind" },
               { n: "14", t: "The Verse Room", d: "A riddle a week, a trader\u2019s alphabet, couplets to finish, old sayings weighed, and five riddles hidden round the site.", href: "/verse" },
+              { n: "15", t: "Rule bench", d: "Build a trading rule from parts, test it on invented prices for six example markets, then watch the same rule meet forty other markets. You can also send us the source of your own EA or indicator.", href: "/labs/rule-bench" },
             ].map((x) => (
               <li key={x.href} className="bg-surface p-21 lg:p-34">
                 <p className="num text-xs font-semibold tracking-[0.1em] text-prestige-ink">{x.n}</p>

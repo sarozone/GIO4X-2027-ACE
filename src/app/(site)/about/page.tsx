@@ -146,7 +146,7 @@ export default function AboutPage() {
       {/* the restraint IS the brand */}
       <section className="on-night relative overflow-hidden" aria-labelledby="unsaid">
         <div aria-hidden className="pointer-events-none absolute -left-[5%] top-1/2 hidden -translate-y-1/2 text-on-night opacity-[0.05] lg:block">
-          <Rosette size={520} blades={5} strokeWidth={0.6} />
+          <Rosette size={520} strokeWidth={0.6} />
         </div>
         <div className="wrap section relative">
           <div className="phi items-end">

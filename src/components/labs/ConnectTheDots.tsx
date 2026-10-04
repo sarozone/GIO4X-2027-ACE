@@ -165,7 +165,7 @@ export function ConnectTheDots({ initial, example }: { initial: string[]; exampl
         </p>
         {!ready ? (
           <div className="panel-quiet grid justify-items-start gap-13 p-34">
-            <Rosette size={34} blades={5} className="text-ink-3" />
+            <Rosette size={34} className="text-ink-3" />
             <p className="h4">Pick at least two things.</p>
             <p className="max-w-measure text-sm text-ink-2">Use the search field, or start from one of the suggested sets. The page will show how the graph connects them, one relation at a time.</p>
           </div>

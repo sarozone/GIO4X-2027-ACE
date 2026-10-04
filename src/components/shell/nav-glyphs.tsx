@@ -488,6 +488,14 @@ const GLYPHS: Record<string, Glyph> = {
       <circle cx="15.5" cy="6.5" r="1.2" {...m("pop", { at: [15.5, 6.5], d: 420, t: 240, tone: "a", cls: "mg-dot" })} />
     </>
   ),
+  // a rule's two averages crossing
+  "/labs/rule-bench": () => (
+    <>
+      <path d="M3.5 3.5v13h13" />
+      <path d="M5.5 13.5c3-1 5-3 9.5-8" {...m("draw", { t: 520, tone: "a" })} />
+      <path d="M5.5 8c3 .5 6 2 9.5 5.5" />
+    </>
+  ),
 
   /* Academy: learn */
   "/academy": book,

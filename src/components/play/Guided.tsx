@@ -248,20 +248,23 @@ export function NewRibbon() {
   if ((play.v ?? "") >= latest.id) return null;
   const fresh = RELEASES.filter((r) => r.id > (play.v ?? "")).slice(0, 3);
   return (
-    <aside className="gx-ribbon no-print" aria-label="Recently added">
-      <p className="label hidden shrink-0 sm:block">{readPlay().v ? "New since you were last here" : "Recently added"}</p>
-      <ul className="flex min-w-0 flex-1 flex-wrap gap-x-21 gap-y-3">
-        {fresh.map((r, i) => (
-          <li key={r.id} className={i ? "hidden sm:block" : ""}>
-            <Link href={r.href} className="link text-sm">
-              {r.title}
-            </Link>
-          </li>
-        ))}
-      </ul>
-      <button type="button" className="btn btn-ghost btn-sm ml-auto shrink-0" onClick={() => noteSeen(latest.id)}>
-        Got it
-      </button>
+    // the same night material and the same content column as the announcement line above it
+    <aside className="gx-ribbon on-night no-print border-b border-night-line bg-night-2 text-on-night" aria-label="Recently added">
+      <div className="wrap gx-ribbon-in">
+        <p className="label hidden shrink-0 sm:block">{readPlay().v ? "New since you were last here" : "Recently added"}</p>
+        <ul className="flex min-w-0 flex-1 flex-wrap gap-x-21 gap-y-3">
+          {fresh.map((r, i) => (
+            <li key={r.id} className={i ? "hidden sm:block" : ""}>
+              <Link href={r.href} className="link text-sm">
+                {r.title}
+              </Link>
+            </li>
+          ))}
+        </ul>
+        <button type="button" className="btn btn-ghost btn-sm ml-auto shrink-0" onClick={() => noteSeen(latest.id)}>
+          Got it
+        </button>
+      </div>
     </aside>
   );
 }

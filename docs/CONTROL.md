@@ -86,6 +86,7 @@ from it. The screens, the access rules and the database are this project's.
 | `/control/broker` (terminal) | Per-symbol conditions and trading blocks on the trading terminal (`RAPTOR_BRIDGE_URL`, `RAPTOR_BRIDGE_SERVICE_KEY`). With `trading.manage`: change one value of one symbol; add a block or end one | `trading.read`, `trading.manage` |
 | `/control/trades` (entry) | With `trading.manage`: enter a closed trade by hand; the portal charges commission and pays rebates on it as on any trade | `trading.manage` |
 | `/control/fees` (by hand) | With `fees.charge`: waive a pending charge; reverse an applied one (two people); confirm a charge another person asked for | `fees.charge` |
+| `/control/content/files`, `/control/content/files/<id>`, `…/download` | Traders' files: the source of an EA, indicator or script sent from the Rule bench page. The list, one file's text, and the file as a plain-text download. Kept to be read: never run, never shown on the website. Mark as read, put away or put back | `content.read` (status: `content.publish`) |
 | `/control/<section>` | A section listed in the menu before it is built: what it will do and what it is waiting for. None at present | staff |
 
 ### How the console reaches the website

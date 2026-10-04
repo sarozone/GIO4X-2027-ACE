@@ -89,7 +89,7 @@ export default function StatusPage() {
       <section className="section-quiet hairline bg-paper" aria-labelledby="why-h">
         <div className="wrap phi items-start">
           <div data-reveal>
-            <Rosette size={34} blades={5} className="text-ink-3" />
+            <Rosette size={34} className="text-ink-3" />
             <h2 id="why-h" className="h3 mt-13">
               Why there is no uptime figure.
             </h2>

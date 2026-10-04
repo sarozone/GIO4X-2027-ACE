@@ -275,7 +275,7 @@ export function SearchResults() {
             {total === 0 && !outcome.action && (
               <div>
                 <div className="flex items-start gap-13">
-                  <Rosette size={34} blades={5} className="mt-3 shrink-0 text-ink-3" />
+                  <Rosette size={34} className="mt-3 shrink-0 text-ink-3" />
                   <div>
                     <h2 className="h3">Nothing matched exactly.</h2>
                     <p className="mt-5 max-w-measure text-ink-2">

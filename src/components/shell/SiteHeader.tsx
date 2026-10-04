@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { SocialLinks } from "@/components/shell/SocialLinks";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { nav } from "@/config/nav";
@@ -151,6 +152,8 @@ export function SiteHeader() {
           </button>
           <LensButton />
           <AppearanceButton />
+          {/* the official social profiles, once they are entered in config/destinations.ts; nothing until then */}
+          <SocialLinks className="hidden xl:flex" />
           <Link href="/sign-in" className="btn btn-quiet btn-sm hidden md:inline-flex">
             Sign in
           </Link>

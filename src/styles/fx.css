@@ -1229,14 +1229,13 @@ html[data-daypart="night"] .cx-hero {
 .gx-motto-b {
   color: var(--accent);
 }
-.gx-ribbon {
+/* the ribbon's words and its button keep to the page's content column, as the announcement line does */
+.gx-ribbon-in {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem 1.3125rem;
-  border-bottom: 1px solid var(--line);
-  background: color-mix(in srgb, var(--accent) 6%, var(--paper));
-  padding: 0.5rem var(--gutter);
+  padding-block: 0.5rem;
 }
 
 /* ---- THE STORY'S DRAWING, ON A NARROW SCREEN ----------------------------------

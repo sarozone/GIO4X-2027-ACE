@@ -2,24 +2,13 @@ import { FooterMotto } from "@/components/play/Guided";
 import Link from "next/link";
 import { nav, secondaryNav } from "@/config/nav";
 import { site } from "@/config/site";
-import { socials } from "@/config/destinations";
+import { SocialLinks, socialEntries } from "@/components/shell/SocialLinks";
 import { companyLine, riskWarning } from "@/config/legal";
 import { restrictedJurisdictions } from "@/data/accounts";
 import { Logo } from "@/components/brand/Logo";
 import { Rosette } from "@/components/brand/Rosette";
 import { Backdrop } from "@/components/figures/Backdrop";
 
-const socialLabels: Record<string, string> = {
-  linkedin: "LinkedIn",
-  x: "X",
-  facebook: "Facebook",
-  instagram: "Instagram",
-  youtube: "YouTube",
-  telegram: "Telegram",
-  whatsapp: "WhatsApp",
-  threads: "Threads",
-  tiktok: "TikTok",
-};
 
 /**
  * The final chapter. Always set on the "night" surface, in both themes, so the
@@ -27,7 +16,7 @@ const socialLabels: Record<string, string> = {
  */
 export function SiteFooter() {
   const year = new Date().getFullYear();
-  const socialEntries = Object.entries(socials).filter(([, url]) => !!url);
+  const social = socialEntries();
   const columns = [
     { title: "Markets", items: nav[0].groups.flatMap((g) => g.items) },
     { title: "Trading", items: nav[1].groups.slice(0, 2).flatMap((g) => g.items) },
@@ -148,14 +137,10 @@ export function SiteFooter() {
         </address>
       </div>
 
-      {socialEntries.length > 0 && (
+      {social.length > 0 && (
         <div className="wrap relative flex flex-wrap items-center gap-x-21 gap-y-8 border-t border-night-line py-21">
           <p className="label">Official channels</p>
-          {socialEntries.map(([key, url]) => (
-            <a key={key} href={url} rel="noopener noreferrer me" target="_blank" className="link-quiet text-sm">
-              {socialLabels[key] ?? key}
-            </a>
-          ))}
+          <SocialLinks names />
           <Link href="/trust/verify" className="link-quiet ml-auto text-xs">
             Verify a GIO4X link
           </Link>

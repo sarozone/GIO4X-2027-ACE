@@ -31,6 +31,10 @@ export default async function ContentPage() {
         <Link href="/control/content/riddles" className="link">
           Readers’ riddles
         </Link>
+        . Visitors can also send the source of an EA or indicator from the Rule bench page, to be read and never run:{" "}
+        <Link href="/control/content/files" className="link">
+          Traders’ files
+        </Link>
         .
       </p>
     </>

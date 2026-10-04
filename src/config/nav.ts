@@ -131,6 +131,7 @@ export const nav: NavSection[] = [
           { label: "One day of markets", href: "/labs/market-day", note: "24 hours as a two-minute film" },
           { label: "Trade Anatomy", href: "/labs/trade-anatomy", note: "One order, click to balance" },
           { label: "Practice desk", href: "/labs/simulator", note: "A simulation on invented prices" },
+          { label: "Rule bench", href: "/labs/rule-bench", note: "Build a rule, test it on invented prices" },
           { label: "Session globe", href: "/labs/session-globe", note: "The four FX sessions on a globe, from the clock" },
           { label: "Order book in 3D", href: "/labs/order-book-3d", note: "Bids, asks, spread and depth: an illustration" },
           { label: "The Workshop", href: "/labs/workshop", note: "Candle forge, tightrope, pip reels, sixty seconds" },

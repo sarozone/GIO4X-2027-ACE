@@ -193,7 +193,7 @@ export function DataNote({
 export function EmptyState({ title, children, actions }: { title: string; children?: ReactNode; actions?: ReactNode }) {
   return (
     <div className="panel-quiet grid justify-items-start gap-13 p-34">
-      <Rosette size={34} blades={5} className="text-ink-3" />
+      <Rosette size={34} className="text-ink-3" />
       <p className="h4">{title}</p>
       {children && <div className="max-w-measure text-sm text-ink-2">{children}</div>}
       {actions && <div className="mt-8 flex flex-wrap gap-13">{actions}</div>}

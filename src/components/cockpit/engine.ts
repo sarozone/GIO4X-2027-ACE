@@ -254,40 +254,6 @@ const BOOT_LEAD = 280;
  * Start a scene on a canvas. Returns the disposer.
  * The canvas is sized by CSS; the engine only sets its backing store.
  */
-/**
- * How far to lift a scene's focal point, as a share of its frame's height
- * (negative lowers it). Each scene composes itself around the frame's centre,
- * but several had their subject low in the frame, some far enough that its
- * near end was cut off by the frame's lower edge. The figures come from
- * measuring where the drawn subject actually sat in each frame at 1440 px, and
- * correcting most of the difference. Wide screens only: the narrow
- * compositions are set separately by each scene.
- */
-const FRAME_LIFT: Record<string, number> = {
-  accounts: 0.23,
-  pip: 0.26,
-  events: 0.27,
-  sizing: 0.18,
-  platforms: 0.25,
-  threshold: 0.17,
-  banks: 0.16,
-  compound: 0.13,
-  costs: 0.13,
-  funding: 0.13,
-  leverage: 0.12,
-  course: 0.11,
-  energy: 0.1,
-  equities: 0.1,
-  beacon: 0.09,
-  metals: 0.09,
-  atelier: 0.08,
-  mt5: 0.08,
-  drawdown: -0.15,
-  provenance: -0.14,
-  forex: -0.2,
-  veil: -0.05,
-};
-
 export function mount<S>(canvas: HTMLCanvasElement, scene: Scene<S>, opts: { seed?: number; tag?: string } = {}): () => void {
   const ctx = canvas.getContext("2d");
   if (!ctx) return () => {};
@@ -320,6 +286,10 @@ export function mount<S>(canvas: HTMLCanvasElement, scene: Scene<S>, opts: { see
   let own: { x: number; y: number; w: number; h: number } | null = null;
   // the frame as last published on the canvas (data-frame), so the attribute is written only when it moves
   let frameAt: string | null = null;
+  // how far the scene is moved to sit in the middle of its frame, and the frame size that was measured for (see `fit`)
+  let fitFor = "";
+  let fitX = 0;
+  let fitY = 0;
 
   const cam: Cam = { yaw: 0, pitch: 0.18, dist: 6, zoom: 1, parallax: 1 };
   // rotation terms, refreshed by `aim`
@@ -517,6 +487,110 @@ export function mount<S>(canvas: HTMLCanvasElement, scene: Scene<S>, opts: { see
     return wiped;
   };
 
+  /**
+   * How far to move a framed scene so that what it draws is centred in its frame, in CSS pixels.
+   *
+   * Each scene composes itself round the frame's centre, but where its subject ends up depends on the
+   * scene: a globe seen from above sits low, a tall instrument sits high, and some were cut off by the
+   * frame's edge. Instead of a figure kept by hand for each scene, the engine looks: it draws the
+   * scene's composed still once, unclipped, reads back where the ink is (a small copy, a third of the
+   * frame beyond each edge included, so a subject that runs out of the frame is seen whole), and takes
+   * the middle of the span that holds the central 94% of it. Stray marks and faint fields do not move
+   * the answer; a drawing that fills the frame measures as centred and is left where it is.
+   *
+   * Called from `frame` before the picture is cleared and drawn, in the same task, so the measuring
+   * drawing is never shown. Any failure leaves the scene where it composed itself.
+   */
+  const fit = (): [number, number] => {
+    const b = f.box;
+    const keep = { t: f.t, dt: f.dt, boot: f.boot, hover: f.hover, px: f.px, py: f.py };
+    try {
+      f.t = scene.pose ?? 9;
+      f.dt = 0;
+      f.boot = 1;
+      f.hover = 0;
+      f.px = 0;
+      f.py = 0;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      ctx.save();
+      ctx.globalAlpha = 1;
+      ctx.globalCompositeOperation = "source-over";
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      focusLocked = true;
+      try {
+        scene.draw(f, state as S);
+      } finally {
+        focusLocked = false;
+        ctx.restore();
+      }
+
+      const rx = Math.max(0, b.x - b.w * 0.33);
+      const ry = Math.max(0, b.y - b.h * 0.33);
+      const rw = Math.min(w, b.x + b.w * 1.33) - rx;
+      const rh = Math.min(h, b.y + b.h * 1.33) - ry;
+      if (rw < 16 || rh < 16) return [0, 0];
+      const ow = Math.max(16, Math.min(260, Math.round(rw)));
+      const oh = Math.max(16, Math.round((ow * rh) / rw));
+      const copy = document.createElement("canvas");
+      copy.width = ow;
+      copy.height = oh;
+      const c2 = copy.getContext("2d", { willReadFrequently: true });
+      if (!c2) return [0, 0];
+      c2.drawImage(canvas, rx * dpr, ry * dpr, rw * dpr, rh * dpr, 0, 0, ow, oh);
+      const data = c2.getImageData(0, 0, ow, oh).data;
+      const cols = new Float64Array(ow);
+      const rows = new Float64Array(oh);
+      let total = 0;
+      for (let y = 0; y < oh; y++) {
+        for (let x = 0; x < ow; x++) {
+          const a = data[(y * ow + x) * 4 + 3] ?? 0;
+          // the faintest washes and fields are atmosphere, not the subject
+          if (a < 28) continue;
+          cols[x] = (cols[x] ?? 0) + a;
+          rows[y] = (rows[y] ?? 0) + a;
+          total += a;
+        }
+      }
+      if (total <= 0) return [0, 0];
+      /** the middle of the span holding the central 94% of the ink, as a share of the length */
+      const middle = (sums: Float64Array): number => {
+        let run = 0;
+        let lo = 0;
+        let hi = sums.length - 1;
+        let foundLo = false;
+        for (let i = 0; i < sums.length; i++) {
+          run += sums[i] ?? 0;
+          if (!foundLo && run >= total * 0.03) {
+            lo = i;
+            foundLo = true;
+          }
+          if (run >= total * 0.97) {
+            hi = i;
+            break;
+          }
+        }
+        return (lo + hi + 1) / 2 / sums.length;
+      };
+      let dx = b.x + b.w / 2 - (rx + middle(cols) * rw);
+      let dy = b.y + b.h / 2 - (ry + middle(rows) * rh);
+      // close enough is left alone: a scene that fills its frame must not be nudged off its edges
+      if (Math.abs(dx) < b.w * 0.03) dx = 0;
+      if (Math.abs(dy) < b.h * 0.03) dy = 0;
+      return [clamp(dx, -b.w * 0.3, b.w * 0.3), clamp(dy, -b.h * 0.3, b.h * 0.3)];
+    } catch {
+      return [0, 0];
+    } finally {
+      f.t = keep.t;
+      f.dt = keep.dt;
+      f.boot = keep.boot;
+      f.hover = keep.hover;
+      f.px = keep.px;
+      f.py = keep.py;
+    }
+  };
+
   const frame = (time: number) => {
     raf = 0;
     if (disposed) return;
@@ -573,8 +647,7 @@ export function mount<S>(canvas: HTMLCanvasElement, scene: Scene<S>, opts: { see
         b.y = 76;
       }
       f.cx = b.x + b.w / 2;
-      // on a wide screen, a scene whose subject was measured sitting low (or high) in its frame is re-centred
-      f.cy = b.y + b.h / 2 - (w >= 1080 ? (FRAME_LIFT[canvas.dataset.scene ?? ""] ?? 0) * b.h : 0);
+      f.cy = b.y + b.h / 2;
       f.u = Math.min(b.w / 3.9, b.h / 2.75);
     } else {
       // free composition: the golden section to the right on wide screens,
@@ -596,6 +669,20 @@ export function mount<S>(canvas: HTMLCanvasElement, scene: Scene<S>, opts: { see
       stateFor = key;
     }
 
+    if (framed) {
+      // where this scene's drawing actually sits is measured once for each size of frame, and the
+      // drawing is moved so that its middle is the frame's middle
+      const fitKey = `${key}:${Math.round(f.box.w)}x${Math.round(f.box.h)}`;
+      if (fitKey !== fitFor) {
+        fitFor = fitKey;
+        [fitX, fitY] = fit();
+        // how far it was moved ("x,y" in CSS pixels), so the centring can be checked from the markup
+        canvas.dataset.fit = `${Math.round(fitX)},${Math.round(fitY)}`;
+      }
+      f.cx += fitX;
+      f.cy += fitY;
+    }
+
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, h);
     ctx.globalAlpha = 1;
@@ -615,7 +702,16 @@ export function mount<S>(canvas: HTMLCanvasElement, scene: Scene<S>, opts: { see
     }
 
     focusLocked = framed;
+    // a scene that composes itself in the box (not round the focal point) is moved with it
+    if (framed) {
+      f.box.x += fitX;
+      f.box.y += fitY;
+    }
     scene.draw(f, state as S);
+    if (framed) {
+      f.box.x -= fitX;
+      f.box.y -= fitY;
+    }
     focusLocked = false;
     own = !framed && scene.frame ? scene.frame(f) : null;
 
