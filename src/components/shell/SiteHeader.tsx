@@ -186,7 +186,7 @@ export function SiteHeader() {
         onPointerMove={panelLight}
       >
         {nav.map((s, si) => (
-          <div key={s.key} id={`mega-${s.key}`} hidden={open !== s.key} className="wrap grid grid-cols-[minmax(0,1fr)_minmax(0,1.618fr)] gap-55 py-34">
+          <div key={s.key} id={`mega-${s.key}`} hidden={open !== s.key} className="wrap grid grid-cols-[minmax(0,1fr)_minmax(0,2.618fr)] gap-34 py-34 xl:gap-55">
             <div className="border-r border-line pr-55">
               <p className="eyebrow">{s.label}</p>
               <p className="mt-13 max-w-narrow font-display text-xl font-light leading-snug text-ink">{s.blurb}</p>
@@ -194,7 +194,8 @@ export function SiteHeader() {
                 {s.label} overview
               </Link>
             </div>
-            <div className="grid gap-34" style={{ gridTemplateColumns: `repeat(${s.groups.length}, minmax(0, 1fr))` }}>
+            {/* always four columns, so a section with fewer groups keeps the same column width as the rest */}
+            <div className="grid grid-cols-4 gap-21 xl:gap-34">
               {s.groups.map((g, gi) => (
                 <div key={g.title} data-mg-fx={rowFx(si, gi)}>
                   <p className="label">{g.title}</p>

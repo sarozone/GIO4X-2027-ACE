@@ -25,7 +25,6 @@ export default function OrderBook3DPage() {
       <JsonLd data={webPageSchema({ path: "/labs/order-book-3d", name: "Order book in 3D", description: DESCRIPTION })} />
       <PageHero
         quiet
-        scene="spread"
         crumbs={[
           { name: "Labs", href: "/labs" },
           { name: "Order book in 3D", href: "/labs/order-book-3d" },

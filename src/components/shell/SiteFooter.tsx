@@ -17,32 +17,30 @@ import { Backdrop } from "@/components/figures/Backdrop";
 export function SiteFooter() {
   const year = new Date().getFullYear();
   const social = socialEntries();
+  // The directory is the navigation's own groups, laid out as twelve blocks of a similar
+  // length (two rows of six on a wide screen). Nothing is listed here by hand, so a page
+  // cannot appear twice or be forgotten: it is in the footer because it is in config/nav.ts.
+  const group = (key: string, ...titles: string[]) => {
+    const section = nav.find((s) => s.key === key);
+    return titles.flatMap((t) => section?.groups.find((g) => g.title === t)?.items ?? []);
+  };
   const columns = [
-    { title: "Markets", items: nav[0].groups.flatMap((g) => g.items) },
-    { title: "Trading", items: nav[1].groups.slice(0, 2).flatMap((g) => g.items) },
-    { title: "Platforms", items: [...nav[2].groups.flatMap((g) => g.items), { label: "Trader Toolkit", href: "/tools" }] },
-    { title: "Knowledge", items: [...nav[3].groups.flatMap((g) => g.items), ...nav[4].groups[0].items] },
-    { title: "Company", items: nav[5].groups.flatMap((g) => g.items) },
-    // free things: elsewhere on the web, and here
-    {
-      title: "Nice & Need",
-      items: [
-        { label: "All free resources", href: "/nice-and-need" },
-        { label: "Free courses", href: "/nice-and-need#learn" },
-        { label: "Free data", href: "/nice-and-need#data" },
-        { label: "Central bank calendars", href: "/nice-and-need#banks" },
-        { label: "Charts and calendars", href: "/nice-and-need#charts" },
-        { label: "Scam warnings and checks", href: "/nice-and-need#safe" },
-        { label: "The Playbook", href: "/playbook" },
-        { label: "Candlestick patterns", href: "/playbook#patterns" },
-        { label: "When this happens", href: "/playbook#situations" },
-        { label: "Cheat sheets", href: "/academy/cheat-sheets" },
-        { label: "Fun@Finance", href: "/fun" },
-        { label: "Send your EA or indicator", href: "/labs/rule-bench#send" },
-        { label: "A to Z index", href: "/a-z" },
-      ],
-    },
+    { title: "Markets", items: group("markets", "Asset classes") },
+    { title: "Market Command", items: group("markets", "Market Command", "What moves them") },
+    { title: "Trading", items: group("trading", "Accounts", "Ways to participate") },
+    { title: "Trader’s desk", items: group("trading", "Trader Toolkit", "Plan and review") },
+    { title: "Platforms", items: group("platforms", "777 Raptor", "MetaTrader 5", "Choose and build") },
+    { title: "Intelligence", items: group("intelligence", "Read", "Labs: see") },
+    { title: "Labs", items: group("intelligence", "Labs: machines", "Labs: practise") },
+    { title: "Academy", items: group("academy", "Start here") },
+    { title: "Go deeper", items: group("academy", "Go deeper") },
+    { title: "Look it up", items: group("academy", "Look it up") },
+    { title: "See it, play it", items: group("academy", "See it, play it") },
+    { title: "Company", items: group("company", "GIO4X", "Trust") },
   ];
+  // a page already in the directory above is not repeated in the lists beneath it
+  const listed = new Set(columns.flatMap((c) => c.items.map((i) => i.href)));
+  const secondary = secondaryNav.map((g) => ({ ...g, items: g.items.filter((i) => !listed.has(i.href)) }));
 
   return (
     <footer data-site-footer className="on-night relative overflow-hidden">
@@ -69,7 +67,7 @@ export function SiteFooter() {
       </div>
 
       {/* directory */}
-      <nav aria-label="Footer" className="wrap relative grid grid-cols-2 gap-x-21 gap-y-34 border-t border-night-line py-55 md:grid-cols-3 lg:grid-cols-6">
+      <nav aria-label="Footer" className="wrap relative grid grid-cols-2 gap-x-21 gap-y-34 border-t border-night-line py-55 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
         {columns.map((c) => (
           <div key={c.title}>
             <p className="label">{c.title}</p>
@@ -89,7 +87,7 @@ export function SiteFooter() {
       {/* support, legal, contact */}
       <div className="wrap relative grid gap-34 border-t border-night-line py-55 lg:grid-cols-phi">
         <div className="grid grid-cols-2 gap-x-21 gap-y-34 md:grid-cols-3">
-          {secondaryNav.map((g) => (
+          {secondary.map((g) => (
             <div key={g.title}>
               <p className="label">{g.title}</p>
               <ul className="mt-13 grid gap-[0.4rem]">

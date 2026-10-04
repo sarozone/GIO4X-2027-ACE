@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { CockpitBoot } from "@/components/cockpit/Boot";
 import { CockpitFx } from "@/components/cockpit/CockpitFx";
 import { StageTransition } from "@/components/cockpit/StageTransition";
+import { GapFill } from "@/components/fx/GapFill";
 import { MicroFx } from "@/components/fx/MicroFx";
 import { SunTheme } from "@/components/fx/SunTheme";
 import { RecentRecorder } from "@/components/desk/RecentRecorder";
@@ -45,6 +46,8 @@ export function SiteShell({ children }: { children: ReactNode }) {
       <CommandBar />
       <Lens />
       <CockpitFx />
+      {/* a figure in the empty half of a two-column section, wherever there is one */}
+      <GapFill />
       {/* mouse and pen only: the cursor light, the magnetic buttons and the tilt of tiles and panels (off under reduced motion, low effects, or its switch at /preferences) */}
       <PointerLayer />
       <CockpitBoot />

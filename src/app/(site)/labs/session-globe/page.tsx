@@ -27,7 +27,6 @@ export default function SessionGlobePage() {
       <JsonLd data={webPageSchema({ path: "/labs/session-globe", name: "Session globe", description: DESCRIPTION })} />
       <PageHero
         quiet
-        scene="clock"
         crumbs={[
           { name: "Labs", href: "/labs" },
           { name: "Session globe", href: "/labs/session-globe" },

@@ -136,7 +136,7 @@ const config: Config = {
     extend: {
       maxWidth: {
         page: "var(--page)",
-        measure: "68ch",
+        measure: "76ch",
         narrow: "48ch",
       },
       gridTemplateColumns: {

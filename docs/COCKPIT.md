@@ -236,3 +236,22 @@ node --no-experimental-strip-types node_modules/next/dist/bin/next dev
 ```
 
 Node 22 (the version Netlify builds with) is not affected.
+
+## One scene, one page (4 October 2026)
+
+No scene is used by two routes. Twenty-five were added so that this holds: one for each of the sixteen
+newer sections (`rulebench`, `riskroom`, `portfolio`, `savings`, `oscillator`, `shapes`, `gambit`, `scales`,
+`chronicle`, `decoy`, `ledger`, `meridian`, `sheets`, `alphabet`, `exam`, `persona`) and one for each older
+page that had borrowed another page's (`signpost` for Explore, `shelf` for Nice & Need, `daynight` for One
+day of markets, `candlebook` for the Playbook, `anatomy` for Trade Anatomy, `practice` for the Practice
+desk, `helpdesk` for Support, `depth` for the order book, `terminator` for the Session globe). The Trader
+Toolkit's own page opens with the slide rule (`instrument`); the workbench is My desk's. Pages generated
+from data still share their family's scene and pass their subject as `tag`.
+
+## Figures in empty columns
+
+`src/components/fx/GapFill.tsx`, mounted once in the site shell, stands an interactive figure wherever a
+two-column section has a short column beside a long one, or text in a narrow measure leaves a third or
+more of the row empty. It measures each section when it first comes near the screen (sections far from the
+screen are not laid out), never makes a section taller and never covers words, pictures, rules or panels.
+Desktop widths only. A block can opt out with `data-no-gapfill`.
