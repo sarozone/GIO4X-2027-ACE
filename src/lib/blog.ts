@@ -117,13 +117,19 @@ const IMAGE_PATH = /^[a-z0-9][a-z0-9/_.-]*$/;
 export const isBlogImagePath = (value: unknown): value is string =>
   typeof value === "string" && value.length > 0 && value.length <= 200 && IMAGE_PATH.test(value) && !value.includes("..");
 
+/** A cover path that begins with this is a file in `public/blog-covers/`, not in the bucket. */
+export const SITE_COVER_PREFIX = "site/";
+
 /**
  * The public address of a picture in the blog bucket, or null when the path is
- * not one or the project is not configured. Only this bucket is ever linked:
- * a post cannot point an <img> at another host.
+ * not one or the project is not configured. Only this bucket, and the site's
+ * own `public/blog-covers/`, are ever linked: a post cannot point an <img> at
+ * another host.
  */
 export function blogImageUrl(path: string): string | null {
   if (!isBlogImagePath(path)) return null;
+  // a picture shipped with the site itself (public/blog-covers), for posts that were imported with their covers
+  if (path.startsWith(SITE_COVER_PREFIX)) return `/blog-covers/${path.slice(SITE_COVER_PREFIX.length)}`;
   const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
   if (!base) return null;
   try {

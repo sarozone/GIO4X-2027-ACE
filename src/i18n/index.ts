@@ -7,10 +7,29 @@ import { fr } from "./fr";
 import { hi } from "./hi";
 import { pt } from "./pt";
 import { ta } from "./ta";
+import { te } from "./te";
+import { ml } from "./ml";
+import { kn } from "./kn";
+import { bn } from "./bn";
+import { mr } from "./mr";
+import { gu } from "./gu";
+import { ur } from "./ur";
+import { ja } from "./ja";
+import { ko } from "./ko";
+import { th } from "./th";
+import { vi } from "./vi";
+import { fil } from "./fil";
+import { it } from "./it";
+import { nl } from "./nl";
+import { pl } from "./pl";
+import { el } from "./el";
+import { sw } from "./sw";
+import { af } from "./af";
+import { am } from "./am";
 
 export type { Dictionary } from "./en";
 
-const DICTIONARIES: Record<Locale, Dictionary> = { hi, ta, ar, es, pt, fr, de };
+const DICTIONARIES: Record<Locale, Dictionary> = { hi, ta, ar, es, pt, fr, de, te, ml, kn, bn, mr, gu, ur, ja, ko, th, vi, fil, it, nl, pl, el, sw, af, am };
 
 /**
  * The dictionary of one language. Server only in practice: the dictionaries

@@ -26,7 +26,9 @@ import { aiCorpus } from "@/lib/server/ai-corpus";
 const ENDPOINT = "https://api.anthropic.com/v1/messages";
 const API_VERSION = "2023-06-01";
 
-const apiKey = () => (process.env.ANTHROPIC_API_KEY ?? "").trim();
+// GIO4X_ANTHROPIC_API_KEY comes first: on Netlify the name ANTHROPIC_API_KEY is taken by the host's own
+// AI gateway, whose token the provider refuses (401) when called directly.
+const apiKey = () => (process.env.GIO4X_ANTHROPIC_API_KEY ?? process.env.ANTHROPIC_API_KEY ?? "").trim();
 
 /** Switched on at build time and a key present now. Says nothing about the key itself. */
 export function aiAvailable(): boolean {

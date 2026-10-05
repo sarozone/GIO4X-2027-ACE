@@ -128,7 +128,7 @@ export function LanguageSwitcher({ variant = "menu", className = "" }: { variant
           style={{ animation: "gx-rise 260ms var(--ease-out)" }}
         >
           <p className="label px-8">{label}</p>
-          <ul className="mt-8 grid gap-2">
+          <ul className="mt-8 grid max-h-[min(60vh,26rem)] gap-2 overflow-y-auto overscroll-contain">
             {entries.map((e) => (
               <li key={e.code}>
                 <Link

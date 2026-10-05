@@ -11,9 +11,9 @@ available to them): see "Before it is switched on" at the end.
 
 | To | Do this |
 |---|---|
-| Switch it on | In Netlify: `ANTHROPIC_API_KEY` (secret, available to Functions) and `GIO4X_AI_ENABLED` = `true` (available to builds). Redeploy. |
+| Switch it on | In Netlify: `GIO4X_ANTHROPIC_API_KEY` (secret, available to Functions; not `ANTHROPIC_API_KEY`, which Netlify fills with its own gateway token and the provider then answers 401) and `GIO4X_AI_ENABLED` = `true` (available to builds). Redeploy. |
 | Switch it off | Set `GIO4X_AI_ENABLED` to anything but `true` (or delete it) and redeploy. |
-| Stop it at once, without a deploy | Delete or rotate the key at the provider (or remove `ANTHROPIC_API_KEY` in Netlify: it is read at run time). The endpoint answers 503 and the "Ask" tab disappears on the next page load. `/trust/ai` goes on saying "Live" until the redeploy, so do the redeploy too. |
+| Stop it at once, without a deploy | Delete or rotate the key at the provider (or remove `GIO4X_ANTHROPIC_API_KEY` in Netlify: it is read at run time). The endpoint answers 503 and the "Ask" tab disappears on the next page load. `/trust/ai` goes on saying "Live" until the redeploy, so do the redeploy too. |
 | Change the model | `GIO4X_AI_MODEL` = `claude-haiku-4-5` (default), `claude-sonnet-5-5` or `claude-opus-5-5`. Redeploy. `/trust/ai` names the model. |
 
 `GIO4X_AI_ENABLED` and `GIO4X_AI_MODEL` are written into the build by `next.config.mjs`, and read through
