@@ -87,7 +87,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" data-theme="light" data-accent="gio4x" className={`${inter.variable} ${norms.variable}`} suppressHydrationWarning>
+    <html lang="en" data-theme="light" data-accent="emerald" className={`${inter.variable} ${norms.variable}`} suppressHydrationWarning>
       <head>
         {/* Applies saved display preferences before first paint: no theme flash. */}
         <script dangerouslySetInnerHTML={{ __html: PREFS_BOOT_SCRIPT }} />

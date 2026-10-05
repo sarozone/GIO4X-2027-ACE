@@ -47,7 +47,7 @@ export type Prefs = {
 
 export const DEFAULT_PREFS: Prefs = {
   theme: "light",
-  accent: "gio4x",
+  accent: "emerald",
   accentHue: DEFAULT_ACCENT_HUE,
   accentHue2: NO_SECOND_HUE,
   pointerFx: true,
@@ -174,4 +174,4 @@ export async function clearOfflineCopy(): Promise<number> {
  * Runs before paint. Kept tiny and dependency-free; mirrors applyPrefs().
  * Explicit visitor choice always wins; "auto" follows the OS setting.
  */
-export const PREFS_BOOT_SCRIPT = `(function(){try{var d=document.documentElement,s=d.dataset,p={};try{p=JSON.parse(localStorage.getItem("${PREFS_KEY}")||"{}")||{}}catch(e){}var t=p.theme||"light";s.themePref=t;s.theme=t==="auto"?(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):t;s.accent=p.accent||"gio4x";s.density=p.density||"standard";s.motion=p.motion||"full";s.contrast=p.contrast||"default";s.text=p.text||"default";s.effects=p.effects||"full";s.links=p.links||"default";${ACCENT_BOOT_JS}}catch(e){}})();`;
+export const PREFS_BOOT_SCRIPT = `(function(){try{var d=document.documentElement,s=d.dataset,p={};try{p=JSON.parse(localStorage.getItem("${PREFS_KEY}")||"{}")||{}}catch(e){}var t=p.theme||"light";s.themePref=t;s.theme=t==="auto"?(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):t;s.accent=p.accent||"emerald";s.density=p.density||"standard";s.motion=p.motion||"full";s.contrast=p.contrast||"default";s.text=p.text||"default";s.effects=p.effects||"full";s.links=p.links||"default";${ACCENT_BOOT_JS}}catch(e){}})();`;
