@@ -25,7 +25,10 @@ export function blogListHref(page = 1, category: BlogCategory | null = null): st
  * browser when the row has it, and the frame has a fixed shape either way, so
  * the page does not move when the picture arrives.
  */
-export function BlogCoverImage({ cover, eager = false, className = "" }: { cover: BlogCover; eager?: boolean; className?: string }) {
+export function BlogCoverImage({ cover, eager = false, own = false, className = "" }: { cover: BlogCover; eager?: boolean; own?: boolean; className?: string }) {
+  // `own`: the frame takes the picture's own shape (within reason) instead of the list's 16:10, so a wide
+  // cover with words drawn on it is shown whole and not cut at the sides
+  const shape = own && cover.width && cover.height ? { aspectRatio: String(Math.min(2.6, Math.max(1.2, cover.width / cover.height))) } : undefined;
   return (
     // eslint-disable-next-line @next/next/no-img-element -- served from the project's own storage bucket
     <img
@@ -34,6 +37,7 @@ export function BlogCoverImage({ cover, eager = false, className = "" }: { cover
       {...(cover.width && cover.height ? { width: cover.width, height: cover.height } : {})}
       {...(eager ? { fetchPriority: "high" as const } : { loading: "lazy" as const })}
       decoding="async"
+      style={shape}
       className={`rounded border border-line bg-surface ${className}`}
     />
   );
@@ -134,7 +138,7 @@ function Featured({ post }: { post: BlogCard }) {
     <article className="grid items-center gap-34 border-b border-line pb-34 lg:grid-cols-phi lg:gap-55 lg:pb-55" aria-labelledby="blog-latest-post">
       <Link href={href} tabIndex={-1} aria-hidden className="block">
         {/* a post without a picture of its own is given a drawn cover, worked out from its address */}
-        {post.cover ? <BlogCoverImage cover={post.cover} className="aspect-[16/10] w-full object-cover" /> : <GeneratedCover seed={post.slug} className="aspect-[16/10] w-full" />}
+        {post.cover ? <BlogCoverImage cover={post.cover} own className="aspect-[16/10] w-full object-cover" /> : <GeneratedCover seed={post.slug} className="aspect-[16/10] w-full" />}
       </Link>
       <div>
         <p className="label">{standing}</p>
@@ -174,7 +178,7 @@ export function BlogCards({ posts, columns = "sm:grid-cols-2 lg:grid-cols-3" }: 
         <li key={p.slug} className="relative grid">
           <div className="group flex h-full flex-col overflow-hidden rounded-md border border-line bg-surface transition-colors duration-fast hover:border-line-strong">
             {p.cover ? (
-              <BlogCoverImage cover={p.cover} className="aspect-[16/10] w-full !rounded-none border-0 border-b object-cover" />
+              <BlogCoverImage cover={p.cover} own className="aspect-[16/10] w-full !rounded-none border-0 border-b object-cover" />
             ) : (
               <GeneratedCover seed={p.slug} className="aspect-[16/10] w-full !rounded-none border-b border-line" />
             )}
