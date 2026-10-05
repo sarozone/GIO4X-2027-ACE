@@ -98,6 +98,7 @@ from it. The screens, the access rules and the database are this project's.
 | The announcement line under the header | Configuration |
 | "Notices from GIO4X" on `/status` | Incidents in Configuration, when published. Written by staff; not monitoring |
 | Support hours on `/support` | Configuration |
+| `/intelligence/blog`, each post at `/intelligence/blog/<slug>`, and one page per category at `/intelligence/blog/category/<category>` (`market-notes`, `education`, `platform`, `company`) | Blog. A post is on all three within a minute of being published, and at once after a save in the console. The category chip on a card and "filed under" on a post lead to the category's page; the tabs on the index still filter it in place (`?category=`). A category page with no post says so and asks not to be indexed; `/sitemap-blog.xml` lists a category once it has a post. At the foot of a post, "Related posts": up to three other public posts, chosen from the newest 36 by shared tags first, then the same category, then the same format, then the newer post (`src/lib/blog-related.ts`, tested by `node --test scripts/test-blog-related.mjs`); with no other post the block is not shown. Nothing to set in the console: tags, category and format on the post decide it |
 | (The other direction) page views, accepted forms and searches on the public pages | Counted by the website and read in Analytics. What is counted is published at `/legal/cookies`, "Counting visits" |
 
 Times are shown in UTC, for everyone.

@@ -32,7 +32,7 @@
 import { unstable_cache } from "next/cache";
 import redirectsFile from "@/config/redirects.json";
 import { site } from "@/config/site";
-import { BLOG_PATH } from "@/lib/blog";
+import { BLOG_PATH, blogCategoryPath } from "@/lib/blog";
 import { readPage, readRobots, saysNoindex, xmlBalanced, xmlBlocks, xmlTexts } from "@/lib/seo-parse";
 import { blogPostPath, indexablePosts } from "@/lib/server/blog";
 import { SITEMAP_NAMES } from "@/lib/sitemap";
@@ -569,6 +569,9 @@ async function knownPages(): Promise<{ paths: string[]; inSitemaps: Set<string> 
     for (const post of posts.entries) {
       paths.add(blogPostPath(post.slug));
       inSitemaps.add(blogPostPath(post.slug));
+      // and the page of the post's category, which /sitemap-blog.xml lists once the category has a post
+      paths.add(blogCategoryPath(post.category));
+      inSitemaps.add(blogCategoryPath(post.category));
     }
   }
   for (const p of UTILITY_PAGES) paths.add(p);

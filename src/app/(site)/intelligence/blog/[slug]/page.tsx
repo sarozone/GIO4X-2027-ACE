@@ -6,7 +6,7 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { NextSteps } from "@/components/ui/Page";
 import { absoluteUrl } from "@/config/site";
 import { BLOG_PATH, isBlogSlug } from "@/lib/blog";
-import { blogCover, blogPostPath, getPost, movedPost, neighbours } from "@/lib/server/blog";
+import { blogCover, blogPostPath, getPost, movedPost, neighbours, relatedPosts } from "@/lib/server/blog";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -48,12 +48,13 @@ export default async function BlogPostPage({ params }: Params) {
   const { post } = result;
 
   const cover = blogCover(post);
-  const around = await neighbours(post);
+  // the posts on either side and the related ones are asked for together; a read that fails leaves its block out, never the post
+  const [around, alike] = await Promise.all([neighbours(post), relatedPosts(post)]);
 
   return (
     <>
       <JsonLd data={blogPostSchema(post, cover)} />
-      <BlogPostView post={post} cover={cover} previous={around.state === "ok" ? around.previous : null} next={around.state === "ok" ? around.next : null} url={absoluteUrl(blogPostPath(post.slug))} />
+      <BlogPostView post={post} cover={cover} previous={around.state === "ok" ? around.previous : null} next={around.state === "ok" ? around.next : null} related={alike.state === "ok" ? alike.posts : []} url={absoluteUrl(blogPostPath(post.slug))} />
       <NextSteps
         items={[
           { kind: "Daily blog", label: "All posts", href: BLOG_PATH, note: "Every post, newest first." },

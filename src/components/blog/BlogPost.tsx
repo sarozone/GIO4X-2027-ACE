@@ -5,16 +5,16 @@ import { SideBlock } from "@/components/knowledge/Reader";
 import { Share } from "@/components/knowledge/Share";
 import { PageHero } from "@/components/ui/Page";
 import { educationalNote, riskWarning } from "@/config/legal";
-import { BLOG_CATEGORY_LABEL, BLOG_FORMAT_LABEL, BLOG_PATH, readingMinutes } from "@/lib/blog";
-import type { BlogCover, BlogNeighbour, BlogPost } from "@/lib/server/blog";
+import { BLOG_CATEGORY_LABEL, BLOG_FORMAT_LABEL, BLOG_PATH, blogCategoryPath, readingMinutes } from "@/lib/blog";
+import type { BlogCard, BlogCover, BlogNeighbour, BlogPost } from "@/lib/server/blog";
 import { BlogBody, blogHeadings } from "./BlogBody";
-import { BlogCoverImage, blogListHref, blogPostHref } from "./BlogList";
+import { BlogCards, BlogCoverImage, blogListHref, blogPostHref } from "./BlogList";
 import { blogIso, blogLongDate, blogShortDate } from "./format";
 import "@/components/knowledge/knowledge.css";
 
 /**
- * One post of the daily blog. Presentation only: the post, its cover and its
- * neighbours arrive as props.
+ * One post of the daily blog. Presentation only: the post, its cover, its
+ * neighbours and the posts related to it arrive as props.
  *
  * What the editorial standards promise is on the page, not behind it: who
  * stands behind the post (a desk), who reviewed it when a reviewer is named,
@@ -56,6 +56,7 @@ export function BlogPostView({
   cover,
   previous,
   next,
+  related = [],
   url,
 }: {
   post: BlogPost;
@@ -64,6 +65,8 @@ export function BlogPostView({
   /** the post published just before this one, and the one just after */
   previous: BlogNeighbour | null;
   next: BlogNeighbour | null;
+  /** up to three other posts, already chosen and ordered (see relatedPosts); with none, the block is not there */
+  related?: BlogCard[];
   /** the post's absolute address, for sharing */
   url: string;
 }) {
@@ -166,6 +169,16 @@ export function BlogPostView({
               </Link>
             </aside>
 
+            {related.length > 0 && (
+              <section aria-labelledby="related-posts" className="no-print mt-55 border-t border-line-strong pt-21">
+                <h2 id="related-posts" className="label mb-21">
+                  Related posts
+                </h2>
+                {/* the column narrows when the side panel stands beside it (lg), and is wide enough for three again from xl */}
+                <BlogCards posts={related} columns="sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3" />
+              </section>
+            )}
+
             <nav aria-label="More posts" className="no-print mt-55 border-t border-line-strong">
               {(previous || next) && (
                 <div className="grid border-b border-line sm:grid-cols-2">
@@ -192,7 +205,7 @@ export function BlogPostView({
               <SideBlock label="About this post">
                 <p className="text-sm leading-relaxed text-ink-2">
                   A short note from a GIO4X desk, filed under{" "}
-                  <Link href={blogListHref(1, post.category)} className="link">
+                  <Link href={blogCategoryPath(post.category)} className="link">
                     {category}
                   </Link>
                   . It explains; it does not forecast and it does not tell you to trade. GIO4X is a broker and earns money when clients trade.

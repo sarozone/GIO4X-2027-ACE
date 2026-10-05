@@ -5,17 +5,23 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Rosette } from "@/components/brand/Rosette";
 import { loadSearchIndex, openCommandBar } from "@/components/shell/CommandBar";
+import { LensAsk, useAiAvailable, type Exchange } from "@/components/shell/LensAsk";
 import { search, type SearchEntry } from "@/lib/search";
 
 /**
  * GIO4X LENS — contextual intelligence for the page you are on.
  *
  * Three views, all derived from the page itself and from GIO4X's own curated
- * data. No language model is involved and nothing is generated:
+ * data. No language model is involved in them and nothing is generated:
  *   Explain  — glossary terms that actually appear on this page, defined
  *   Related  — what this page's subject is connected to in the GIO4X graph
  *   Sources  — every data note on the page: status, source and date
  * "Source mode" outlines those notes on the page itself.
+ *
+ * A fourth view, Ask, is GIO4X AI: a language model that answers from the
+ * site's own pages (LensAsk.tsx, /trust/ai). It is there only when the server
+ * says the assistant is switched on; otherwise the Lens is exactly the three
+ * views above, and its footer says "No AI model" on every one of them.
  */
 
 const OPEN_EVENT = "gx:lens";
@@ -41,7 +47,7 @@ function loadGraph(): Promise<Graph> {
 type Explained = { title: string; definition: string; href: string };
 type Related = { label: string; href: string; kind: string; text?: string };
 type SourceNote = { status: string; source: string; updated: string };
-type Tab = "explain" | "related" | "sources";
+type Tab = "explain" | "related" | "sources" | "ask";
 
 const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -100,6 +106,9 @@ export function Lens() {
   const [title, setTitle] = useState("");
   const [sourceMode, setSourceMode] = useState(false);
   const [failed, setFailed] = useState(false);
+  // the conversation with GIO4X AI: held here so it survives closing the panel, and gone on reload
+  const [talk, setTalk] = useState<Exchange[]>([]);
+  const aiAvailable = useAiAvailable(open);
   const panelRef = useRef<HTMLDivElement>(null);
   const restoreRef = useRef<HTMLElement | null>(null);
 
@@ -183,6 +192,7 @@ export function Lens() {
     { key: "explain", label: "Explain", count: explained?.length ?? null },
     { key: "related", label: "Related", count: related?.length ?? null },
     { key: "sources", label: "Sources", count: notes.length },
+    ...(aiAvailable ? [{ key: "ask" as const, label: "Ask", count: null }] : []),
   ];
 
   return (
@@ -225,7 +235,7 @@ export function Lens() {
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-21" aria-live="polite">
-        {failed && <p className="text-sm text-ink-2">The Lens could not load its index. The page itself is unaffected.</p>}
+        {failed && tab !== "ask" && <p className="text-sm text-ink-2">The Lens could not load its index. The page itself is unaffected.</p>}
 
         {tab === "explain" && (
           <div id="lens-explain" role="tabpanel">
@@ -316,10 +326,25 @@ export function Lens() {
             </p>
           </div>
         )}
+
+        {tab === "ask" && aiAvailable && (
+          <div id="lens-ask" role="tabpanel">
+            <LensAsk pathname={pathname} talk={talk} setTalk={setTalk} />
+          </div>
+        )}
       </div>
 
       <footer className="flex items-center justify-between gap-13 border-t border-line px-21 py-13">
-        <p className="text-xs text-ink-3">Derived from this page and GIO4X&rsquo;s curated data. No AI model.</p>
+        {tab === "ask" && aiAvailable ? (
+          <p className="text-xs text-ink-3">
+            Answered by a language model from GIO4X&rsquo;s own pages. Not advice. It can be wrong: check the source.{" "}
+            <Link href="/trust/ai" className="link">
+              AI at GIO4X
+            </Link>
+          </p>
+        ) : (
+          <p className="text-xs text-ink-3">Derived from this page and GIO4X&rsquo;s curated data. No AI model.</p>
+        )}
         <button type="button" className="btn btn-ghost btn-sm shrink-0" onClick={() => openCommandBar()}>
           Search
         </button>

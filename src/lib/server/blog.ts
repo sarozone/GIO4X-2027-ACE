@@ -28,7 +28,8 @@
  */
 import { unstable_cache } from "next/cache";
 import { cache } from "react";
-import { BLOG_CATEGORIES, BLOG_PAGE_SIZE, BLOG_PATH, blogImageUrl, DEFAULT_BLOG_FORMAT, isBlogFormat, isBlogSlug, readingMinutes } from "@/lib/blog";
+import { BLOG_CATEGORIES, BLOG_PAGE_SIZE, BLOG_PATH, BLOG_RELATED_COUNT, BLOG_RELATED_POOL, blogImageUrl, DEFAULT_BLOG_FORMAT, isBlogFormat, isBlogSlug, readingMinutes } from "@/lib/blog";
+import { rankRelated } from "@/lib/blog-related";
 import { createPublicSupabase } from "@/lib/supabase/server";
 import { BLOG_JOURNAL_COLUMNS, BLOG_PUBLIC_COLUMNS, type BlogCategory, type BlogFormat, type BlogPublicPost } from "@/lib/supabase/types";
 
@@ -55,8 +56,8 @@ export type BlogCard = Pick<BlogPost, "slug" | "title" | "excerpt" | "category" 
 
 export type BlogNeighbour = Pick<BlogPost, "slug" | "title" | "published_at">;
 export type BlogFeedItem = Pick<BlogPost, "slug" | "title" | "excerpt" | "category" | "byline" | "published_at">;
-/** What a sitemap needs of a post. */
-export type BlogIndexEntry = { slug: string; lastmod: string };
+/** What a sitemap needs of a post. The category dates the page of that category. */
+export type BlogIndexEntry = { slug: string; lastmod: string; category: BlogCategory };
 
 export type BlogFailure = { state: "failed"; reason: "not-configured" | "unavailable" };
 export type BlogList =
@@ -70,6 +71,7 @@ export type BlogOne = { state: "ok"; post: BlogPost } | { state: "none" } | Blog
 export type BlogMoved = { state: "moved"; slug: string } | { state: "none" };
 export type BlogLatest = { state: "ok"; posts: BlogCard[] } | { state: "none" } | BlogFailure;
 export type BlogNeighbours = { state: "ok"; previous: BlogNeighbour | null; next: BlogNeighbour | null } | BlogFailure;
+export type BlogRelated = { state: "ok"; posts: BlogCard[] } | { state: "none" } | BlogFailure;
 export type BlogFeed = { state: "ok"; items: BlogFeedItem[] } | { state: "none" } | BlogFailure;
 export type BlogIndex = { state: "ok"; entries: BlogIndexEntry[] } | { state: "none" } | BlogFailure;
 
@@ -278,6 +280,48 @@ export async function neighbours(post: Pick<BlogPost, "slug" | "published_at">):
   }
 }
 
+/**
+ * Up to BLOG_RELATED_COUNT other public posts for the foot of a post, chosen
+ * by rankRelated (src/lib/blog-related.ts): shared tags first, then the same
+ * category, then the same format, then the newer post.
+ *
+ * One read, as the anonymous role like every other here: the newest
+ * BLOG_RELATED_POOL public posts other than this one, from which the three are
+ * chosen. A post older than those is therefore not found, however many tags it
+ * shares. Before 0031 every post is a note, so the format decides nothing.
+ */
+export async function relatedPosts(post: Pick<BlogPost, "slug" | "tags" | "category" | "format">): Promise<BlogRelated> {
+  const supabase = createPublicSupabase();
+  if (!supabase) return NOT_CONFIGURED;
+  try {
+    const now = new Date().toISOString();
+    type Row = CardRow & { tags: string[] | null };
+    const ask = async (journal: boolean) => {
+      const answer = await supabase
+        .from("blog_posts")
+        .select(journal ? `${CARD_COLUMNS_0031}, tags` : `${CARD_COLUMNS}, tags`)
+        .eq("status", "published")
+        .lte("published_at", now)
+        .neq("slug", post.slug)
+        .order("published_at", { ascending: false })
+        .order("slug", { ascending: true })
+        .limit(BLOG_RELATED_POOL);
+      return { data: answer.data as unknown as Row[] | null, error: answer.error };
+    };
+    let { data, error } = await ask(true);
+    if (before0031(error)) ({ data, error } = await ask(false));
+    if (error) return UNAVAILABLE;
+    const candidates = (data ?? []).flatMap((row) => {
+      const card = toCard(row);
+      return card ? [{ card, slug: card.slug, tags: Array.isArray(row.tags) ? row.tags : [], category: card.category, format: card.format, published_at: card.published_at }] : [];
+    });
+    const posts = rankRelated(post, candidates, BLOG_RELATED_COUNT).map((c) => c.card);
+    return posts.length ? { state: "ok", posts } : { state: "none" };
+  } catch {
+    return UNAVAILABLE;
+  }
+}
+
 /** The newest posts, for a short section on another page. */
 export async function latestPosts(n: number): Promise<BlogLatest> {
   const supabase = createPublicSupabase();
@@ -349,7 +393,7 @@ export async function indexablePosts(): Promise<BlogIndex> {
     for (let from = 0; from < 10 * step; from += step) {
       const { data, error } = await supabase
         .from("blog_posts")
-        .select("slug, published_at, updated_at, canonical_url")
+        .select("slug, category, published_at, updated_at, canonical_url")
         .eq("status", "published")
         .eq("noindex", false)
         .lte("published_at", now)
@@ -360,11 +404,11 @@ export async function indexablePosts(): Promise<BlogIndex> {
         if (error.code === "PGRST103") break;
         return UNAVAILABLE;
       }
-      const rows = (data ?? []) as { slug: string; published_at: string | null; updated_at: string; canonical_url: string }[];
+      const rows = (data ?? []) as { slug: string; category: BlogCategory; published_at: string | null; updated_at: string; canonical_url: string }[];
       for (const r of rows) {
         if (!r.published_at || pointsElsewhere(r.slug, r.canonical_url)) continue;
         const day = blogDay(Date.parse(r.updated_at) > Date.parse(r.published_at) ? r.updated_at : r.published_at);
-        if (day) entries.push({ slug: r.slug, lastmod: day });
+        if (day) entries.push({ slug: r.slug, lastmod: day, category: r.category });
       }
       if (rows.length < step) break;
     }

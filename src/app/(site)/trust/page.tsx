@@ -6,6 +6,7 @@ import { HeroCompanion } from "@/components/figures/stage/HeroCompanion";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { LEDGER_REVIEWED, pendingCount, publishedCount } from "@/components/trust/disclosures";
 import { NextSteps, PageHero } from "@/components/ui/Page";
+import { AI_ENABLED } from "@/config/ai";
 import { pageMeta } from "@/lib/meta";
 import { webPageSchema } from "@/lib/schema";
 
@@ -19,7 +20,8 @@ const sections = [
   { href: "/trust/client-funds", k: "Ask", t: "Client funds", d: "The statement GIO4X has published, what it does not cover, and the questions to put to any broker." },
   { href: "/trust/transparency", k: "Disclose", t: "What we disclose", d: "One table of what is published and what is not yet published, item by item." },
   { href: "/trust/data-methodology", k: "Source", t: "Data methodology", d: "Where every number on this site comes from, when it was fixed and how it is calculated." },
-  { href: "/trust/ai", k: "Bound", t: "AI at GIO4X", d: "What is and is not a language model on this site today, and the limits any future assistant will keep." },
+  // follows the assistant's switch, decided when the site is built (src/config/ai.ts)
+  { href: "/trust/ai", k: "Bound", t: "AI at GIO4X", d: AI_ENABLED ? "What is and is not a language model on this site today, and the limits the GIO4X AI assistant keeps." : "What is and is not a language model on this site today, and the limits any future assistant will keep." },
   { href: "/trust/editorial-standards", k: "Correct", t: "Editorial standards", d: "Sources, bylines, corrections and the conflict of interest a broker has when it publishes research." },
 ];
 

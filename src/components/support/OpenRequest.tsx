@@ -41,6 +41,15 @@ export function OpenRequest({ categories, email }: { categories: CategoryOption[
 
   useEffect(() => {
     startedAt.current = Date.now();
+    // Arriving from "This is wrong" under a GIO4X AI answer: what the request is about and its
+    // subject are filled in, and nothing else. The link carries the page's path only; the question
+    // and the answer are never in it, so the visitor writes what was wrong in their own words.
+    const from = new URLSearchParams(window.location.search);
+    if (from.get("about") === "ai-answer") {
+      const page = from.get("page") ?? "";
+      const on = /^\/[A-Za-z0-9\-._~/]{0,80}$/.test(page) ? ` (asked on ${page})` : "";
+      setV((cur) => (cur.category || cur.subject ? cur : { ...cur, category: "technical", subject: `GIO4X AI gave a wrong answer${on}` }));
+    }
   }, []);
 
   useEffect(() => {

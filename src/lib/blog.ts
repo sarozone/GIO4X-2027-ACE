@@ -18,6 +18,14 @@ export const BLOG_CATEGORY_LABEL: Record<BlogCategory, string> = {
   company: "GIO4X",
 };
 
+/** What each category covers, in one sentence: the standfirst of its page and that page's description. */
+export const BLOG_CATEGORY_ABOUT: Record<BlogCategory, string> = {
+  "market-notes": "Short notes on what happened in the markets and what lay behind it, written after the event and never as a forecast.",
+  education: "How trading works, one idea at a time: the terms, the arithmetic and the mechanics behind an order.",
+  platform: "The trading platforms offered through GIO4X: what they do, how to use them and what has changed in them.",
+  company: "Posts about the firm itself: what has changed at GIO4X and how it works.",
+};
+
 /**
  * What kind of piece a post is, beside its category (which says what it is
  * about). Must equal `blog_posts_format_valid` in 0031_blog_journal.sql.
@@ -50,6 +58,20 @@ export const BLOG_STATUS_LABEL: Record<BlogStatus, string> = {
 export const BLOG_PATH = "/intelligence/blog";
 export const BLOG_BUCKET = "blog";
 export const BLOG_PAGE_SIZE = 12;
+
+/**
+ * The page of one category. It sits in a folder of its own beside the posts
+ * (`category/[category]`), so it takes no post's address: a post whose slug is
+ * "category" is still at BLOG_PATH/category, where this folder has no page.
+ */
+export function blogCategoryPath(category: BlogCategory, page = 1): string {
+  return `${BLOG_PATH}/category/${category}${page > 1 ? `?page=${page}` : ""}`;
+}
+
+/** How many posts stand under "Related posts" at the foot of a post, at most. */
+export const BLOG_RELATED_COUNT = 3;
+/** How many of the newest other posts are read to choose them from. */
+export const BLOG_RELATED_POOL = 36;
 
 /** Limits. Must equal the checks in 0011_blog.sql. */
 export const BLOG_LIMITS = {

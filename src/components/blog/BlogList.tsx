@@ -1,7 +1,7 @@
 import { GeneratedCover } from "@/components/ui/GeneratedCover";
 import Link from "next/link";
 import { EmptyState } from "@/components/ui/Page";
-import { BLOG_CATEGORIES, BLOG_CATEGORY_LABEL, BLOG_FORMAT_LABEL, BLOG_PATH } from "@/lib/blog";
+import { BLOG_CATEGORIES, BLOG_CATEGORY_LABEL, BLOG_FORMAT_LABEL, BLOG_PATH, blogCategoryPath } from "@/lib/blog";
 import type { BlogCard, BlogCover } from "@/lib/server/blog";
 import type { BlogCategory } from "@/lib/supabase/types";
 import { blogIso, blogShortDate } from "./format";
@@ -75,16 +75,50 @@ export function BlogCategoryNav({ current }: { current: BlogCategory | null }) {
   );
 }
 
-/** What kind of piece a post is, and what it is about: the two chips on a card. */
-export function BlogChips({ post, className = "" }: { post: Pick<BlogCard, "format" | "category">; className?: string }) {
+/**
+ * The pages of the categories as a row of links: every category, or every one
+ * but the page being read. The rail above filters the index in place; these
+ * lead to each category's own page.
+ */
+export function BlogCategoryLinks({ id, label = "Browse by category", except = null }: { id: string; label?: string; except?: BlogCategory | null }) {
+  return (
+    <nav aria-labelledby={id} className="no-print">
+      <h2 id={id} className="label">
+        {label}
+      </h2>
+      <ul className="mt-8 flex flex-wrap gap-x-34 gap-y-2">
+        {BLOG_CATEGORIES.filter((c) => c !== except).map((c) => (
+          <li key={c}>
+            <Link href={blogCategoryPath(c)} className="h4 inline-flex min-h-[2.75rem] items-center transition-colors duration-fast hover:text-accent">
+              {BLOG_CATEGORY_LABEL[c]}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
+/**
+ * What kind of piece a post is, and what it is about: the two chips on a card.
+ * With `link`, the category is a link to that category's page; it is raised
+ * above the card's own link (see BlogCards), so it can be followed from a card.
+ */
+export function BlogChips({ post, link = false, className = "" }: { post: Pick<BlogCard, "format" | "category">; link?: boolean; className?: string }) {
   return (
     <span className={`flex flex-wrap gap-5 ${className}`}>
       <span className="chip" data-chip="format">
         {BLOG_FORMAT_LABEL[post.format]}
       </span>
-      <span className="chip" data-chip="category">
-        {BLOG_CATEGORY_LABEL[post.category]}
-      </span>
+      {link ? (
+        <Link href={blogCategoryPath(post.category)} className="chip relative z-[1] transition-colors duration-fast hover:border-line-strong hover:text-ink" data-chip="category">
+          {BLOG_CATEGORY_LABEL[post.category]}
+        </Link>
+      ) : (
+        <span className="chip" data-chip="category">
+          {BLOG_CATEGORY_LABEL[post.category]}
+        </span>
+      )}
     </span>
   );
 }
@@ -104,7 +138,7 @@ function Featured({ post }: { post: BlogCard }) {
       </Link>
       <div>
         <p className="label">{standing}</p>
-        <BlogChips post={post} className="mt-13" />
+        <BlogChips post={post} link className="mt-13" />
         <h3 id="blog-latest-post" className="h2 mt-13 max-w-[22ch] [overflow-wrap:anywhere]">
           <Link href={href} className="transition-colors duration-fast hover:text-accent">
             {post.title}
@@ -125,13 +159,20 @@ function Featured({ post }: { post: BlogCard }) {
  * on a phone. A card is its cover (a drawn one when the post has no picture),
  * the two chips, the date, and the title and the excerpt held to two lines
  * each, so that every card in a row is the same height.
+ *
+ * The whole card leads to the post: the link is the title, stretched over the
+ * card (its ::after covers the list item), and the focus ring is drawn there.
+ * Only the category chip stands above it, as a link of its own, because a
+ * link cannot contain another.
+ *
+ * `columns` is for a place narrower than the index (the foot of a post).
  */
-function Cards({ posts }: { posts: BlogCard[] }) {
+export function BlogCards({ posts, columns = "sm:grid-cols-2 lg:grid-cols-3" }: { posts: BlogCard[]; columns?: string }) {
   return (
-    <ul className="grid gap-x-21 gap-y-34 sm:grid-cols-2 lg:grid-cols-3" data-blog-cards>
+    <ul className={`grid gap-x-21 gap-y-34 ${columns}`} data-blog-cards>
       {posts.map((p) => (
-        <li key={p.slug} className="grid">
-          <Link href={blogPostHref(p.slug)} className="group flex h-full flex-col overflow-hidden rounded-md border border-line bg-surface transition-colors duration-fast hover:border-line-strong">
+        <li key={p.slug} className="relative grid">
+          <div className="group flex h-full flex-col overflow-hidden rounded-md border border-line bg-surface transition-colors duration-fast hover:border-line-strong">
             {p.cover ? (
               <BlogCoverImage cover={p.cover} className="aspect-[16/10] w-full !rounded-none border-0 border-b object-cover" />
             ) : (
@@ -139,14 +180,19 @@ function Cards({ posts }: { posts: BlogCard[] }) {
             )}
             <span className="flex flex-1 flex-col gap-13 p-21">
               <span className="flex flex-wrap items-center justify-between gap-x-13 gap-y-8">
-                <BlogChips post={p} />
+                <BlogChips post={p} link />
                 {p.pinned && <span className="label text-ink-2">Pinned</span>}
               </span>
               <time dateTime={blogIso(p.published_at)} className="num text-xs text-ink-3">
                 {blogShortDate(p.published_at)}
               </time>
               <span role="heading" aria-level={3} className="h4 line-clamp-2 transition-colors duration-fast [overflow-wrap:anywhere] group-hover:text-accent">
-                {p.title}
+                <Link
+                  href={blogPostHref(p.slug)}
+                  className="after:absolute after:inset-0 after:rounded-md after:content-[''] focus-visible:outline-none focus-visible:after:outline focus-visible:after:outline-2 focus-visible:after:outline-offset-[3px] focus-visible:after:outline-accent"
+                >
+                  {p.title}
+                </Link>
               </span>
               {p.excerpt && <span className="line-clamp-2 text-sm text-ink-2">{p.excerpt}</span>}
               <span className="mt-auto flex flex-wrap items-center gap-x-13 gap-y-2 pt-8 text-xs text-ink-3">
@@ -154,21 +200,21 @@ function Cards({ posts }: { posts: BlogCard[] }) {
                 <span className="num">{p.minutes} min read</span>
               </span>
             </span>
-          </Link>
+          </div>
         </li>
       ))}
     </ul>
   );
 }
 
-function Pages({ page, pages, category }: { page: number; pages: number; category: BlogCategory | null }) {
+function Pages({ page, pages, hrefFor }: { page: number; pages: number; hrefFor: (page: number) => string }) {
   if (pages <= 1) return null;
   const link = "link inline-flex min-h-[2.75rem] items-center text-sm font-medium";
   return (
     <nav aria-label="Pages of posts" className="no-print mt-34 grid grid-cols-[1fr_auto_1fr] items-center gap-13">
       <span>
         {page > 1 && (
-          <Link href={blogListHref(page - 1, category)} rel="prev" className={link}>
+          <Link href={hrefFor(page - 1)} rel="prev" className={link}>
             Newer posts
           </Link>
         )}
@@ -178,7 +224,7 @@ function Pages({ page, pages, category }: { page: number; pages: number; categor
       </p>
       <span className="text-right">
         {page < pages && (
-          <Link href={blogListHref(page + 1, category)} rel="next" className={link}>
+          <Link href={hrefFor(page + 1)} rel="next" className={link}>
             Older posts
           </Link>
         )}
@@ -187,7 +233,25 @@ function Pages({ page, pages, category }: { page: number; pages: number; categor
   );
 }
 
-export function BlogListView({ posts, page, pages, total, category }: { posts: BlogCard[]; page: number; pages: number; total: number; category: BlogCategory | null }) {
+/**
+ * One page of posts. `hrefFor` is the address of another page of the same
+ * list; left out, it is the index with its query string, as it always was.
+ */
+export function BlogListView({
+  posts,
+  page,
+  pages,
+  total,
+  category,
+  hrefFor = (n) => blogListHref(n, category),
+}: {
+  posts: BlogCard[];
+  page: number;
+  pages: number;
+  total: number;
+  category: BlogCategory | null;
+  hrefFor?: (page: number) => string;
+}) {
   const feature = page === 1 ? posts[0] : undefined;
   const rest = feature ? posts.slice(1) : posts;
   return (
@@ -201,11 +265,11 @@ export function BlogListView({ posts, page, pages, total, category }: { posts: B
         {rest.length > 0 && (
           <div className={feature ? "mt-34 lg:mt-55" : ""}>
             {feature && <p className="label mb-21">More from the blog</p>}
-            <Cards posts={rest} />
+            <BlogCards posts={rest} />
           </div>
         )}
       </div>
-      <Pages page={page} pages={pages} category={category} />
+      <Pages page={page} pages={pages} hrefFor={hrefFor} />
     </>
   );
 }

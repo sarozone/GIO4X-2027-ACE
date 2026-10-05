@@ -49,7 +49,9 @@ if (process.env.NETLIFY) {
  *    when pages are statically generated (a nonce would force every page to be
  *    rendered on demand). No inline event handlers are used anywhere.
  *    'unsafe-eval' is development only (React refresh).
- *  - connect-src is limited to this origin and the Supabase project.
+ *  - connect-src is limited to this origin and the Supabase project. GIO4X AI
+ *    needs nothing more: the browser asks this site's own /api/ai, and only
+ *    the server speaks to the model provider.
  */
 const csp = [
   "default-src 'self'",
@@ -86,7 +88,15 @@ const nextConfig = {
   // Written into the build, so the pages that run on the server (GIO4X Control,
   // the gateway pages) see the same value this file proxies to. A variable set
   // only for the build (netlify.toml) does not exist when the site is running.
-  env: { PORTAL_ORIGIN: portalOrigin, PORTAL_SUPABASE_URL: portalSupabaseUrl },
+  env: {
+    PORTAL_ORIGIN: portalOrigin,
+    PORTAL_SUPABASE_URL: portalSupabaseUrl,
+    // GIO4X AI: the switch and the model name, so the static pages that describe the
+    // assistant and the endpoint that answers read one value (src/config/ai.ts).
+    // Neither is a secret. The provider key is NOT written into the build.
+    GIO4X_AI_ENABLED: process.env.GIO4X_AI_ENABLED === "true" ? "true" : "",
+    GIO4X_AI_MODEL: (process.env.GIO4X_AI_MODEL ?? "").trim().toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 60),
+  },
   reactStrictMode: true,
   poweredByHeader: false,
   trailingSlash: false,

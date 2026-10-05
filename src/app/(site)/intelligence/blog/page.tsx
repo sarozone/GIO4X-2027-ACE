@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BlogCategoryNav, BlogEmpty, blogListHref, BlogListView, blogPostHref, BlogUnavailable } from "@/components/blog/BlogList";
+import { BlogCategoryLinks, BlogCategoryNav, BlogEmpty, blogListHref, BlogListView, blogPostHref, BlogUnavailable } from "@/components/blog/BlogList";
 import { blogIso } from "@/components/blog/format";
 import { BLOG_FEED } from "@/components/blog/seo";
 import { JsonLd } from "@/components/seo/JsonLd";
@@ -113,6 +113,10 @@ export default async function BlogPage({ searchParams }: Search) {
             ) : (
               <BlogUnavailable />
             )}
+          </div>
+          {/* the rail above filters this page; these lead to each category's own page */}
+          <div className="mt-34 border-t border-line pt-21">
+            <BlogCategoryLinks id="blog-by-category" />
           </div>
           <p className="mt-34 flex flex-wrap gap-x-21 text-sm">
             <a href={FEED.url} className="link inline-flex min-h-[2.75rem] items-center" type="application/rss+xml">

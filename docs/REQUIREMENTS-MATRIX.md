@@ -162,7 +162,7 @@ internal systems (CRM operating system, CMS, communications, generative AI) are 
 | SEO, campaign, social, newsletter command centres | NOT BUILT | |
 | Communications hub, bulk email, voice control | NOT BUILT | |
 | Live chat with human support | NOT BUILT | The old site bridged to the portal's chat tables; that bridge was not carried over (BLOCKED: CREDENTIAL) |
-| GIO4X AI (generative, grounded, cited) | NOT BUILT | BLOCKED: CREDENTIAL. Commitments published at `/trust/ai` |
+| GIO4X AI (generative, grounded, cited) | BUILT, OFF | Built 5 October 2026 (`docs/AI.md`); off until `GIO4X_AI_ENABLED` is `true`. Commitments published at `/trust/ai`, which follows the switch |
 | Ask This Page / Lens | PARTIAL | Deterministic Lens: Explain, Related, Sources, Source mode |
 | AI Site Concierge commands | PARTIAL | Command-bar display commands |
 | Connect the Dots | IMPLEMENTED | Deterministic, from the graph |

@@ -68,7 +68,7 @@ async function writer() {
 
 /**
  * The website reads again: the cached lists, every page under the blog (the
- * list, each post, the feed), and the Intelligence page that shows the latest
+ * list, each category's page, each post, the feed), and the Intelligence page that shows the latest
  * posts. Called after a write that touched a post the public can see, or could
  * see a moment ago.
  */

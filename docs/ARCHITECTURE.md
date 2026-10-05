@@ -130,3 +130,4 @@ Everything optional degrades to a designed state rather than a broken one:
 | Supabase | Forms fail gracefully with the contact email; `/control` says "Not configured" |
 | TradingView | The chart frame is simply not loaded (it is opt-in per page view) |
 | Portal URLs | "Not connected yet" gateway states |
+| GIO4X AI (`GIO4X_AI_ENABLED`, `ANTHROPIC_API_KEY`) | No "Ask" tab in the Lens, `/api/ai` answers 503, `/trust/ai` says "Not live" (`docs/AI.md`) |

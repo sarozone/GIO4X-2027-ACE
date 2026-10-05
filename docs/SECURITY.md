@@ -155,6 +155,10 @@ Then run the Supabase security advisor on the project and read every finding.
 
 A throttled insert returns 429 from PostgREST (`SQLSTATE PT429`) and from the API.
 
+GIO4X AI (`/api/ai`, `docs/AI.md`) uses the first layer only, with its own rules: 5 questions a minute and 30 a
+day per address, 1,500 a day in all. It writes nothing to the database, so the second layer does not
+apply to it. Its durable limit is the monthly spending limit set at the model provider.
+
 ## 6. GIO4X Control
 
 - Email and password through Supabase Auth; no sign-up; accounts are created by the owner.
@@ -261,6 +265,13 @@ the client portal's Supabase project. Control reads them on the server with that
   staff login of the portal's own console, is not a database matter and remains.
 - Consequence to accept: anyone who obtains this key can read and change everything in the portal's
   database. If it is ever exposed, rotate it in the portal's Supabase project and replace the variable.
+
+## 8b. The model provider's key (GIO4X AI)
+
+`ANTHROPIC_API_KEY` is read in one file, `src/lib/server/ai.ts` (`server-only`), at the moment a question
+is answered. It is not written into the build, not sent to the browser and not logged. The browser talks
+only to `/api/ai`, so the Content-Security-Policy is unchanged. What is sent to the provider, and what is
+not, is in `docs/AI.md`, section 3. If the key is exposed: revoke it at the provider and replace the variable.
 
 ## 9. Not built yet (deliberately)
 

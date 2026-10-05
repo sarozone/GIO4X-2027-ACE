@@ -79,19 +79,30 @@ Recommendation: A now, B when there is a moderator, C only with a community mana
 
 ## 4. GIO4X AI assistant
 
-Designed for and deliberately not live (`/trust/ai`). To switch it on:
+Built on 5 October 2026 and switched off until `GIO4X_AI_ENABLED` is `true`. How it works, what is sent
+to the provider and how to switch it off are in `docs/AI.md`.
+
+| Done | Detail |
+|---|---|
+| The assistant | An "Ask" tab in the Lens panel. It answers only from this site's own pages (glossary, Academy, tools, FAQs, instruments, accounts, funding, platforms, legal documents, guides, the disclosure ledger), cites them as links, and says when they do not contain the answer. |
+| The rules of the house | The seven boundaries on `/trust/ai`, given to the model with every question: no advice, no signals, no forecasts, no account actions, no GIO4X fact that is not in the sources, a person always reachable. |
+| The switch | `GIO4X_AI_ENABLED` and a redeploy. `/trust/ai` says "Live" or "Not live" from the same value, in the same deploy. |
+| Records | Nothing is stored: no question, no answer, no log of either. |
+| Limits | 600 characters a question; 5 a minute and 30 a day from one address; 1,500 a day in all; answers of about 120 words. |
+| A wrong-answer route | "This is wrong" under every answer opens a support request with the subject filled in. Nothing of the conversation is sent with it. |
+
+Still the owner's to decide or do:
 
 | Need | Detail |
 |---|---|
-| A provider key | An Anthropic API key in Netlify as `ANTHROPIC_API_KEY` (secret). `GIO4X_AI_MODEL` chooses the model. A monthly spending limit set at the provider. |
-| Approved sources | Confirmation that the assistant may answer **only** from this site's own pages (glossary, Academy, tools, FAQs, legal documents), which is how it would be built. Anything else it may use must be listed. |
-| Rules of the house, approved | No advice, no signals, no price forecasts, no account actions; every answer cites the pages it used; it says when it does not know. The draft is on `/trust/ai`: approve or amend it. |
-| A decision on records | Whether questions are stored (to improve answers) or not stored at all; if stored, for how long, and a line in the Privacy Policy. |
-| A named owner | Someone who reads a weekly sample of answers and can switch it off (a flag in Control). |
-| Limits | Questions per visitor per day, and the languages it answers in. |
-| A wrong-answer route | A "this is wrong" button that opens a ticket. |
-
-With those, about two days: the Lens panel already has the place for it.
+| **A monthly spending limit at the provider** | Set in the Anthropic console. The site's own limits are held in memory and do not stop a determined sender (`docs/AI.md`, section 4); this one does. Do it before switching on. |
+| **A named person who samples the answers** | Nobody at GIO4X can see what the assistant says, because nothing is stored. Someone should ask it awkward questions each week (the list is in `docs/AI.md`, section 8) and can switch it off. |
+| **Whether to keep "nothing stored"** | Storing questions would let answers be reviewed and improved. It needs a retention period, a line in the Privacy Policy and a change to `/trust/ai`, which today says nothing is stored. |
+| **A line in the Privacy Policy** | Questions are sent to Anthropic to be answered. `/trust/ai` says so; the Privacy Policy, which is under legal review, does not yet. |
+| **Approval of the rules and the sources** | The rules are `SYSTEM_PROMPT` in `src/lib/ai.ts`; the sources are listed in `src/lib/server/ai-corpus.ts`. Approve or amend both. |
+| Languages | It answers in the language of the question but reads English pages, so questions in other languages mostly get "I could not find that". Decide whether that is acceptable beside the seven translated languages. |
+| A switch in Control | Today the switch is an environment variable and a redeploy. A flag in GIO4X Control is not built. |
+| A count of questions | Not counted. Adding it to the visit counter is a small migration. |
 
 ## 5. Newsletter and e-mail courses
 

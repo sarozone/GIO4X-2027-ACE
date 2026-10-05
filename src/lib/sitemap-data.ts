@@ -71,7 +71,7 @@ export function sitemapEntries(name: SitemapName): SitemapEntry[] {
     case "academy":
       return [{ path: "/academy", lastmod: CONTENT_REVISED }, { path: "/academy/books", lastmod: CONTENT_REVISED }, { path: "/academy/practice", lastmod: CONTENT_REVISED }, { path: "/academy/first-trade", lastmod: CONTENT_REVISED }, { path: "/academy/leverage-story", lastmod: CONTENT_REVISED }, { path: "/academy/cheat-sheets", lastmod: CONTENT_REVISED }, { path: "/academy/exams", lastmod: CONTENT_REVISED }, { path: "/academy/trader-type", lastmod: CONTENT_REVISED }, ...PLAYBOOK.map((p) => ({ path: `/playbook/${p.slug}`, lastmod: CONTENT_REVISED })), ...lessons.map((l) => ({ path: `/academy/${l.slug}`, lastmod: l.updated ?? l.published }))];
     case "blog":
-      // the list page only: the posts are rows in the database and are added by /sitemap-blog.xml itself
+      // the list page only: the posts are rows in the database and are added by /sitemap-blog.xml itself, with the page of each category that has a post
       return [{ path: "/intelligence/blog", lastmod: CONTENT_REVISED }];
   }
 }

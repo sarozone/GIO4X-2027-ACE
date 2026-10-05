@@ -58,7 +58,7 @@ ready, the engine in `src/components/funding/allocation.ts` is written to be lif
 | Central Bank Watch and Economic Events: dated, maintained figures; Market Clock holidays | Needs a reliable source and an update process | F2 |
 | Rule bench and history on real historical data | Needs data rights | F2 |
 | A maintained research desk with dated briefings | Needs people to write and review it | Owner's decision |
-| A conversational assistant in Lens | Optional in the brief; needs a provider key and approved sources | F4 |
+| A conversational assistant in Lens | Built 5 October 2026 and switched off (`docs/AI.md`); the owner's remaining decisions are in `docs/NEXT-STEPS.md`, section 4 | F4 |
 | Support hours, response times, complaint process; e-mail acknowledgements | Not supplied; no sending domain | C2, F5 |
 | Measured service status and incident history | Needs real monitoring | Owner's decision |
 | An evidence drawer in Lens for every claim | The history pages now carry named documents; a site-wide drawer needs each claim's source recorded first | Editorial work |
