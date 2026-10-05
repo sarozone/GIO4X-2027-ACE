@@ -4,7 +4,7 @@ import { fmtDateTime, jsonPairs } from "@/components/control/format";
 import type { BlogRevisionListRow, BlogRevisionMeta } from "@/components/control/views/blog-revisions-shared";
 import { BLOG_STATE_LABEL, blogState } from "@/components/control/views/blog-shared";
 import { BlogEditor } from "@/components/control/views/BlogEditor";
-import { BlogStateBadge } from "@/components/control/views/BlogListView";
+import { BlogPlacementBadges, BlogStateBadge } from "@/components/control/views/BlogListView";
 import { BLOG_STATUS_LABEL, BLOG_STATUSES } from "@/lib/blog";
 import type { AuditRow, BlogPostRow, BlogStatus } from "@/lib/supabase/types";
 
@@ -29,6 +29,8 @@ export type BlogEditorViewProps = {
    * be read. Left out (a new post has none), the editor draws no history panel.
    */
   revisions?: BlogRevisionListRow[] | null;
+  /** names already used as a byline and as a reviewer, offered in those two fields (they stay free text) */
+  suggestions?: { bylines: string[]; reviewers: string[] };
   notice?: string;
   error?: string;
 };
@@ -68,7 +70,7 @@ function describe(entry: BlogEditorViewProps["audit"][number]): { what: string; 
  * its history. Presentation only; the editor itself (a client component) holds
  * what is being typed, and the server actions do the saving.
  */
-export function BlogEditorView({ post, audit, auditFailed, names, me, now, canWrite, canPublish, siteUrl, revisions, notice, error }: BlogEditorViewProps) {
+export function BlogEditorView({ post, audit, auditFailed, names, me, now, canWrite, canPublish, siteUrl, revisions, suggestions, notice, error }: BlogEditorViewProps) {
   const who = (userId: string | null) => (!userId ? "Database (SQL)" : userId === me ? "You" : (names.get(userId) ?? "Former member of staff"));
   const state = post ? blogState(post, now) : null;
   // who saved each revision, as a name: the editor is a client component and is never handed an id to look up
@@ -99,7 +101,14 @@ export function BlogEditorView({ post, audit, auditFailed, names, me, now, canWr
               "Nothing is on the website until a post is published. Save a draft as often as you like."
             )
           }
-          actions={post ? <BlogStateBadge post={post} now={now} withTime /> : undefined}
+          actions={
+            post ? (
+              <span className="inline-flex flex-wrap items-center gap-8">
+                <BlogPlacementBadges post={post} />
+                <BlogStateBadge post={post} now={now} withTime />
+              </span>
+            ) : undefined
+          }
         />
       </div>
 
@@ -110,7 +119,7 @@ export function BlogEditorView({ post, audit, auditFailed, names, me, now, canWr
 
       <div className="mt-13">
         {/* a saved post comes back with a new change time: the editor starts again from what was saved */}
-        <BlogEditor key={post ? `${post.id}:${post.updated_at}` : "new"} post={post} canWrite={canWrite} canPublish={canPublish} now={now} siteUrl={siteUrl} history={history} />
+        <BlogEditor key={post ? `${post.id}:${post.updated_at}` : "new"} post={post} canWrite={canWrite} canPublish={canPublish} now={now} siteUrl={siteUrl} history={history} suggestions={suggestions} />
       </div>
 
       {post && (

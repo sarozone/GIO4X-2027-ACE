@@ -27,6 +27,14 @@
  *
  * Only text travels through these actions. Pictures go through the route
  * handler at /control/blog/upload, and arrive here as paths in the bucket.
+ *
+ * The format and the reviewer (0031_blog_journal.sql) are fields like the
+ * others. Leading the index and being pinned are a post's place in front of
+ * the public, so they are read from the form only for a caller who holds
+ * blog.publish; the trigger `blog_posts_placement` refuses anyone else, and
+ * takes the lead from the post that had it in the same statement. When the
+ * slug of a published post changes, the trigger `blog_posts_keep_slug` keeps
+ * the old address so that the public page can redirect it: nothing here does.
  */
 import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
@@ -43,11 +51,11 @@ import {
   type BlogFormState,
   type BlogIntent,
 } from "@/components/control/views/blog-shared";
-import { BLOG_CATEGORIES, BLOG_LIMITS, BLOG_PATH, BLOG_STATUSES, isBlogImagePath, isBlogSlug } from "@/lib/blog";
+import { BLOG_CATEGORIES, BLOG_LIMITS, BLOG_PATH, BLOG_STATUSES, DEFAULT_BLOG_FORMAT, isBlogFormat, isBlogImagePath, isBlogSlug } from "@/lib/blog";
 import { BLOG_CACHE_TAG } from "@/lib/server/blog";
 import { can, getAccess, SIGN_IN_PATH } from "@/lib/server/staff";
 import { cleanLine, cleanText, isUuid } from "@/lib/server/validate";
-import type { BlogCategory, BlogStatus } from "@/lib/supabase/types";
+import type { BlogCategory, BlogFormat, BlogStatus } from "@/lib/supabase/types";
 
 const LIST = "/control/blog";
 
@@ -107,7 +115,27 @@ type Fields = {
   cover_credit: string;
   cover_width: number | null;
   cover_height: number | null;
+  format: BlogFormat;
+  reviewed_by: string;
 };
+
+/** A post's place on the public index (0031). The publisher's to set: a writer's form does not carry it. */
+type Placement = { is_lead: boolean; is_pinned: boolean };
+
+const readPlacement = (formData: FormData): Placement => ({ is_lead: formData.get("is_lead") === "1", is_pinned: formData.get("is_pinned") === "1" });
+
+/**
+ * The database does not know a column of 0031 yet: PostgREST answers PGRST204
+ * for a column it has not heard of, Postgres 42703. The code can be live a
+ * moment before the migration is applied; until then a post is saved as it
+ * was saved before, without the format, the reviewer and the placement.
+ */
+const before0031 = (code: string | undefined): boolean => code === "PGRST204" || code === "42703";
+
+function without0031(values: Fields): Omit<Fields, "format" | "reviewed_by"> {
+  const { format: _format, reviewed_by: _reviewedBy, ...rest } = values;
+  return rest;
+}
 
 /** A picture's side in pixels: empty is "not known", otherwise a whole number the database accepts. */
 function readSize(raw: string): { ok: true; value: number | null } | { ok: false } {
@@ -147,6 +175,14 @@ function readFields(formData: FormData): { values: Fields; bad: string[] } {
 
   const byline = line(formData, "byline") || DEFAULT_BYLINE;
   if (byline.length < 2 || byline.length > BLOG_LIMITS.byline) bad.push("byline");
+
+  const formatRaw = formData.get("format");
+  const format: BlogFormat = isBlogFormat(formatRaw) ? formatRaw : DEFAULT_BLOG_FORMAT;
+  if (!isBlogFormat(formatRaw)) bad.push("format");
+
+  // empty is "nobody is named"; otherwise a name a reader will be shown, held to the same length as the byline
+  const reviewedBy = line(formData, "reviewed_by");
+  if (reviewedBy.length > BLOG_LIMITS.reviewedBy) bad.push("reviewed_by");
 
   const seoTitle = line(formData, "seo_title");
   if (seoTitle.length > BLOG_LIMITS.seoTitle) bad.push("seo_title");
@@ -196,6 +232,8 @@ function readFields(formData: FormData): { values: Fields; bad: string[] } {
       cover_credit: coverCredit,
       cover_width: hasCover && width.ok ? width.value : null,
       cover_height: hasCover && height.ok ? height.value : null,
+      format,
+      reviewed_by: reviewedBy,
     },
   };
 }
@@ -244,16 +282,26 @@ export async function createBlogPost(_prev: BlogFormState, formData: FormData): 
     publishedAt ??= new Date(now).toISOString();
   }
 
+  // where the post stands on the index is the publisher's to say; a writer's post starts as neither
+  const placement: Partial<Placement> = mayPublish ? readPlacement(formData) : {};
+
   // created_by, updated_by and the timestamps are not sent: the trigger sets them to the caller and the clock
-  const { data, error } = await ctx.supabase
+  let { data, error } = await ctx.supabase
     .from("blog_posts")
-    .insert({ ...values, status, published_at: publishedAt })
+    .insert({ ...values, ...placement, status, published_at: publishedAt })
     .select("id");
+  if (error && before0031(error.code)) {
+    ({ data, error } = await ctx.supabase
+      .from("blog_posts")
+      .insert({ ...without0031(values), status, published_at: publishedAt })
+      .select("id"));
+  }
   if (error) return refuse(blogDbError(error.code), error.code === "23505" ? ["slug"] : undefined);
   const id = data?.[0]?.id;
   if (!data || data.length !== 1 || !isUuid(id)) return refuse("save");
 
-  if (status === "published") refreshPublic();
+  // a new lead takes the place of the post that led, which the public may be reading now
+  if (status === "published" || placement.is_lead) refreshPublic();
   const notice = status !== "published" ? "created" : publishedAt && Date.parse(publishedAt) > now ? "scheduled" : "published";
   redirect(`${LIST}/${id}?notice=${notice}`);
 }
@@ -301,16 +349,28 @@ export async function saveBlogPost(_prev: BlogFormState, formData: FormData): Pr
     if (problem) return problem;
   }
 
+  // where the post stands on the index is the publisher's to say; a writer's save leaves it as it is
+  const placement: Partial<Placement> = mayPublish ? readPlacement(formData) : {};
+  const moment = publishedAt === undefined ? {} : { published_at: publishedAt };
+
   // .select() makes a refusal visible: a row that row-level security filters out is simply "0 rows updated"
-  const { data, error } = await ctx.supabase
+  let { data, error } = await ctx.supabase
     .from("blog_posts")
-    .update({ ...values, status, ...(publishedAt === undefined ? {} : { published_at: publishedAt }) })
+    .update({ ...values, ...placement, status, ...moment })
     .eq("id", id)
     .select("id, published_at");
+  if (error && before0031(error.code)) {
+    ({ data, error } = await ctx.supabase
+      .from("blog_posts")
+      .update({ ...without0031(values), status, ...moment })
+      .eq("id", id)
+      .select("id, published_at"));
+  }
   if (error) return refuse(blogDbError(error.code), error.code === "23505" ? ["slug"] : undefined);
   if (!data || data.length !== 1) return refuse("forbidden");
 
-  if (was === "published" || status === "published") refreshPublic();
+  // a draft made the lead takes the place of the post that led, which the public may be reading now
+  if (was === "published" || status === "published" || placement.is_lead) refreshPublic();
   let notice = "saved";
   if (status !== was) {
     const at = data[0].published_at;

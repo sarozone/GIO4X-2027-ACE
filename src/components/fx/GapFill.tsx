@@ -282,6 +282,8 @@ export function GapFill() {
     const run = () => {
       clear();
       setSlots([]);
+      // the homepage has a composition of its own (the story that travels down it): no scene is added there (owner, 5 October 2026)
+      if (pathname === "/") return;
       if (window.innerWidth < 1024 || !("IntersectionObserver" in window)) return;
       // Sections far from the screen are not laid out yet (content-visibility), so nothing can be
       // measured in them. Each candidate is measured once, when it first comes near the screen.

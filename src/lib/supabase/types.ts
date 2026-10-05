@@ -299,6 +299,8 @@ export type IncidentRow = {
 /** Must equal the checks in 0011_blog.sql. */
 export type BlogCategory = "market-notes" | "education" | "platform" | "company";
 export type BlogStatus = "draft" | "review" | "published" | "archived";
+/** Must equal `blog_posts_format_valid` in 0031_blog_journal.sql. */
+export type BlogFormat = "note" | "explainer" | "guide" | "how-to" | "analysis" | "news";
 
 export type BlogPostRow = {
   id: string;
@@ -327,6 +329,14 @@ export type BlogPostRow = {
   cover_credit: string;
   cover_width: number | null;
   cover_height: number | null;
+  /** what kind of piece it is, beside the category (0031) */
+  format: BlogFormat;
+  /** the one post that leads the public index; at most one row (0031). Set by blog.publish. */
+  is_lead: boolean;
+  /** pinned posts come before the others on the public index (0031). Set by blog.publish. */
+  is_pinned: boolean;
+  /** who reviewed the post, as a reader is told; "" when nobody is named (0031) */
+  reviewed_by: string;
   created_by: string | null;
   updated_by: string | null;
   created_at: string;
@@ -336,6 +346,12 @@ export type BlogPostRow = {
 /** The columns the anonymous role may read (0011): everything on the page, nothing about who wrote the row. */
 export const BLOG_PUBLIC_COLUMNS =
   "id, slug, title, excerpt, body, category, tags, byline, status, published_at, corrected_at, correction_note, seo_title, seo_description, canonical_url, noindex, og_image_path, cover_path, cover_alt, cover_caption, cover_credit, cover_width, cover_height, updated_at" as const;
+/**
+ * The four columns 0031_blog_journal.sql adds, which the anonymous role may read too. Kept apart from the
+ * list above so that a public page can ask for them and, on a database the migration has not reached yet,
+ * ask again without them (see src/lib/server/blog.ts).
+ */
+export const BLOG_JOURNAL_COLUMNS = "format, is_lead, is_pinned, reviewed_by" as const;
 export type BlogPublicPost = Omit<BlogPostRow, "created_by" | "updated_by" | "created_at">;
 
 type BlogWritable = Pick<
@@ -343,7 +359,15 @@ type BlogWritable = Pick<
   | "slug" | "title" | "excerpt" | "body" | "category" | "tags" | "byline" | "status" | "published_at"
   | "seo_title" | "seo_description" | "canonical_url" | "noindex" | "og_image_path"
   | "cover_path" | "cover_alt" | "cover_caption" | "cover_credit" | "cover_width" | "cover_height"
+  | "format" | "is_lead" | "is_pinned" | "reviewed_by"
 >;
+
+/** An address a published post has left (0031). Written only by a trigger on blog_posts; the public post page redirects it. */
+export type BlogSlugRedirectRow = {
+  old_slug: string;
+  post_id: string;
+  created_at: string;
+};
 
 /** The five fields of a post that a revision records (0020_blog_revisions.sql). Must equal `blog_revisions_changed_valid`. */
 export type BlogRevisionField = "title" | "excerpt" | "body" | "seo_title" | "seo_description";
@@ -637,6 +661,12 @@ export type Database = {
       };
       blog_revisions: {
         Row: BlogRevisionRow;
+        Insert: { [_ in never]: never };
+        Update: { [_ in never]: never };
+        Relationships: [];
+      };
+      blog_slug_redirects: {
+        Row: BlogSlugRedirectRow;
         Insert: { [_ in never]: never };
         Update: { [_ in never]: never };
         Relationships: [];

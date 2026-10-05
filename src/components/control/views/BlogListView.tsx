@@ -5,12 +5,15 @@ import { Icon, type IconName } from "@/components/control/icons";
 import { ViewsControl, type ViewsProps } from "@/components/control/ViewsControl";
 import { viewParamsFrom } from "@/components/control/views-shared";
 import { BLOG_FILTER_LABEL, BLOG_FILTERS, BLOG_STATE_LABEL, blogState, type BlogFilter, type BlogState } from "@/components/control/views/blog-shared";
-import { BLOG_CATEGORIES, BLOG_CATEGORY_LABEL, BLOG_PATH } from "@/lib/blog";
-import type { BlogCategory, BlogPostRow } from "@/lib/supabase/types";
+import { BLOG_CATEGORIES, BLOG_CATEGORY_LABEL, BLOG_FORMAT_LABEL, BLOG_FORMATS, BLOG_PATH, isBlogFormat } from "@/lib/blog";
+import type { BlogCategory, BlogFormat, BlogPostRow } from "@/lib/supabase/types";
 
-export type BlogListItem = Pick<BlogPostRow, "id" | "slug" | "title" | "category" | "status" | "published_at" | "byline" | "updated_at">;
+/** A row of the list. The last three are from 0031_blog_journal.sql and are missing on a database it has not reached. */
+export type BlogListItem = Pick<BlogPostRow, "id" | "slug" | "title" | "category" | "status" | "published_at" | "byline" | "updated_at"> & Partial<Pick<BlogPostRow, "format" | "is_lead" | "is_pinned">>;
 
-export const BLOG_LIST_COLUMNS = "id, slug, title, category, status, published_at, byline, updated_at";
+/** What the list read before 0031, and reads again when the database answers that it has no such column. */
+export const BLOG_LIST_COLUMNS_0011 = "id, slug, title, category, status, published_at, byline, updated_at";
+export const BLOG_LIST_COLUMNS = "id, slug, title, category, status, published_at, byline, updated_at, format, is_lead, is_pinned";
 
 /** How many posts stand in each state, counted from the rows. */
 export type BlogCounts = Record<BlogFilter | "all", number>;
@@ -19,6 +22,8 @@ export type BlogListViewProps = {
   /** "" is every post */
   status: BlogFilter | "";
   category: BlogCategory | "";
+  /** "" or left out is every format */
+  format?: BlogFormat | "";
   q: string;
   posts: BlogListItem[];
   /** null when a figure could not be counted: none is shown rather than a wrong one */
@@ -67,14 +72,40 @@ export function BlogStateBadge({ post, now, withTime = false }: { post: Pick<Blo
   );
 }
 
+/**
+ * Where a post stands on the public index, in words beside its title: the one
+ * post that leads it, and the posts pinned to come before the rest. Nothing is
+ * drawn for a post that is neither.
+ */
+export function BlogPlacementBadges({ post }: { post: Pick<BlogListItem, "is_lead" | "is_pinned"> }) {
+  if (!post.is_lead && !post.is_pinned) return null;
+  return (
+    <span className="inline-flex flex-wrap items-center gap-5 align-middle" data-placement>
+      {post.is_lead && (
+        <span className="chip" title="Leads the blog’s index on the website">
+          Lead
+        </span>
+      )}
+      {post.is_pinned && (
+        <span className="chip" title="Comes before the other posts on the blog’s index">
+          Pinned
+        </span>
+      )}
+    </span>
+  );
+}
+
+const formatLabel = (post: Pick<BlogListItem, "format">) => (isBlogFormat(post.format) ? BLOG_FORMAT_LABEL[post.format] : "");
+
 /** Presentation only. The filters shown here were validated by the page before they reached the database. */
-export function BlogListView({ status, category, q, posts, counts, now, canWrite, total, page, pageCount, failed, pastEnd, views, error }: BlogListViewProps) {
-  const filtered = !!(status || category || q);
+export function BlogListView({ status, category, format = "", q, posts, counts, now, canWrite, total, page, pageCount, failed, pastEnd, views, error }: BlogListViewProps) {
+  const filtered = !!(status || category || format || q);
   const href = (next: { status?: BlogFilter | ""; page?: number }) => {
     const sp = new URLSearchParams();
     const s = next.status ?? status;
     if (s) sp.set("status", s);
     if (category) sp.set("category", category);
+    if (format) sp.set("format", format);
     if (q) sp.set("q", q);
     if (next.page && next.page > 1) sp.set("page", String(next.page));
     const query = sp.toString();
@@ -121,7 +152,7 @@ export function BlogListView({ status, category, q, posts, counts, now, canWrite
             const current = tile.key === "all" ? status === "" : status === tile.key;
             return (
               <li key={tile.key} className="grid">
-                <Link href={tile.key === "all" ? "/control/blog" : `/control/blog?status=${tile.key}`} className="gxc-stat" aria-current={current && !category && !q ? "page" : undefined}>
+                <Link href={tile.key === "all" ? "/control/blog" : `/control/blog?status=${tile.key}`} className="gxc-stat" aria-current={current && !category && !format && !q ? "page" : undefined}>
                   <span className="gxc-stat-icon">
                     <Icon name={tile.icon} size={16} />
                   </span>
@@ -140,10 +171,10 @@ export function BlogListView({ status, category, q, posts, counts, now, canWrite
 
       {views && <ViewsControl screen="blog" current={viewParamsFrom("blog", { status, category })} searching={!!q} {...views} />}
 
-      <form method="get" action="/control/blog" role="search" aria-label="Filter posts" className="mt-21 grid gap-13 border-b border-line pb-21 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.618fr)_minmax(0,1fr)_minmax(0,1fr)_auto] lg:items-end">
+      <form method="get" action="/control/blog" role="search" aria-label="Filter posts" className="mt-21 grid gap-13 border-b border-line pb-21 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.618fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto] lg:items-end">
         <div className="field sm:col-span-2 lg:col-span-1">
-          <label htmlFor="blog-q">Title or address</label>
-          <input id="blog-q" name="q" type="search" className="input" defaultValue={q} maxLength={100} placeholder="Words from the title, or the slug" autoComplete="off" spellCheck={false} />
+          <label htmlFor="blog-q">Title, address or tag</label>
+          <input id="blog-q" name="q" type="search" className="input" defaultValue={q} maxLength={100} placeholder="Words from the title, the slug, or a tag" autoComplete="off" spellCheck={false} />
         </div>
         <div className="field">
           <label htmlFor="blog-status">Status</label>
@@ -163,6 +194,17 @@ export function BlogListView({ status, category, q, posts, counts, now, canWrite
             {BLOG_CATEGORIES.map((c) => (
               <option key={c} value={c}>
                 {BLOG_CATEGORY_LABEL[c]}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="field">
+          <label htmlFor="blog-format">Format</label>
+          <select id="blog-format" name="format" className="select" defaultValue={format}>
+            <option value="">Any format</option>
+            {BLOG_FORMATS.map((f) => (
+              <option key={f} value={f}>
+                {BLOG_FORMAT_LABEL[f]}
               </option>
             ))}
           </select>
@@ -197,7 +239,7 @@ export function BlogListView({ status, category, q, posts, counts, now, canWrite
         ) : filtered ? (
           <Empty title="Nothing matches these filters">
             <p>
-              Try a different status or category, fewer words, or{" "}
+              Try a different status, category or format, fewer words, or{" "}
               <Link href="/control/blog" className="link">
                 see every post
               </Link>
@@ -243,12 +285,13 @@ function PostsTable({ posts, now, caption }: { posts: BlogListItem[]; now: numbe
   return (
     <>
       <div className="scroll-x hidden md:block">
-        <table className="table-gx min-w-[54rem] text-sm">
+        <table className="table-gx min-w-[60rem] text-sm">
           <caption className="sr-only">{caption}</caption>
           <thead>
             <tr>
               <th scope="col">Title</th>
               <th scope="col">Category</th>
+              <th scope="col">Format</th>
               <th scope="col">Status</th>
               <th scope="col">Byline</th>
               <th scope="col">Last changed</th>
@@ -265,8 +308,12 @@ function PostsTable({ posts, now, caption }: { posts: BlogListItem[]; now: numbe
                     {post.title}
                   </Link>
                   <span className="num mt-3 block truncate text-xs text-ink-3">{post.slug}</span>
+                  <span className="mt-5 block empty:hidden">
+                    <BlogPlacementBadges post={post} />
+                  </span>
                 </td>
                 <td className="whitespace-nowrap text-ink-2">{BLOG_CATEGORY_LABEL[post.category]}</td>
+                <td className="whitespace-nowrap text-ink-2">{formatLabel(post)}</td>
                 <td className="py-8">
                   <BlogStateBadge post={post} now={now} withTime />
                 </td>
@@ -288,11 +335,13 @@ function PostsTable({ posts, now, caption }: { posts: BlogListItem[]; now: numbe
               {post.title}
             </Link>
             <p className="num mt-3 break-all text-xs text-ink-3">{post.slug}</p>
-            <p className="mt-8">
+            <p className="mt-8 flex flex-wrap items-center gap-8">
               <BlogStateBadge post={post} now={now} withTime />
+              <BlogPlacementBadges post={post} />
             </p>
             <p className="mt-5 flex flex-wrap gap-x-13 text-xs text-ink-3">
               <span>{BLOG_CATEGORY_LABEL[post.category]}</span>
+              {formatLabel(post) && <span>{formatLabel(post)}</span>}
               <span>{post.byline}</span>
               <span className="num">Changed {fmtDateTime(post.updated_at)}</span>
             </p>

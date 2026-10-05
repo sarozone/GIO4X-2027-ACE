@@ -3,14 +3,17 @@ import { ControlHead, NoAccess, Notice } from "@/components/control/bits";
 import { controlMeta } from "@/components/control/format";
 import { BlogEditorView } from "@/components/control/views/BlogEditorView";
 import { site } from "@/config/site";
+import { blogNames } from "@/lib/server/lists/blog";
 import { can, requireStaff } from "@/lib/server/staff";
 
 export const dynamic = "force-dynamic";
 export const metadata = controlMeta("New post", "/control/blog/new");
 
 /**
- * The editor with nothing in it. Reads nothing: a post exists only once the
- * create action has stored it, and the action then opens it at its own address.
+ * The editor with nothing in it. A post exists only once the create action
+ * has stored it, and the action then opens it at its own address. The one
+ * thing read is the names already used as a byline and as a reviewer, which
+ * the editor offers in those two fields.
  */
 export default async function NewBlogPostPage() {
   const ctx = await requireStaff();
@@ -36,6 +39,6 @@ export default async function NewBlogPostPage() {
   }
 
   return (
-    <BlogEditorView post={null} audit={[]} auditFailed={false} names={new Map()} me={ctx.userId} now={Date.now()} canWrite canPublish={can(ctx, "blog.publish")} siteUrl={site.url} />
+    <BlogEditorView post={null} audit={[]} auditFailed={false} names={new Map()} me={ctx.userId} now={Date.now()} canWrite canPublish={can(ctx, "blog.publish")} siteUrl={site.url} suggestions={await blogNames(ctx.supabase)} />
   );
 }

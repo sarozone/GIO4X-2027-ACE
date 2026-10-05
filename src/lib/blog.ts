@@ -6,7 +6,7 @@
  * publication time has passed; the database enforces that for the anonymous
  * role, so nothing here is a gate.
  */
-import type { BlogCategory, BlogStatus } from "@/lib/supabase/types";
+import type { BlogCategory, BlogFormat, BlogStatus } from "@/lib/supabase/types";
 
 /** Must equal `blog_posts_category_valid` in 0011_blog.sql. */
 export const BLOG_CATEGORIES = ["market-notes", "education", "platform", "company"] as const satisfies readonly BlogCategory[];
@@ -17,6 +17,26 @@ export const BLOG_CATEGORY_LABEL: Record<BlogCategory, string> = {
   platform: "Platforms",
   company: "GIO4X",
 };
+
+/**
+ * What kind of piece a post is, beside its category (which says what it is
+ * about). Must equal `blog_posts_format_valid` in 0031_blog_journal.sql.
+ */
+export const BLOG_FORMATS = ["note", "explainer", "guide", "how-to", "analysis", "news"] as const satisfies readonly BlogFormat[];
+
+export const BLOG_FORMAT_LABEL: Record<BlogFormat, string> = {
+  note: "Note",
+  explainer: "Explainer",
+  guide: "Guide",
+  "how-to": "How-to",
+  analysis: "Analysis",
+  news: "News",
+};
+
+/** What a post is when nothing says otherwise: every post written before formats existed. */
+export const DEFAULT_BLOG_FORMAT: BlogFormat = "note";
+
+export const isBlogFormat = (value: unknown): value is BlogFormat => typeof value === "string" && (BLOG_FORMATS as readonly string[]).includes(value);
 
 export const BLOG_STATUSES = ["draft", "review", "published", "archived"] as const satisfies readonly BlogStatus[];
 
@@ -40,6 +60,8 @@ export const BLOG_LIMITS = {
   tags: 8,
   tag: 32,
   byline: 80,
+  /** `blog_posts_reviewed_by_valid` in 0031_blog_journal.sql */
+  reviewedBy: 80,
   seoTitle: 70,
   seoDescription: 170,
   canonical: 300,

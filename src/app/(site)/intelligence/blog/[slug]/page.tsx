@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { BlogPostView } from "@/components/blog/BlogPost";
 import { blogPostMetadata, blogPostSchema } from "@/components/blog/seo";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { NextSteps } from "@/components/ui/Page";
 import { absoluteUrl } from "@/config/site";
 import { BLOG_PATH, isBlogSlug } from "@/lib/blog";
-import { blogCover, blogPostPath, getPost, neighbours } from "@/lib/server/blog";
+import { blogCover, blogPostPath, getPost, movedPost, neighbours } from "@/lib/server/blog";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -16,6 +16,11 @@ type Params = { params: Promise<{ slug: string }> };
  * the first time it is asked for and kept for a minute, after which the next
  * request reads the row again. A correction, a withdrawal or a scheduled post
  * reaching its time is therefore on the site within about a minute.
+ *
+ * An address a published post has left (0031_blog_journal.sql keeps it when
+ * the slug of a published post is changed in the console) answers with a
+ * permanent redirect to the post's current address. A post that is at the
+ * address always wins: the old addresses are asked for only when there is none.
  */
 export const revalidate = 60;
 
@@ -32,7 +37,13 @@ export default async function BlogPostPage({ params }: Params) {
   if (!isBlogSlug(slug)) notFound();
   const result = await getPost(slug);
   // "there is no such public post" is a 404; "the database did not answer" is an error, so that it is never kept as a 404
-  if (result.state === "none" || (result.state === "failed" && result.reason === "not-configured")) notFound();
+  if (result.state === "none") {
+    const moved = await movedPost(slug);
+    // permanent: a search engine and a reader's bookmark are both told the address has changed for good
+    if (moved.state === "moved") permanentRedirect(blogPostPath(moved.slug));
+    notFound();
+  }
+  if (result.state === "failed" && result.reason === "not-configured") notFound();
   if (result.state === "failed") throw new Error("The post could not be read.");
   const { post } = result;
 

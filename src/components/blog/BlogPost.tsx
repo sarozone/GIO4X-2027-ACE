@@ -5,7 +5,7 @@ import { SideBlock } from "@/components/knowledge/Reader";
 import { Share } from "@/components/knowledge/Share";
 import { PageHero } from "@/components/ui/Page";
 import { educationalNote, riskWarning } from "@/config/legal";
-import { BLOG_CATEGORY_LABEL, BLOG_PATH, readingMinutes } from "@/lib/blog";
+import { BLOG_CATEGORY_LABEL, BLOG_FORMAT_LABEL, BLOG_PATH, readingMinutes } from "@/lib/blog";
 import type { BlogCover, BlogNeighbour, BlogPost } from "@/lib/server/blog";
 import { BlogBody, blogHeadings } from "./BlogBody";
 import { BlogCoverImage, blogListHref, blogPostHref } from "./BlogList";
@@ -17,8 +17,9 @@ import "@/components/knowledge/knowledge.css";
  * neighbours arrive as props.
  *
  * What the editorial standards promise is on the page, not behind it: who
- * stands behind the post (a desk), the day it was published, and, when it has
- * been materially changed since, the day of that change and what was changed.
+ * stands behind the post (a desk), who reviewed it when a reviewer is named,
+ * the day it was published, and, when it has been materially changed since,
+ * the day of that change and what was changed.
  */
 
 type Heading = { id: string; text: string };
@@ -72,6 +73,7 @@ export function BlogPostView({
   const headings = blogHeadings(post.body);
   const contents = headings.length >= 3 ? headings : [];
   const tags = post.tags.map((t) => t.trim()).filter(Boolean);
+  const reviewer = post.reviewed_by.trim();
 
   return (
     <>
@@ -83,7 +85,7 @@ export function BlogPostView({
           { name: "Daily blog", href: BLOG_PATH },
           { name: post.title, href: path },
         ]}
-        eyebrow={category}
+        eyebrow={`${category} · ${BLOG_FORMAT_LABEL[post.format]}`}
         title={<span className="[overflow-wrap:anywhere]">{post.title}</span>}
         lead={post.excerpt || undefined}
       />
@@ -93,6 +95,11 @@ export function BlogPostView({
           <article id="reading" className="min-w-0">
             <p className="flex max-w-measure flex-wrap items-center gap-x-21 gap-y-5 border-b border-line pb-21 text-sm text-ink-3">
               <span className="font-medium text-ink-2">{post.byline}</span>
+              {reviewer && (
+                <span data-reviewed-by>
+                  Reviewed by <span className="font-medium text-ink-2">{reviewer}</span>
+                </span>
+              )}
               <span>
                 Published <time dateTime={blogIso(post.published_at)}>{blogLongDate(post.published_at)}</time>
               </span>

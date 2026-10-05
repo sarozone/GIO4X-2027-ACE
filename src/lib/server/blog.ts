@@ -18,12 +18,19 @@
  * console is on the site within about a minute, without a deploy. The console
  * can make that immediate by calling revalidateTag(BLOG_CACHE_TAG) and
  * revalidatePath(BLOG_PATH, "layout") after publishing.
+ *
+ * The format, the lead, the pinned posts, the reviewer and the old addresses
+ * come from 0031_blog_journal.sql. Each read that wants them asks for them
+ * and, when the database answers that it has no such column (the code can be
+ * live a moment before the migration is applied), asks again the way it did
+ * before 0031: the page is then exactly what it was, newest first, every post
+ * a note, nobody leading.
  */
 import { unstable_cache } from "next/cache";
 import { cache } from "react";
-import { BLOG_CATEGORIES, BLOG_PAGE_SIZE, BLOG_PATH, blogImageUrl, readingMinutes } from "@/lib/blog";
+import { BLOG_CATEGORIES, BLOG_PAGE_SIZE, BLOG_PATH, blogImageUrl, DEFAULT_BLOG_FORMAT, isBlogFormat, isBlogSlug, readingMinutes } from "@/lib/blog";
 import { createPublicSupabase } from "@/lib/supabase/server";
-import { BLOG_PUBLIC_COLUMNS, type BlogCategory, type BlogPublicPost } from "@/lib/supabase/types";
+import { BLOG_JOURNAL_COLUMNS, BLOG_PUBLIC_COLUMNS, type BlogCategory, type BlogFormat, type BlogPublicPost } from "@/lib/supabase/types";
 
 /** Seconds a rendered page or a cached list may be served before it is read again. */
 export const BLOG_REVALIDATE = 60;
@@ -40,6 +47,10 @@ export type BlogPost = Omit<BlogPublicPost, "published_at"> & { published_at: st
 export type BlogCard = Pick<BlogPost, "slug" | "title" | "excerpt" | "category" | "byline" | "published_at" | "corrected_at"> & {
   minutes: number;
   cover: BlogCover | null;
+  format: BlogFormat;
+  /** the post the editors chose to lead the index */
+  lead: boolean;
+  pinned: boolean;
 };
 
 export type BlogNeighbour = Pick<BlogPost, "slug" | "title" | "published_at">;
@@ -55,6 +66,8 @@ export type BlogList =
   | { state: "out-of-range" }
   | BlogFailure;
 export type BlogOne = { state: "ok"; post: BlogPost } | { state: "none" } | BlogFailure;
+/** Where an address that no longer has a post leads: the post's current slug, or nowhere. */
+export type BlogMoved = { state: "moved"; slug: string } | { state: "none" };
 export type BlogLatest = { state: "ok"; posts: BlogCard[] } | { state: "none" } | BlogFailure;
 export type BlogNeighbours = { state: "ok"; previous: BlogNeighbour | null; next: BlogNeighbour | null } | BlogFailure;
 export type BlogFeed = { state: "ok"; items: BlogFeedItem[] } | { state: "none" } | BlogFailure;
@@ -64,7 +77,18 @@ const NOT_CONFIGURED: BlogFailure = { state: "failed", reason: "not-configured" 
 const UNAVAILABLE: BlogFailure = { state: "failed", reason: "unavailable" };
 
 const CARD_COLUMNS = "slug, title, excerpt, body, category, byline, published_at, corrected_at, cover_path, cover_alt, cover_width, cover_height" as const;
-type CardRow = Pick<BlogPublicPost, "slug" | "title" | "excerpt" | "body" | "category" | "byline" | "published_at" | "corrected_at" | "cover_path" | "cover_alt" | "cover_width" | "cover_height">;
+/** A card's row: the columns of 0011 always, those of 0031 when the database has them. */
+type CardRow = Pick<BlogPublicPost, "slug" | "title" | "excerpt" | "body" | "category" | "byline" | "published_at" | "corrected_at" | "cover_path" | "cover_alt" | "cover_width" | "cover_height"> &
+  Partial<Pick<BlogPublicPost, "format" | "is_lead" | "is_pinned">>;
+const CARD_COLUMNS_0031 = `${CARD_COLUMNS}, format, is_lead, is_pinned` as const;
+const POST_COLUMNS_0031 = `${BLOG_PUBLIC_COLUMNS}, ${BLOG_JOURNAL_COLUMNS}` as const;
+
+/**
+ * The database answered that a column of 0031 is not there (42703), or not the
+ * anonymous role's to read yet (42501): the migration has not been applied.
+ * The read is then made again without those columns.
+ */
+const before0031 = (error: { code?: string } | null): boolean => error?.code === "42703" || error?.code === "42501";
 
 export const isBlogCategory = (value: unknown): value is BlogCategory => typeof value === "string" && (BLOG_CATEGORIES as readonly string[]).includes(value);
 
@@ -89,29 +113,43 @@ function toCard(row: CardRow): BlogCard | null {
     corrected_at: row.corrected_at,
     minutes: readingMinutes(row.body),
     cover: blogCover(row),
+    format: isBlogFormat(row.format) ? row.format : DEFAULT_BLOG_FORMAT,
+    lead: row.is_lead === true,
+    pinned: row.is_pinned === true,
   };
 }
 
 const cards = (rows: CardRow[] | null): BlogCard[] => (rows ?? []).map(toCard).filter((c): c is BlogCard => c !== null);
 
-/** One page of the list, read from the database. */
+/**
+ * One page of the list, read from the database: the lead first, then the
+ * pinned posts, then the rest, newest first within each. Before 0031 there is
+ * no lead and nothing is pinned, so it is simply newest first.
+ */
 async function readList(page: number, category: BlogCategory | null): Promise<BlogList> {
   const supabase = createPublicSupabase();
   if (!supabase) return NOT_CONFIGURED;
   try {
     const from = (page - 1) * BLOG_PAGE_SIZE;
-    let query = supabase.from("blog_posts").select(CARD_COLUMNS, { count: "exact" }).eq("status", "published").lte("published_at", new Date().toISOString());
-    if (category) query = query.eq("category", category);
-    const { data, count, error } = await query
-      .order("published_at", { ascending: false })
-      .order("slug", { ascending: true })
-      .range(from, from + BLOG_PAGE_SIZE - 1);
+    const now = new Date().toISOString();
+    const ask = async (journal: boolean) => {
+      let query = supabase.from("blog_posts").select(journal ? CARD_COLUMNS_0031 : CARD_COLUMNS, { count: "exact" }).eq("status", "published").lte("published_at", now);
+      if (category) query = query.eq("category", category);
+      if (journal) query = query.order("is_lead", { ascending: false }).order("is_pinned", { ascending: false });
+      const answer = await query
+        .order("published_at", { ascending: false })
+        .order("slug", { ascending: true })
+        .range(from, from + BLOG_PAGE_SIZE - 1);
+      return { data: answer.data as unknown as CardRow[] | null, count: answer.count, error: answer.error };
+    };
+    let { data, count, error } = await ask(true);
+    if (before0031(error)) ({ data, count, error } = await ask(false));
     if (error) {
       // PostgREST answers "range not satisfiable" when the first row asked for is past the last one
       if (error.code === "PGRST103") return page > 1 ? { state: "out-of-range" } : { state: "none" };
       return UNAVAILABLE;
     }
-    const posts = cards(data as CardRow[] | null);
+    const posts = cards(data);
     if (!posts.length) return page > 1 ? { state: "out-of-range" } : { state: "none" };
     const total = Math.max(count ?? 0, from + posts.length);
     return { state: "ok", posts, total, page, pages: Math.max(1, Math.ceil(total / BLOG_PAGE_SIZE)) };
@@ -134,7 +172,8 @@ const cachedList = unstable_cache(
     if (result.state === "failed") throw new BlogReadFailed(result.reason);
     return result;
   },
-  ["blog-list"],
+  // "-0031": a card gained its format and its place on the index; a list kept from before must not be handed to code that expects them
+  ["blog-list-0031"],
   { revalidate: BLOG_REVALIDATE, tags: [BLOG_CACHE_TAG] },
 );
 
@@ -158,19 +197,62 @@ export const getPost = cache(async (slug: string): Promise<BlogOne> => {
   const supabase = createPublicSupabase();
   if (!supabase) return NOT_CONFIGURED;
   try {
-    const { data, error } = await supabase
-      .from("blog_posts")
-      .select(BLOG_PUBLIC_COLUMNS)
-      .eq("slug", slug)
-      .eq("status", "published")
-      .lte("published_at", new Date().toISOString())
-      .maybeSingle();
+    const now = new Date().toISOString();
+    // before 0031 the four columns are not in the answer: the post is then a note, leads nothing, and names no reviewer
+    type Row = Omit<BlogPublicPost, "format" | "is_lead" | "is_pinned" | "reviewed_by"> & Partial<Pick<BlogPublicPost, "format" | "is_lead" | "is_pinned" | "reviewed_by">>;
+    const ask = async (journal: boolean) => {
+      const answer = await supabase
+        .from("blog_posts")
+        .select(journal ? POST_COLUMNS_0031 : BLOG_PUBLIC_COLUMNS)
+        .eq("slug", slug)
+        .eq("status", "published")
+        .lte("published_at", now)
+        .maybeSingle();
+      return { data: answer.data as unknown as Row | null, error: answer.error };
+    };
+    let { data: row, error } = await ask(true);
+    if (before0031(error)) ({ data: row, error } = await ask(false));
     if (error) return UNAVAILABLE;
-    const row = data as BlogPublicPost | null;
     if (!row || !row.published_at) return { state: "none" };
-    return { state: "ok", post: { ...row, published_at: row.published_at } };
+    return {
+      state: "ok",
+      post: {
+        ...row,
+        published_at: row.published_at,
+        format: isBlogFormat(row.format) ? row.format : DEFAULT_BLOG_FORMAT,
+        is_lead: row.is_lead === true,
+        is_pinned: row.is_pinned === true,
+        reviewed_by: typeof row.reviewed_by === "string" ? row.reviewed_by : "",
+      },
+    };
   } catch {
     return UNAVAILABLE;
+  }
+});
+
+/**
+ * Where an address that has no public post leads, when a published post used
+ * to live there (`blog_slug_redirects`, 0031). Asked only after getPost() has
+ * answered "none", and read the same way: as the anonymous role, which is
+ * shown an old address only while the post it belongs to is public.
+ *
+ * Anything other than a clear answer is "none": the table not being there yet,
+ * or a read that did not complete, leaves the page what it was before 0031, a
+ * 404 that is read again within a minute.
+ */
+export const movedPost = cache(async (slug: string): Promise<BlogMoved> => {
+  const supabase = createPublicSupabase();
+  if (!supabase) return { state: "none" };
+  try {
+    const old = await supabase.from("blog_slug_redirects").select("post_id").eq("old_slug", slug).maybeSingle();
+    if (old.error || !old.data) return { state: "none" };
+    const current = await supabase.from("blog_posts").select("slug").eq("id", old.data.post_id).eq("status", "published").lte("published_at", new Date().toISOString()).maybeSingle();
+    const to = current.data?.slug;
+    // never to itself, and never to anything that is not the address of a post
+    if (current.error || !isBlogSlug(to) || to === slug) return { state: "none" };
+    return { state: "moved", slug: to };
+  } catch {
+    return { state: "none" };
   }
 });
 
@@ -201,16 +283,23 @@ export async function latestPosts(n: number): Promise<BlogLatest> {
   const supabase = createPublicSupabase();
   if (!supabase) return NOT_CONFIGURED;
   try {
-    const { data, error } = await supabase
-      .from("blog_posts")
-      .select(CARD_COLUMNS)
-      .eq("status", "published")
-      .lte("published_at", new Date().toISOString())
-      .order("published_at", { ascending: false })
-      .order("slug", { ascending: true })
-      .limit(Math.min(Math.max(1, Math.floor(n)), BLOG_PAGE_SIZE));
+    const now = new Date().toISOString();
+    // newest first, as it always was: the lead and the pinned posts order the blog's own index, not this section
+    const ask = async (journal: boolean) => {
+      const answer = await supabase
+        .from("blog_posts")
+        .select(journal ? CARD_COLUMNS_0031 : CARD_COLUMNS)
+        .eq("status", "published")
+        .lte("published_at", now)
+        .order("published_at", { ascending: false })
+        .order("slug", { ascending: true })
+        .limit(Math.min(Math.max(1, Math.floor(n)), BLOG_PAGE_SIZE));
+      return { data: answer.data as unknown as CardRow[] | null, error: answer.error };
+    };
+    let { data, error } = await ask(true);
+    if (before0031(error)) ({ data, error } = await ask(false));
     if (error) return UNAVAILABLE;
-    const posts = cards(data as CardRow[] | null);
+    const posts = cards(data);
     return posts.length ? { state: "ok", posts } : { state: "none" };
   } catch {
     return UNAVAILABLE;

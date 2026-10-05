@@ -1,7 +1,7 @@
 import { GeneratedCover } from "@/components/ui/GeneratedCover";
 import Link from "next/link";
 import { EmptyState } from "@/components/ui/Page";
-import { BLOG_CATEGORIES, BLOG_CATEGORY_LABEL, BLOG_PATH } from "@/lib/blog";
+import { BLOG_CATEGORIES, BLOG_CATEGORY_LABEL, BLOG_FORMAT_LABEL, BLOG_PATH } from "@/lib/blog";
 import type { BlogCard, BlogCover } from "@/lib/server/blog";
 import type { BlogCategory } from "@/lib/supabase/types";
 import { blogIso, blogShortDate } from "./format";
@@ -75,9 +75,27 @@ export function BlogCategoryNav({ current }: { current: BlogCategory | null }) {
   );
 }
 
-/** The newest post of page one, set larger. */
+/** What kind of piece a post is, and what it is about: the two chips on a card. */
+export function BlogChips({ post, className = "" }: { post: Pick<BlogCard, "format" | "category">; className?: string }) {
+  return (
+    <span className={`flex flex-wrap gap-5 ${className}`}>
+      <span className="chip" data-chip="format">
+        {BLOG_FORMAT_LABEL[post.format]}
+      </span>
+      <span className="chip" data-chip="category">
+        {BLOG_CATEGORY_LABEL[post.category]}
+      </span>
+    </span>
+  );
+}
+
+/**
+ * The first post of page one, set larger: the post the editors chose to lead
+ * when there is one, otherwise the first pinned post, otherwise the newest.
+ */
 function Featured({ post }: { post: BlogCard }) {
   const href = blogPostHref(post.slug);
+  const standing = post.lead ? "Lead" : post.pinned ? "Pinned" : "Latest";
   return (
     <article className="grid items-center gap-34 border-b border-line pb-34 lg:grid-cols-phi lg:gap-55 lg:pb-55" aria-labelledby="blog-latest-post">
       <Link href={href} tabIndex={-1} aria-hidden className="block">
@@ -85,7 +103,8 @@ function Featured({ post }: { post: BlogCard }) {
         {post.cover ? <BlogCoverImage cover={post.cover} className="aspect-[16/10] w-full object-cover" /> : <GeneratedCover seed={post.slug} className="aspect-[16/10] w-full" />}
       </Link>
       <div>
-        <p className="label">Latest · {BLOG_CATEGORY_LABEL[post.category]}</p>
+        <p className="label">{standing}</p>
+        <BlogChips post={post} className="mt-13" />
         <h3 id="blog-latest-post" className="h2 mt-13 max-w-[22ch] [overflow-wrap:anywhere]">
           <Link href={href} className="transition-colors duration-fast hover:text-accent">
             {post.title}
@@ -101,33 +120,40 @@ function Featured({ post }: { post: BlogCard }) {
   );
 }
 
-/** Every other post: a row with the date in the margin, as the Intelligence archive is set. */
-function Rows({ posts }: { posts: BlogCard[] }) {
+/**
+ * Every other post, as cards: three to a row on a desk, two on a tablet, one
+ * on a phone. A card is its cover (a drawn one when the post has no picture),
+ * the two chips, the date, and the title and the excerpt held to two lines
+ * each, so that every card in a row is the same height.
+ */
+function Cards({ posts }: { posts: BlogCard[] }) {
   return (
-    <ul className="border-t border-line-strong">
+    <ul className="grid gap-x-21 gap-y-34 sm:grid-cols-2 lg:grid-cols-3" data-blog-cards>
       {posts.map((p) => (
-        <li key={p.slug} className="border-b border-line">
-          <Link
-            href={blogPostHref(p.slug)}
-            className={`group grid gap-x-34 gap-y-8 py-21 transition-colors duration-fast hover:bg-surface md:px-13 lg:py-34 ${"md:grid-cols-[8.5rem_minmax(0,1fr)_minmax(0,13rem)]"}`}
-          >
-            <span className="flex items-baseline gap-13 md:flex-col md:gap-3">
-              <span className="label text-ink-2">{BLOG_CATEGORY_LABEL[p.category]}</span>
+        <li key={p.slug} className="grid">
+          <Link href={blogPostHref(p.slug)} className="group flex h-full flex-col overflow-hidden rounded-md border border-line bg-surface transition-colors duration-fast hover:border-line-strong">
+            {p.cover ? (
+              <BlogCoverImage cover={p.cover} className="aspect-[16/10] w-full !rounded-none border-0 border-b object-cover" />
+            ) : (
+              <GeneratedCover seed={p.slug} className="aspect-[16/10] w-full !rounded-none border-b border-line" />
+            )}
+            <span className="flex flex-1 flex-col gap-13 p-21">
+              <span className="flex flex-wrap items-center justify-between gap-x-13 gap-y-8">
+                <BlogChips post={p} />
+                {p.pinned && <span className="label text-ink-2">Pinned</span>}
+              </span>
               <time dateTime={blogIso(p.published_at)} className="num text-xs text-ink-3">
                 {blogShortDate(p.published_at)}
               </time>
-            </span>
-            <span className="min-w-0">
-              <span role="heading" aria-level={3} className="h3 block max-w-[30ch] transition-colors duration-fast [overflow-wrap:anywhere] group-hover:text-accent">
+              <span role="heading" aria-level={3} className="h4 line-clamp-2 transition-colors duration-fast [overflow-wrap:anywhere] group-hover:text-accent">
                 {p.title}
               </span>
-              {p.excerpt && <span className="mt-8 block max-w-measure text-ink-2">{p.excerpt}</span>}
-              <span className="mt-13 flex flex-wrap items-center gap-x-13 gap-y-2 text-xs text-ink-3">
+              {p.excerpt && <span className="line-clamp-2 text-sm text-ink-2">{p.excerpt}</span>}
+              <span className="mt-auto flex flex-wrap items-center gap-x-13 gap-y-2 pt-8 text-xs text-ink-3">
                 <span>{p.byline}</span>
                 <span className="num">{p.minutes} min read</span>
               </span>
             </span>
-            {p.cover ? <BlogCoverImage cover={p.cover} className="aspect-[16/10] w-full max-w-[21rem] self-start object-cover md:max-w-none" /> : <GeneratedCover seed={p.slug} className="aspect-[16/10] w-full max-w-[21rem] self-start md:max-w-none" />}
           </Link>
         </li>
       ))}
@@ -174,7 +200,8 @@ export function BlogListView({ posts, page, pages, total, category }: { posts: B
         {feature && <Featured post={feature} />}
         {rest.length > 0 && (
           <div className={feature ? "mt-34 lg:mt-55" : ""}>
-            <Rows posts={rest} />
+            {feature && <p className="label mb-21">More from the blog</p>}
+            <Cards posts={rest} />
           </div>
         )}
       </div>

@@ -2,18 +2,18 @@ import { NoAccess } from "@/components/control/bits";
 import { controlMeta, firstParam } from "@/components/control/format";
 import { BLOG_FILTERS, type BlogFilter } from "@/components/control/views/blog-shared";
 import { BlogListView, type BlogCounts, type BlogListItem } from "@/components/control/views/BlogListView";
-import { BLOG_CATEGORIES } from "@/lib/blog";
+import { BLOG_CATEGORIES, isBlogFormat } from "@/lib/blog";
 import { blogFiltered } from "@/lib/server/lists/blog";
 import { readViews } from "@/lib/server/personal";
 import { can, requireStaff } from "@/lib/server/staff";
 import { cleanSearch } from "@/lib/server/validate";
-import type { BlogCategory } from "@/lib/supabase/types";
+import type { BlogCategory, BlogFormat } from "@/lib/supabase/types";
 
 export const dynamic = "force-dynamic";
 export const metadata = controlMeta("Blog", "/control/blog");
 
 const PER_PAGE = 25;
-/** A search is a few words: each must appear in the title or the address. */
+/** A search is a few words: each must appear in the title or the address, or be one of the post's tags. */
 const MAX_WORDS = 5;
 
 const ERRORS: Record<string, string> = {
@@ -40,6 +40,8 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
   const status: BlogFilter | "" = (BLOG_FILTERS as readonly string[]).includes(statusParam) ? (statusParam as BlogFilter) : "";
   const categoryParam = firstParam(params.category);
   const category: BlogCategory | "" = (BLOG_CATEGORIES as readonly string[]).includes(categoryParam) ? (categoryParam as BlogCategory) : "";
+  const formatParam = firstParam(params.format);
+  const format: BlogFormat | "" = isBlogFormat(formatParam) ? formatParam : "";
   const words = firstParam(params.q)
     .slice(0, 200)
     .split(/\s+/)
@@ -53,10 +55,13 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
   const nowIso = new Date(now).toISOString();
 
   // the filters are applied in src/lib/server/lists/blog.ts, which a saved view's count on the dashboard uses too
-  const query = blogFiltered(supabase, { status, category, words }, nowIso)
-    .order("updated_at", { ascending: false })
-    .order("id", { ascending: false })
-    .range((page - 1) * PER_PAGE, page * PER_PAGE - 1);
+  const list = (legacy: boolean) =>
+    blogFiltered(supabase, { status, category, format: legacy ? "" : format, words }, nowIso, false, legacy)
+      .order("updated_at", { ascending: false })
+      .order("id", { ascending: false })
+      .range((page - 1) * PER_PAGE, page * PER_PAGE - 1);
+  // 42703: the database has no such column yet (0031_blog_journal.sql not applied): the list as it was before it
+  const query = list(false).then((answer) => (answer.error?.code === "42703" ? list(true) : answer));
 
   // the figures at the top: one count per state, from the rows themselves
   const count = () => supabase.from("blog_posts").select("id", { count: "exact", head: true });
@@ -85,8 +90,10 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
     <BlogListView
       status={status}
       category={category}
+      format={format}
       q={words.join(" ")}
-      posts={(result.data ?? []) as BlogListItem[]}
+      // read with one of two lists of columns (see BLOG_LIST_COLUMNS_0011), so the rows are named here
+      posts={(result.data ?? []) as unknown as BlogListItem[]}
       counts={counts}
       now={now}
       canWrite={can(ctx, "blog.write")}

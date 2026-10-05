@@ -14,6 +14,9 @@ import { blogImageUrl } from "@/lib/blog";
  *   > a quotation
  *   ---                   a rule
  *   ![alt text](folder/picture.webp "optional caption")
+ *   | Column | Column |   a table: a row of headings, a row of dashes
+ *   | --- | --- |         (| --- | --- |), then the rows. A cell takes the
+ *   | cell | cell |       same inline marks as a paragraph.
  *
  * A picture's address is a path inside the blog bucket (see blogImageUrl): a
  * post cannot load an image from another host. A link is a path on this site
@@ -66,9 +69,28 @@ type Block =
   | { kind: "h2" | "h3" | "p" | "quote"; text: string }
   | { kind: "ul" | "ol"; items: string[] }
   | { kind: "rule" }
-  | { kind: "image"; alt: string; path: string; caption: string };
+  | { kind: "image"; alt: string; path: string; caption: string }
+  | { kind: "table"; head: string[]; rows: string[][] };
 
 const IMAGE = /^!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)$/;
+
+/** A row of a table: it starts with a bar. The row under the headings is made of dashes (colons are allowed, and ignored). */
+const TABLE_ROW = /^\|.*\S/;
+const TABLE_RULE = /^\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)*\|?$/;
+
+/** The cells of a row. A bar inside a cell is written \| . */
+function tableCells(line: string): string[] {
+  const inner = line.trim().replace(/^\|/, "").replace(/(?<!\\)\|$/, "");
+  return inner.split(/(?<!\\)\|/).map((cell) => cell.replace(/\\\|/g, "|").trim());
+}
+
+/** A table begins where a row of headings is followed at once by the row of dashes, with as many columns. */
+function tableStartsAt(lines: string[], i: number): boolean {
+  const head = lines[i]?.trim() ?? "";
+  const rule = lines[i + 1]?.trim() ?? "";
+  if (!TABLE_ROW.test(head) || !rule.startsWith("|") || !TABLE_RULE.test(rule)) return false;
+  return tableCells(head).length === tableCells(rule).length;
+}
 
 export function parseBlogBody(source: string): Block[] {
   const blocks: Block[] = [];
@@ -89,6 +111,19 @@ export function parseBlogBody(source: string): Block[] {
     if (image) {
       blocks.push({ kind: "image", alt: image[1], path: image[2], caption: image[3] ?? "" });
       i++;
+      continue;
+    }
+    if (tableStartsAt(lines, i)) {
+      const head = tableCells(lines[i]);
+      const rows: string[][] = [];
+      i += 2;
+      while (i < lines.length && TABLE_ROW.test(lines[i].trim())) {
+        // every row has as many cells as there are headings: short rows are filled, long ones cut
+        const cells = tableCells(lines[i]);
+        rows.push(head.map((_, c) => cells[c] ?? ""));
+        i++;
+      }
+      blocks.push({ kind: "table", head, rows });
       continue;
     }
     if (line.startsWith("### ")) {
@@ -118,7 +153,7 @@ export function parseBlogBody(source: string): Block[] {
     while (i < lines.length) {
       const l = lines[i].trimEnd();
       if (!l.trim()) break;
-      if (buf.length && (/^(## |### |[-*] |\d+[.)] |---+$)/.test(l) || IMAGE.test(l.trim()) || l.startsWith("> ") !== quote)) break;
+      if (buf.length && (/^(## |### |[-*] |\d+[.)] |---+$)/.test(l) || IMAGE.test(l.trim()) || l.startsWith("> ") !== quote || tableStartsAt(lines, i))) break;
       buf.push(quote ? l.slice(2) : l);
       i++;
     }
@@ -193,6 +228,34 @@ export function BlogBody({ source, className = "" }: { source: string; className
               </figure>
             );
           }
+          case "table":
+            return (
+              // wider than the column on a phone: the table scrolls sideways inside its own frame, the page does not
+              <div key={key} className="scroll-x">
+                <table className="table-gx w-full text-sm">
+                  <thead>
+                    <tr>
+                      {b.head.map((cell, c) => (
+                        <th key={c} scope="col">
+                          {inline(cell, `${key}-h${c}`)}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {b.rows.map((row, r) => (
+                      <tr key={r}>
+                        {row.map((cell, c) => (
+                          <td key={c} className="py-8">
+                            {inline(cell, `${key}-${r}-${c}`)}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            );
           default:
             return (
               <p key={key}>

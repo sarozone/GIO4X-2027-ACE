@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useActionState, useEffect, useMemo, useRef, useState, type ClipboardEvent, type ReactNode } from "react";
 import { createBlogPost, saveBlogCorrection, saveBlogPost, setBlogStatus } from "@/app/control/actions-blog";
 import { readBlogRevisions } from "@/app/control/actions-blog-revisions";
 import { BlogBody } from "@/components/blog/BlogBody";
@@ -25,8 +25,23 @@ import {
   wordCount,
   type BlogFormState,
 } from "@/components/control/views/blog-shared";
-import { BLOG_CATEGORIES, BLOG_CATEGORY_LABEL, BLOG_IMAGE_TYPES, BLOG_LIMITS, BLOG_PATH, blogImageUrl, isBlogSlug, readingMinutes, slugify } from "@/lib/blog";
-import type { BlogCategory, BlogPostRow } from "@/lib/supabase/types";
+import {
+  BLOG_CATEGORIES,
+  BLOG_CATEGORY_LABEL,
+  BLOG_FORMAT_LABEL,
+  BLOG_FORMATS,
+  BLOG_IMAGE_TYPES,
+  BLOG_LIMITS,
+  BLOG_PATH,
+  blogImageUrl,
+  DEFAULT_BLOG_FORMAT,
+  isBlogFormat,
+  isBlogSlug,
+  readingMinutes,
+  slugify,
+} from "@/lib/blog";
+import { pasteAsMarkdown } from "@/lib/blog-paste";
+import type { BlogCategory, BlogFormat, BlogPostRow } from "@/lib/supabase/types";
 
 const STANDARDS_PATH = "/trust/editorial-standards";
 const UPLOAD_PATH = "/control/blog/upload";
@@ -49,6 +64,11 @@ export type BlogEditorProps = {
    * server action unless a stand-in is given.
    */
   history?: { revisions: BlogRevisionMeta[] | null; load?: LoadRevisions };
+  /**
+   * Names already used as a byline and as a reviewer on other posts, offered as the writer types. Both fields
+   * stay free text: left out, nothing is offered and nothing else changes.
+   */
+  suggestions?: { bylines: string[]; reviewers: string[] };
 };
 
 /** Everything being typed. Saved values arrive in `post`; saving is the server action's job. */
@@ -57,8 +77,12 @@ type Values = {
   slug: string;
   excerpt: string;
   category: BlogCategory;
+  format: BlogFormat;
   tags: string;
   byline: string;
+  reviewedBy: string;
+  isLead: boolean;
+  isPinned: boolean;
   body: string;
   coverPath: string;
   coverAlt: string;
@@ -83,8 +107,13 @@ function initialValues(post: BlogPostRow | null): Values {
     slug: post?.slug ?? "",
     excerpt: post?.excerpt ?? "",
     category: post?.category ?? "market-notes",
+    // a row read from a database that 0031_blog_journal.sql has not reached carries none of the four: each has its default
+    format: isBlogFormat(post?.format) ? post.format : DEFAULT_BLOG_FORMAT,
     tags: (post?.tags ?? []).join(", "),
     byline: post?.byline ?? DEFAULT_BYLINE,
+    reviewedBy: post?.reviewed_by ?? "",
+    isLead: post?.is_lead === true,
+    isPinned: post?.is_pinned === true,
     body: post?.body ?? "",
     coverPath: post?.cover_path ?? "",
     coverAlt: post?.cover_alt ?? "",
@@ -282,7 +311,49 @@ function insertBlock(text: string, at: number, block: string, selectFrom: number
   return { text: text.slice(0, at) + lead + block + tail + rest, start: begin, end: begin + selectLength };
 }
 
+/** Numbers every line the selection touches, from 1. An empty line gets a placeholder to type over. */
+function numberLines(text: string, start: number, end: number, placeholder: string): Edit {
+  const from = text.lastIndexOf("\n", start - 1) + 1;
+  const nextBreak = text.indexOf("\n", end);
+  const to = nextBreak === -1 ? text.length : nextBreak;
+  const chosen = text.slice(from, to);
+  let n = 0;
+  const lines = (chosen.trim() ? chosen : placeholder).split("\n").map((l) => (l.trim() ? `${++n}. ${l}` : l));
+  const block = lines.join("\n");
+  return { text: text.slice(0, from) + block + text.slice(to), start: from + 3, end: from + block.length };
+}
+
+/**
+ * Puts pasted Markdown where the selection is. A few words go into the line
+ * being written; anything made of blocks (a heading, a list, a table, several
+ * paragraphs) goes on lines of its own. The cursor is left after it.
+ */
+function pasteInto(text: string, start: number, end: number, markdown: string): Edit {
+  const cut = text.slice(0, start) + text.slice(end);
+  if (!markdown.includes("\n") && !/^(#{2,3} |[-*] |\d+[.)] |> |\||---+$)/.test(markdown)) {
+    const at = start + markdown.length;
+    return { text: cut.slice(0, start) + markdown + cut.slice(start), start: at, end: at };
+  }
+  return insertBlock(cut, start, markdown, markdown.length, 0);
+}
+
 const ALT_PLACEHOLDER = "Describe the picture";
+
+/** A table to type over: a row of headings, the row of dashes that makes it a table, and a first row. */
+const TABLE_BLOCK = "| Column | Column |\n| --- | --- |\n| Cell | Cell |";
+
+/* -------------------------------------------------------------------------- */
+/* the size of the body field                                                 */
+/* -------------------------------------------------------------------------- */
+
+const EDITOR_SIZES = ["small", "medium", "large", "full"] as const;
+type EditorSize = (typeof EDITOR_SIZES)[number];
+const EDITOR_SIZE_LABEL: Record<EditorSize, string> = { small: "Small", medium: "Medium", large: "Large", full: "Full height" };
+/** "medium" is the height the field has always had. "full" is the window, less the console's header and the toolbar. */
+const EDITOR_SIZE_HEIGHT: Record<EditorSize, string> = { small: "16rem", medium: "28rem", large: "44rem", full: "max(28rem, calc(100dvh - 9rem))" };
+/** One key in this browser's localStorage. A preference about the screen: it is never sent anywhere. */
+const EDITOR_SIZE_KEY = "gxc:blog-editor-size";
+const isEditorSize = (value: unknown): value is EditorSize => typeof value === "string" && (EDITOR_SIZES as readonly string[]).includes(value);
 
 const SYNTAX: { mark: string; means: string }[] = [
   { mark: "## Heading", means: "a section heading" },
@@ -296,6 +367,7 @@ const SYNTAX: { mark: string; means: string }[] = [
   { mark: "1. item", means: "a numbered list" },
   { mark: "> words", means: "a quotation" },
   { mark: "---", means: "a rule across the page" },
+  { mark: "| A | B |", means: "a table: the first row is the headings, with a row | --- | --- | under it" },
   { mark: '![alt text](path "caption")', means: "a picture, on a line of its own" },
 ];
 
@@ -311,7 +383,7 @@ const SYNTAX: { mark: string; means: string }[] = [
  * the server actions check the role again, and the database has the final
  * say. A refusal comes back as a fixed code and the form keeps what was typed.
  */
-export function BlogEditor({ post, canWrite, canPublish, now, siteUrl, history }: BlogEditorProps) {
+export function BlogEditor({ post, canWrite, canPublish, now, siteUrl, history, suggestions }: BlogEditorProps) {
   const start = useMemo(() => initialValues(post), [post]);
   const [values, setValues] = useState<Values>(start);
   // a new post's address follows its title until the writer types an address of their own
@@ -321,6 +393,8 @@ export function BlogEditor({ post, canWrite, canPublish, now, siteUrl, history }
   const [coverUpload, setCoverUpload] = useState<UploadState>(IDLE);
   const [ogUpload, setOgUpload] = useState<UploadState>(IDLE);
   const [bodyUpload, setBodyUpload] = useState<UploadState>(IDLE);
+  const [pasteNote, setPasteNote] = useState("");
+  const [editorSize, setEditorSize] = useState<EditorSize>("medium");
   const bodyRef = useRef<HTMLTextAreaElement>(null);
   const selection = useRef<[number, number] | null>(null);
   const problemRef = useRef<HTMLDivElement>(null);
@@ -356,6 +430,24 @@ export function BlogEditor({ post, canWrite, canPublish, now, siteUrl, history }
     selection.current = null;
   }, [values.body]);
 
+  // the size of the body field this browser was last left at (read after the first paint: the server cannot know it)
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(EDITOR_SIZE_KEY);
+      if (isEditorSize(stored)) setEditorSize(stored);
+    } catch {
+      /* storage is switched off in this browser: the field keeps its usual size */
+    }
+  }, []);
+  const chooseEditorSize = (size: EditorSize) => {
+    setEditorSize(size);
+    try {
+      window.localStorage.setItem(EDITOR_SIZE_KEY, size);
+    } catch {
+      /* not remembered, and nothing else changes */
+    }
+  };
+
   // a refusal: show the form (not the preview) and bring the reason into view
   useEffect(() => {
     if (!state.error) return;
@@ -377,6 +469,25 @@ export function BlogEditor({ post, canWrite, canPublish, now, siteUrl, history }
     const next = change(values.body, el.selectionStart, el.selectionEnd);
     selection.current = [next.start, next.end];
     set("body", next.text);
+  };
+
+  /**
+   * A paste from Word, Google Docs or a web page: the clipboard's HTML is read for its headings, bold, italic,
+   * lists, links, quotations and tables, which go into the body as the marks it understands (src/lib/blog-paste.ts).
+   * No HTML is ever inserted. When the HTML says nothing the plain text does not, the browser pastes as it always has.
+   */
+  const onBodyPaste = (e: ClipboardEvent<HTMLTextAreaElement>) => {
+    if (ro) return;
+    const html = e.clipboardData.getData("text/html");
+    if (!html) return;
+    const markdown = pasteAsMarkdown(html, e.clipboardData.getData("text/plain"));
+    if (markdown === null) return;
+    e.preventDefault();
+    const el = e.currentTarget;
+    const next = pasteInto(values.body, el.selectionStart, el.selectionEnd, markdown);
+    selection.current = [next.start, next.end];
+    set("body", next.text);
+    setPasteNote("Pasted with its formatting kept as marks: headings, bold, italic, lists, links, quotations and tables. Pictures, colours and fonts are not pasted. Look it over in the preview.");
   };
 
   const onTitle = (title: string) => setValues((v) => ({ ...v, title, slug: slugOwn ? v.slug : slugify(title) }));
@@ -537,22 +648,25 @@ export function BlogEditor({ post, canWrite, canPublish, now, siteUrl, history }
                     </span>
                     . Lower-case letters, digits and single hyphens, 3 to {BLOG_LIMITS.slug} characters. {!post && !slugOwn ? "It follows the title until you change it here." : ""}
                     {values.slug !== "" && !slugOk && <span className="mt-3 block font-medium text-neg">This is not a valid address yet.</span>}
-                    {!ro && slugOwn && slugify(values.title) !== values.slug && values.title.trim().length >= 3 && (
+                    {post?.status === "published" && values.slug !== post.slug && (
+                      <span className="mt-3 block font-medium text-warn" data-slug-warning>
+                        This post is published. When the change is saved, its old address is kept and answers with a permanent redirect to the new one, so links in search engines and on other sites go on working. Change it only when the address is wrong.
+                      </span>
+                    )}
+                    {!ro && (
                       <button
                         type="button"
-                        className="link mt-3 block text-left"
+                        className="btn btn-ghost btn-sm mt-8"
+                        data-slug-from-title
+                        disabled={slugify(values.title).length < 3 || slugify(values.title) === values.slug}
                         onClick={() => {
+                          // a new post goes back to following its title; a saved one takes the title's address once
                           setSlugOwn(post !== null);
                           set("slug", slugify(values.title));
                         }}
                       >
-                        Make it from the title
+                        Generate from the title
                       </button>
-                    )}
-                    {post?.status === "published" && values.slug !== post.slug && (
-                      <span className="mt-3 block font-medium text-warn" data-slug-warning>
-                        This post is published. Changing its address breaks every link to it, in search engines and on other sites: the old address is not redirected.
-                      </span>
                     )}
                   </Hint>
                 </div>
@@ -578,6 +692,17 @@ export function BlogEditor({ post, canWrite, canPublish, now, siteUrl, history }
 
                 <div className="grid gap-21 sm:grid-cols-2 sm:items-start">
                   <div className="field">
+                    <label htmlFor="blog-format">Format</label>
+                    <select id="blog-format" name="format" className="select" value={values.format} onChange={(e) => set("format", e.target.value as BlogFormat)} disabled={ro} aria-invalid={invalid("format")} aria-describedby="blog-format-hint">
+                      {BLOG_FORMATS.map((f) => (
+                        <option key={f} value={f}>
+                          {BLOG_FORMAT_LABEL[f]}
+                        </option>
+                      ))}
+                    </select>
+                    <Hint id="blog-format-hint">What kind of piece it is. Shown beside the category on the post and in the list of posts.</Hint>
+                  </div>
+                  <div className="field">
                     <label htmlFor="blog-category">Category</label>
                     <select id="blog-category" name="category" className="select" value={values.category} onChange={(e) => set("category", e.target.value as BlogCategory)} disabled={ro} aria-invalid={invalid("category")} aria-describedby="blog-category-hint">
                       {BLOG_CATEGORIES.map((c) => (
@@ -589,11 +714,12 @@ export function BlogEditor({ post, canWrite, canPublish, now, siteUrl, history }
                     <Hint id="blog-category-hint">The one section of the blog the post belongs to.</Hint>
                   </div>
                   <div className="field">
-                    <label htmlFor="blog-byline">Byline</label>
+                    <label htmlFor="blog-byline">Byline (author)</label>
                     <input
                       id="blog-byline"
                       name="byline"
                       type="text"
+                      list="blog-bylines"
                       className="input"
                       value={values.byline}
                       onChange={(e) => set("byline", e.target.value)}
@@ -608,6 +734,36 @@ export function BlogEditor({ post, canWrite, canPublish, now, siteUrl, history }
                     <Hint id="blog-byline-hint" count={<Count name="byline" value={values.byline} max={BLOG_LIMITS.byline} />}>
                       The site publishes under desks, not invented people: see <NewTab href={STANDARDS_PATH}>Editorial standards</NewTab>. Left empty, it is “{DEFAULT_BYLINE}”.
                     </Hint>
+                    <datalist id="blog-bylines">
+                      {(suggestions?.bylines ?? [DEFAULT_BYLINE]).map((name) => (
+                        <option key={name} value={name} />
+                      ))}
+                    </datalist>
+                  </div>
+                  <div className="field">
+                    <label htmlFor="blog-reviewed-by">Reviewed by</label>
+                    <input
+                      id="blog-reviewed-by"
+                      name="reviewed_by"
+                      type="text"
+                      list="blog-reviewers"
+                      className="input"
+                      value={values.reviewedBy}
+                      onChange={(e) => set("reviewedBy", e.target.value)}
+                      maxLength={BLOG_LIMITS.reviewedBy}
+                      readOnly={ro}
+                      autoComplete="off"
+                      aria-invalid={invalid("reviewed_by")}
+                      aria-describedby="blog-reviewed-by-hint"
+                    />
+                    <Hint id="blog-reviewed-by-hint" count={<Count name="reviewed_by" value={values.reviewedBy} max={BLOG_LIMITS.reviewedBy} />}>
+                      Optional. Who read the post before it was published, as a reader is told: “Reviewed by …” beside the byline. Name a desk or a real reviewer, and only when the review took place. Left empty, nothing is shown.
+                    </Hint>
+                    <datalist id="blog-reviewers">
+                      {(suggestions?.reviewers ?? []).map((name) => (
+                        <option key={name} value={name} />
+                      ))}
+                    </datalist>
                   </div>
                 </div>
 
@@ -645,8 +801,11 @@ export function BlogEditor({ post, canWrite, canPublish, now, siteUrl, history }
                     <label htmlFor="blog-body">Body</label>
                     {!ro && (
                       <div role="toolbar" aria-label="Insert a mark at the cursor" className="flex flex-wrap items-center gap-5">
-                        <button type="button" className="btn btn-ghost btn-sm" data-mark="heading" onClick={() => editBody((t, a, b) => prefixLines(t, a, b, "## ", "Heading"))}>
-                          Heading
+                        <button type="button" className="btn btn-ghost btn-sm" data-mark="heading" title="A section heading" onClick={() => editBody((t, a, b) => prefixLines(t, a, b, "## ", "Heading"))}>
+                          H2
+                        </button>
+                        <button type="button" className="btn btn-ghost btn-sm" data-mark="subheading" title="A heading inside a section" onClick={() => editBody((t, a, b) => prefixLines(t, a, b, "### ", "Smaller heading"))}>
+                          H3
                         </button>
                         <button type="button" className="btn btn-ghost btn-sm" data-mark="bold" onClick={() => editBody((t, a, b) => wrap(t, a, b, "**", "**", "bold words"))}>
                           Bold
@@ -654,32 +813,58 @@ export function BlogEditor({ post, canWrite, canPublish, now, siteUrl, history }
                         <button type="button" className="btn btn-ghost btn-sm" data-mark="italic" onClick={() => editBody((t, a, b) => wrap(t, a, b, "*", "*", "italic words"))}>
                           Italic
                         </button>
-                        <button type="button" className="btn btn-ghost btn-sm" data-mark="link" onClick={() => editBody((t, a, b) => wrap(t, a, b, "[", "](https://)", "linked words"))}>
-                          Link
+                        <button type="button" className="btn btn-ghost btn-sm" data-mark="list" title="A list" onClick={() => editBody((t, a, b) => prefixLines(t, a, b, "- ", "List item"))}>
+                          • List
                         </button>
-                        <button type="button" className="btn btn-ghost btn-sm" data-mark="list" onClick={() => editBody((t, a, b) => prefixLines(t, a, b, "- ", "List item"))}>
-                          List
+                        <button type="button" className="btn btn-ghost btn-sm" data-mark="numbered" title="A numbered list" onClick={() => editBody((t, a, b) => numberLines(t, a, b, "List item"))}>
+                          1. List
                         </button>
                         <button type="button" className="btn btn-ghost btn-sm" data-mark="quote" onClick={() => editBody((t, a, b) => prefixLines(t, a, b, "> ", "Quoted words"))}>
                           Quote
+                        </button>
+                        <button type="button" className="btn btn-ghost btn-sm" data-mark="link" onClick={() => editBody((t, a, b) => wrap(t, a, b, "[", "](https://)", "linked words"))}>
+                          Link
+                        </button>
+                        <button type="button" className="btn btn-ghost btn-sm" data-mark="table" title="A table to type over" onClick={() => editBody((t, a) => insertBlock(t, a, TABLE_BLOCK, 2, 6))}>
+                          Table
+                        </button>
+                        <button type="button" className="btn btn-ghost btn-sm" data-mark="rule" title="A rule across the page" onClick={() => editBody((t, a) => insertBlock(t, a, "---", 3, 0))}>
+                          Divider
                         </button>
                         <UploadButton id="blog-body-file" label="Picture" state={bodyUpload} onFile={onBodyPicture} className="btn btn-ghost btn-sm" />
                         <LibraryButton label="From the library" className="btn btn-ghost btn-sm" onChoose={onBodyChosen} />
                       </div>
                     )}
+                    <div className="flex flex-wrap items-center justify-between gap-x-13 gap-y-5 text-xs text-ink-3">
+                      <p className="min-w-0">{ro ? "" : "Paste from Word or Google Docs and the formatting is kept: headings, bold, italic, lists, links, quotations and tables."}</p>
+                      <label className="flex shrink-0 items-center gap-8">
+                        <span>Editor size</span>
+                        <select className="select" style={{ width: "auto", height: "2rem" }} value={editorSize} onChange={(e) => isEditorSize(e.target.value) && chooseEditorSize(e.target.value)} data-editor-size>
+                          {EDITOR_SIZES.map((size) => (
+                            <option key={size} value={size}>
+                              {EDITOR_SIZE_LABEL[size]}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    </div>
                     <textarea
                       ref={bodyRef}
                       id="blog-body"
                       name="body"
                       className="textarea"
-                      style={{ minHeight: "28rem" }}
+                      style={{ minHeight: EDITOR_SIZE_HEIGHT[editorSize] }}
                       value={values.body}
                       onChange={(e) => set("body", e.target.value)}
+                      onPaste={onBodyPaste}
                       readOnly={ro}
                       aria-invalid={invalid("body", values.body.length > BLOG_LIMITS.body)}
                       aria-describedby="blog-body-hint"
                     />
                     <UploadStatus state={bodyUpload} name="body" />
+                    <p role="status" data-paste className="text-xs text-ink-3 empty:hidden">
+                      {pasteNote}
+                    </p>
                     <Hint id="blog-body-hint" count={<Count name="body" value={values.body} max={BLOG_LIMITS.body} />}>
                       <span data-words>
                         {words.toLocaleString("en-GB")} {words === 1 ? "word" : "words"}
@@ -987,11 +1172,14 @@ export function BlogEditor({ post, canWrite, canPublish, now, siteUrl, history }
           <div id="panel-preview" role="tabpanel" aria-labelledby="tab-preview" hidden={tab !== "preview"} className="min-w-0">
             {tab === "preview" && (
               <article className="gxc-card min-w-0 p-21 sm:p-34" data-preview="post">
-                <p className="label">{BLOG_CATEGORY_LABEL[values.category]}</p>
+                <p className="label">
+                  {BLOG_CATEGORY_LABEL[values.category]} · {BLOG_FORMAT_LABEL[values.format]}
+                </p>
                 <h2 className="mt-8 break-words text-[1.75rem] font-bold leading-tight text-ink">{values.title.trim() || "Untitled post"}</h2>
                 {values.excerpt.trim() && <p className="mt-13 max-w-measure text-md text-ink-2">{values.excerpt.trim()}</p>}
                 <p className="mt-13 flex flex-wrap gap-x-13 gap-y-3 text-sm text-ink-3">
                   <span className="font-medium text-ink-2">{values.byline.trim() || DEFAULT_BYLINE}</span>
+                  {values.reviewedBy.trim() && <span>Reviewed by {values.reviewedBy.trim()}</span>}
                   <span className="num">{previewDate ? fmtDateTime(previewDate) : "Not published yet"}</span>
                   <span>{readingMinutes(values.body)} min read</span>
                 </p>
@@ -1087,6 +1275,28 @@ export function BlogEditor({ post, canWrite, canPublish, now, siteUrl, history }
               ) : (
                 !ro && <p className="text-xs text-ink-3">Publishing is done by someone whose role includes it. When the post is ready, send it for review: it then shows under “Ready for review” in the list.</p>
               )}
+
+              {/* where the post stands on the public index: the publisher's to say (the database refuses anyone else) */}
+              <fieldset className="grid gap-8 border-t border-line pt-13" disabled={ro || !canPublish} data-placement>
+                <legend className="field-label">On the blog’s index</legend>
+                <label className="check mt-8">
+                  <input type="checkbox" name="is_lead" value="1" checked={values.isLead} onChange={(e) => set("isLead", e.target.checked)} />
+                  <span>
+                    <span className="font-medium text-ink">Lead story</span>
+                    <span className="block text-xs text-ink-3">Set large at the top of the blog. One post leads at a time: saving this one as the lead takes it from the post that leads now.</span>
+                  </span>
+                </label>
+                <label className="check">
+                  <input type="checkbox" name="is_pinned" value="1" checked={values.isPinned} onChange={(e) => set("isPinned", e.target.checked)} />
+                  <span>
+                    <span className="font-medium text-ink">Pinned</span>
+                    <span className="block text-xs text-ink-3">Comes before the other posts, after the lead, however old it is.</span>
+                  </span>
+                </label>
+                <p className="text-xs text-ink-3">
+                  {!canPublish ? "Set by someone whose role includes publishing." : "Neither shows on the website until the post is published and its time has come. With no lead chosen, the newest post leads."}
+                </p>
+              </fieldset>
 
               {!ro && (
                 <div className="grid gap-8 border-t border-line pt-13">
