@@ -261,9 +261,10 @@ export default async function LocaleHomePage({ params }: Props) {
                 <p className="mt-5 text-sm text-ink-3">{h.learning.academy.body(lessons.length)}</p>
               </li>
               <li className="border-b border-line py-13">
-                <EnglishLink href="/glossary" mark={en} className="h4 link-quiet">
+                {/* the glossary is in the language (pages/glossary.tsx), so this link carries no mark */}
+                <Link href={localePath(lang, "glossary")} className="h4 link-quiet">
                   {h.learning.glossary.name}
-                </EnglishLink>
+                </Link>
                 <p className="mt-5 text-sm text-ink-3">{h.learning.glossary.body(glossary.length)}</p>
               </li>
             </ul>

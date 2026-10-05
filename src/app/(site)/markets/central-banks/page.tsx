@@ -10,7 +10,7 @@ import { pageMeta } from "@/lib/meta";
 import { webPageSchema } from "@/lib/schema";
 
 const DESCRIPTION =
-  "Central Bank Watch: nine central banks, the body that sets policy at each, the instrument it uses, its mandate and where it publishes its decisions. Current rates and meeting dates are deliberately left to each bank’s own publication.";
+  "Central Bank Watch: sixteen central banks and monetary authorities, the body that sets policy at each, the instrument it uses, its mandate and where it publishes its decisions. Current rates and meeting dates are deliberately left to each bank’s own publication.";
 
 export const metadata = pageMeta({ title: "Central Bank Watch", description: DESCRIPTION, path: "/markets/central-banks" });
 

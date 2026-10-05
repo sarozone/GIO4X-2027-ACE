@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { Rosette } from "@/components/brand/Rosette";
+// the everyday names of two restricted countries; one table, shared with the callback request
+import { COUNTRY_ALIASES } from "@/lib/restricted";
 import { EMAIL_RE, readUtm, submitContact } from "./submit";
 
 type Values = { name: string; email: string; country: string; account: string; privacy: boolean; website: string };
@@ -18,21 +20,6 @@ const SERVER_FIELD: Record<string, FieldKey> = { name: "name", email: "email", c
  * application is not connected. Posts to /api/contact with the topic
  * "Account opening"; the structured answers travel in the message body.
  */
-const COUNTRY_ALIASES: Record<string, string> = {
-  uk: "united kingdom",
-  gb: "united kingdom",
-  "great britain": "united kingdom",
-  britain: "united kingdom",
-  england: "united kingdom",
-  scotland: "united kingdom",
-  wales: "united kingdom",
-  "northern ireland": "united kingdom",
-  us: "united states",
-  usa: "united states",
-  america: "united states",
-  "united states of america": "united states",
-};
-
 export function InterestForm({ email, accountNames, restricted }: { email: string; accountNames: string[]; restricted: string[] }) {
   const uid = useId();
   const id = (k: string) => `${uid}-${k}`;

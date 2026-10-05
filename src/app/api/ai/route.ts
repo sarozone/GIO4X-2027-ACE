@@ -20,6 +20,11 @@
  * Every limit is checked before the provider is called, so a refused request
  * costs nothing. The numbers are AI_LIMITS in src/lib/ai.ts.
  *
+ * A question that is not in English, and that the site's own word lists could
+ * not match to a passage, costs one small extra call for English search words
+ * before the answer (src/lib/server/ai.ts, `searchWords`). It is counted too:
+ * see `maySearchWords` below. An English question never makes it.
+ *
  * Nothing about a question is stored or logged: not the question, the answer,
  * the page, the sources or the address. A failure logs a status and an error
  * type, and that is all.
@@ -81,10 +86,28 @@ export async function POST(request: Request) {
   const everyone = rateLimit("ai:site", "all", AI_LIMITS.siteDay);
   if (!everyone.ok) return limited("site", everyone.retryAfterSeconds);
 
-  const { sources, texts } = retrieve(ask);
-
+  // one clock for everything the provider is asked: the search words, if they are needed, and the answer
   const abort = new AbortController();
   const timer = setTimeout(() => abort.abort(), AI_LIMITS.timeoutMs);
+
+  // Consulted only for a question that is not in English and found nothing (see retrieve). The one
+  // extra call it allows is counted: against this address, by the same per-minute and per-day
+  // numbers in windows of its own (so the question itself is still one question of the thirty),
+  // and against the day's total for everyone, which is what bounds the bill. At a limit the
+  // answer is: no, and the question is answered from what it found.
+  const maySearchWords = () =>
+    rateLimit("ai:words:minute", gate.ip, AI_LIMITS.perMinute).ok && rateLimit("ai:words:day", gate.ip, AI_LIMITS.perDay).ok && rateLimit("ai:site", "all", AI_LIMITS.siteDay).ok;
+
+  let found: Awaited<ReturnType<typeof retrieve>>;
+  try {
+    found = await retrieve(ask, maySearchWords, abort.signal);
+  } catch {
+    clearTimeout(timer);
+    console.error("[api/ai] retrieval failure");
+    return fail(503, AI_MESSAGES.failed);
+  }
+  const { sources, texts } = found;
+
   const opened = await openProvider(providerRequest(sources, texts, ask), abort.signal);
   if (!opened.ok) {
     clearTimeout(timer);

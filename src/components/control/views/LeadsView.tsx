@@ -57,10 +57,12 @@ export type LeadsViewProps = {
   canAssign?: boolean;
   /** may import enquiries from a file (leads.write and leads.import) */
   canImport?: boolean;
+  /** id → when, for the enquiries on this page that ask for a call back; left out, none is marked */
+  callbacks?: ReadonlyMap<string, string>;
 };
 
 /** Presentation only. The filters shown here were validated by the page before they reached the database. */
-export function LeadsView({ status, stage, sort, topic, origin = "", who = "", views, q, error, failed, pastEnd, leads, names, me, total, page, pageCount, canAdd = false, canAssign = false, canImport = false }: LeadsViewProps) {
+export function LeadsView({ status, stage, sort, topic, origin = "", who = "", views, q, error, failed, pastEnd, leads, names, me, total, page, pageCount, canAdd = false, canAssign = false, canImport = false, callbacks }: LeadsViewProps) {
   const filtered = !!(status || stage || sort || topic || origin || who || q);
   const href = (p: number) => {
     const sp = new URLSearchParams();
@@ -181,7 +183,7 @@ export function LeadsView({ status, stage, sort, topic, origin = "", who = "", v
             The database did not answer. Reload the page; if this continues, check that the migrations have been applied.
           </Notice>
         ) : leads.length ? (
-          <LeadsTable leads={leads} names={names} me={me} caption={filtered ? "Leads matching the current filters" : "All leads, newest first"} selectForm={canAdd ? BULK_FORM : undefined} />
+          <LeadsTable leads={leads} names={names} me={me} caption={filtered ? "Leads matching the current filters" : "All leads, newest first"} selectForm={canAdd ? BULK_FORM : undefined} callbacks={callbacks} />
         ) : pastEnd ? (
           <Empty title="There is no such page">
             <p>

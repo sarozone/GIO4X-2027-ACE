@@ -14,7 +14,7 @@ const DESCRIPTION =
 export const metadata = pageMeta({ title: "The Playbook: candlestick patterns and trading situations", description: DESCRIPTION, path: "/playbook" });
 
 const GROUPS = [
-  { kind: "pattern" as const, id: "patterns", eyebrow: "Candlestick patterns", title: "Twelve shapes, and what each is taken to mean.", lead: "A pattern describes what a price did. None of them is a forecast, and each page says what to check before giving it any weight." },
+  { kind: "pattern" as const, id: "patterns", eyebrow: "Candlestick patterns", title: "Seventeen shapes, and what each is taken to mean.", lead: "A pattern describes what a price did. None of them is a forecast, and each page says what to check before giving it any weight." },
   { kind: "scenario" as const, id: "situations", eyebrow: "When this happens", title: "Twelve situations every trader meets.", lead: "What is going on, why, what people look at next and where they usually go wrong." },
 ];
 

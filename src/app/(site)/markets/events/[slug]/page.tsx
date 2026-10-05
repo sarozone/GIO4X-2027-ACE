@@ -89,6 +89,12 @@ export default async function EventPage({ params }: Params) {
 
             <h2 className="h3 mt-55">Why markets watch it.</h2>
             <p className="mt-13 text-md text-ink-2">{e.why}</p>
+            {e.misread && (
+              <>
+                <h2 className="h3 mt-34">How it is commonly misread.</h2>
+                <p className="mt-13 text-md text-ink-2">{e.misread}</p>
+              </>
+            )}
             <p className="mt-21 border-l-2 border-line-strong pl-13 text-sm text-ink-3">An explanation of why the release is followed, not a view on what any market will do when it is published. {educationalNote}</p>
             {/* the list beside this column is the longer of the two on every event page: one figure for the template */}
             <SideNote figure={<Compiled ratio={3} />} label="Before it is published" className="lg:!mt-21">

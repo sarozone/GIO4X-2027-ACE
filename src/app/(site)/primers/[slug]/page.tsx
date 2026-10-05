@@ -2,8 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { NextSteps, PageHero } from "@/components/ui/Page";
+import { SaveButton } from "@/components/desk/Buttons";
+import { longDate } from "@/components/knowledge/prose";
 import { PrintButton } from "@/components/ui/PrintButton";
+import { PrintLine } from "@/components/ui/PrintLine";
 import { educationalNote, riskWarning } from "@/config/legal";
+import { absoluteUrl } from "@/config/site";
 import { getLesson } from "@/data/academy";
 import { getTerm } from "@/data/glossary";
 import { PRIMERS, getPrimer } from "@/data/primers";
@@ -92,7 +96,11 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
         <Link href="#pr-example" className="btn btn-primary">
           The worked example
         </Link>
-        <PrintButton className="btn btn-ghost">Save this page as a PDF</PrintButton>
+        <PrintButton className="btn btn-ghost">Print or save as PDF</PrintButton>
+        {/* keeps the primer on My desk's reading list (/desk), in this browser only */}
+        <span className="no-print contents">
+          <SaveButton href={path} title={p.title} className="btn btn-ghost" />
+        </span>
       </PageHero>
 
       <article className="section">
@@ -225,6 +233,9 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
             <p className="mt-34 border-t border-line pt-13 text-sm text-ink-3">
               A general explanation for study, with an invented example. Rules, costs and terms differ by country, market, provider and product, and the documents of the thing itself are what count. {educationalNote}
             </p>
+            {/* on paper only: who wrote it and when, the page's address and the day it was printed */}
+            <p className="print-only mt-13 text-xs text-ink-3">GIO4X Academy · Market primers · Written {longDate(WRITTEN)}</p>
+            <PrintLine url={absoluteUrl(path)} className="mt-8" />
           </div>
         </div>
       </article>

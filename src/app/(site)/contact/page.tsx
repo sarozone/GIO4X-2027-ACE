@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CallbackForm } from "@/components/company/CallbackForm";
 import { ContactForm } from "@/components/company/ContactForm";
 import { Offices } from "@/components/company/Offices";
 import { KeptKey } from "@/components/figures/extra/KeptKey";
@@ -60,6 +61,21 @@ export default function ContactPage() {
             instead: you get a reference and can read our reply on the website.
           </p>
           <ContactForm email={site.email} />
+        </div>
+      </section>
+
+      {/* a second, separate form: the visitor asks to be telephoned. Stored as an enquiry marked "Callback requested" (lib/callback.ts); no time is promised */}
+      <section id="callback" className="section-quiet hairline scroll-mt-[var(--header-h)]" aria-labelledby="callback-h">
+        <div className="wrap">
+          <p className="eyebrow">Prefer to talk?</p>
+          <h2 id="callback-h" className="h3 mt-13">
+            Ask for a call back.
+          </h2>
+          <p className="mb-21 mt-13 max-w-measure text-ink-2">
+            Leave a number and the part of the day that suits you, and we will try to telephone you. A call back is attempted during GIO4X’s support hours. Those hours have not been confirmed for publication yet, so no time or day can be promised here: the part of the day you choose is a
+            preference we will try to keep to, not an appointment. If the call does not reach you, we write to your email address instead.
+          </p>
+          <CallbackForm email={site.email} />
         </div>
       </section>
 

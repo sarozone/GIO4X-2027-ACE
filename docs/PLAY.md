@@ -82,7 +82,7 @@ The leverage story's six drawings are `src/components/play/LeverageScenes.ts`, o
 
 ## The Playbook, and Nice & Need
 
-`/playbook` is twelve candlestick patterns and twelve situations, one page each at `/playbook/[slug]`, all from `src/data/playbook.ts`. An entry carries its own candles (invented, to show the shape), which `src/components/playbook/PlayFigure.tsx` draws and rings. A page explains and never instructs: what a thing is, what it is taken to mean, what to check, where people go wrong. To add a page, add an entry; the sitemap, the index and the links between pages follow.
+`/playbook` is seventeen candlestick patterns (twelve, then five added on 5 October 2026) and twelve situations, one page each at `/playbook/[slug]`, all from `src/data/playbook.ts`. An entry carries its own candles (invented, to show the shape), which `src/components/playbook/PlayFigure.tsx` draws and rings. A page explains and never instructs: what a thing is, what it is taken to mean, what to check, where people go wrong. To add a page, add an entry; the sitemap, the index and the links between pages follow.
 
 `/nice-and-need` lists free resources on other websites (`src/data/nice-and-need.ts`), each a well-known public source, with the free things on this site beneath. The page states that GIO4X has no connection with the sites listed. The footer has a column of the same name.
 

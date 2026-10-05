@@ -8,6 +8,7 @@ import { SunTheme } from "@/components/fx/SunTheme";
 import { RecentRecorder } from "@/components/desk/RecentRecorder";
 import { AmbienceFollower, CurrencyRain, Season } from "@/components/fx/Extras";
 import { Polish } from "@/components/fx/Polish";
+import { TermCards } from "@/components/glossary/TermCards";
 import { NewRibbon } from "@/components/play/Guided";
 import { PassportRecorder } from "@/components/play/Passport";
 import { JsonLd } from "@/components/seo/JsonLd";
@@ -16,6 +17,7 @@ import { ChatWidget } from "@/components/shell/ChatWidget";
 import { CommandBar } from "@/components/shell/CommandBar";
 import { Lens } from "@/components/shell/Lens";
 import { OfflineRegister } from "@/components/shell/OfflineRegister";
+import { PageFeedback } from "@/components/shell/PageFeedback";
 import { PointerLayer } from "@/components/shell/PointerLayer";
 import { Pulse } from "@/components/shell/Pulse";
 import { ScrollArrows } from "@/components/shell/ScrollArrows";
@@ -41,6 +43,8 @@ export function SiteShell({ children }: { children: ReactNode }) {
         {/* what has been added lately; put away with one button */}
         <NewRibbon />
         {children}
+        {/* "Was this page helpful?": one quiet line at the foot of content pages only (lib/feedback.ts); nothing is drawn until answers can be stored */}
+        <PageFeedback />
       </main>
       <SiteFooter />
       <CommandBar />
@@ -69,6 +73,8 @@ export function SiteShell({ children }: { children: ReactNode }) {
       <RecentRecorder />
       {/* the passport on My desk: a stamp for the page that is open, only once the visitor has started it */}
       <PassportRecorder />
+      {/* a link to a glossary term shows the term's definition in a small card when pointed at, focused or tapped; the card and the definitions are fetched on first use */}
+      <TermCards />
       {/* a tint for three stretches of the year, a symbol that falls when its code is typed, and the pitch of the ambient sound if it is on */}
       {/* the light in a machine's card, the keys that work a machine, and the part of the day */}
       <Polish />

@@ -33,6 +33,20 @@
  *   Parabolic   begins at the second bar, rising if that bar closed at or
  *   SAR         above the first; on a reversal the SAR goes to the extreme of
  *               the trend just ended, the reversing bar included.
+ *   Ichimoku    every line is the midpoint of a highest high and a lowest
+ *               low, the latest bar included. The two leading spans are drawn
+ *               `shift` bars after the bar they were worked out at and the
+ *               lagging span `shift` bars before it, a full `shift` each way
+ *               (some programs count the latest bar as the first and move
+ *               them one bar less). Displacing a value changes where it is
+ *               drawn, never what it was made from: the cloud ahead of the
+ *               last bar is arithmetic on bars already closed, and the
+ *               lagging span is the close itself, drawn late on purpose.
+ *   OBV         begins at 0 on the first bar; a close equal to the one before
+ *               leaves it where it was.
+ *   VWAP        on the typical price, (high + low + close) ÷ 3, begun afresh
+ *               every `session` bars counted from the first. A stretch with
+ *               no volume at all reads the typical price of its latest bar.
  */
 
 export type Bar = { o: number; h: number; l: number; c: number };
@@ -448,6 +462,85 @@ export function parabolicSar(bars: readonly Bar[], step: number, max: number): {
     af[i] = a;
   }
   return { sar, rising, ep, af };
+}
+
+/* ==========================================================================
+   Ichimoku Kinko Hyo
+   ========================================================================== */
+
+/**
+ * Midpoint of n bars = (highest high + lowest low) ÷ 2.
+ * Conversion line = the midpoint of `conv` bars; base line = of `base` bars.
+ * Leading span A = (conversion + base) ÷ 2; leading span B = the midpoint of
+ * `spanB` bars. Both are drawn `shift` bars ahead, so `a` and `b` are `shift`
+ * longer than the bars: the value at position i was worked out at bar
+ * i − shift. Lagging span = the close, drawn `shift` bars back: the value at
+ * position i is the close of bar i + shift, and the last `shift` are null.
+ */
+export function ichimoku(bars: readonly Bar[], conv: number, base: number, spanB: number, shift: number = base): { conversion: Series; base: Series; a: Series; b: Series; lag: Series; shift: number } {
+  const d = whole(shift);
+  const conversion = donchian(bars, conv).mid;
+  const baseLine = donchian(bars, base).mid;
+  const far = donchian(bars, spanB).mid;
+  const a: Series = new Array<null>(bars.length + d).fill(null);
+  const b: Series = new Array<null>(bars.length + d).fill(null);
+  const lag: Series = [];
+  for (let i = 0; i < bars.length; i++) {
+    const c = conversion[i];
+    const k = baseLine[i];
+    a[i + d] = c == null || k == null ? null : (c + k) / 2;
+    b[i + d] = far[i] ?? null;
+    lag.push(i + d < bars.length ? bars[i + d]!.c : null);
+  }
+  return { conversion, base: baseLine, a, b, lag, shift: d };
+}
+
+/* ==========================================================================
+   Volume: on-balance volume and VWAP
+   ========================================================================== */
+
+/** On-balance volume: a running total that adds a bar's volume when it closes above the close before, and takes it away when it closes below. */
+export function obv(closes: readonly number[], volumes: readonly number[]): number[] {
+  const out: number[] = [];
+  let total = 0;
+  for (let i = 0; i < closes.length; i++) {
+    if (i > 0) {
+      const d = closes[i]! - closes[i - 1]!;
+      if (d > 0) total += volumes[i] ?? 0;
+      else if (d < 0) total -= volumes[i] ?? 0;
+    }
+    out.push(total);
+  }
+  return out;
+}
+
+/**
+ * Volume-weighted average price. Within a session: VWAP = the sum of typical
+ * price × volume ÷ the sum of volume, both counted from the session's first
+ * bar. A new session begins every `session` bars and both sums begin again.
+ * `pv` and `vol` are those two running sums as they stand after each bar.
+ */
+export function vwap(bars: readonly Bar[], volumes: readonly number[], session: number): { tp: number[]; pv: number[]; vol: number[]; vwap: number[] } {
+  const len = whole(session);
+  const tp = bars.map((b) => (b.h + b.l + b.c) / 3);
+  const pv: number[] = [];
+  const vol: number[] = [];
+  const out: number[] = [];
+  let sumPV = 0;
+  let sumV = 0;
+  for (let i = 0; i < bars.length; i++) {
+    if (i % len === 0) {
+      sumPV = 0;
+      sumV = 0;
+    }
+    const v = volumes[i] ?? 0;
+    sumPV += tp[i]! * v;
+    sumV += v;
+    pv.push(sumPV);
+    vol.push(sumV);
+    out.push(sumV === 0 ? tp[i]! : sumPV / sumV);
+  }
+  return { tp, pv, vol, vwap: out };
 }
 
 /* ==========================================================================

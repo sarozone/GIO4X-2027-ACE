@@ -63,7 +63,7 @@ export default function ScalePage() {
         items={[
           { kind: "Labs", label: "The Workshop", href: "/labs/workshop", note: "Candle forge, tightrope, pip reels and sixty seconds." },
           { kind: "Labs", label: "The Engine Room", href: "/labs/engine-room", note: "Six machines about what happens to a trade." },
-          { kind: "Blog", label: "Reading a candle in ten seconds", href: "/intelligence/blog/reading-a-candle-in-ten-seconds", note: "Four prices, one shape." },
+          { kind: "Lesson", label: "Candlestick patterns masterclass", href: "/academy/candlestick-patterns-masterclass", note: "Four prices, one shape." },
           { kind: "Labs", label: "All experiments", href: "/labs", note: "What Labs is, and what is on the bench." },
         ]}
       />

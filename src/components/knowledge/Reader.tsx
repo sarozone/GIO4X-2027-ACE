@@ -2,6 +2,8 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { RouteScene } from "@/components/cockpit/RouteScene";
 import { Breadcrumbs } from "@/components/ui/Page";
+import { PrintButton } from "@/components/ui/PrintButton";
+import { PrintLine } from "@/components/ui/PrintLine";
 import { educationalNote, riskWarning } from "@/config/legal";
 import type { Crumb } from "@/lib/schema";
 import { CopyButton, Share } from "./Share";
@@ -158,7 +160,8 @@ export function Reader({ crumbs, kicker, title, lead, meta, notice, brief, toc, 
             {children}
           </article>
 
-          <aside className="min-w-0 lg:border-l lg:border-line lg:pl-34" aria-label="About this page">
+          {/* on paper the side column keeps only what is marked print-keep (see knowledge.css): the citation, and the line that says where the page was printed from */}
+          <aside className="min-w-0 lg:border-l lg:border-line lg:pl-34" aria-label="About this page" data-read-rail>
             <div className="grid gap-34 lg:sticky lg:top-[calc(var(--header-h)+1.3125rem)] lg:max-h-[calc(100dvh-var(--header-h)-2.625rem)] lg:overflow-y-auto lg:pb-13 lg:pr-3">
               {toc.length > 1 && (
                 <nav aria-label="On this page" className="no-print hidden lg:block">
@@ -171,13 +174,16 @@ export function Reader({ crumbs, kicker, title, lead, meta, notice, brief, toc, 
               {aside}
               <SideBlock label="Share" className="no-print">
                 <Share url={url} title={title} />
+                {/* the browser's own print dialogue, which also saves a PDF: the page prints as text, without the site around it */}
+                <PrintButton className="btn btn-ghost btn-sm mt-13">Print or save as PDF</PrintButton>
               </SideBlock>
-              <SideBlock label="Cite this page">
+              <SideBlock label="Cite this page" className="print-keep">
                 <p className="text-sm leading-relaxed text-ink-2 [overflow-wrap:anywhere]">{citation}</p>
                 <div className="no-print mt-13">
                   <CopyButton text={citation} label="Copy citation" done="Citation copied" />
                 </div>
               </SideBlock>
+              <PrintLine url={url} />
             </div>
           </aside>
         </div>

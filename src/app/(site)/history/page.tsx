@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CenturyLine } from "@/components/history/CenturyLine";
+import { OnThisDayCard } from "@/components/history/OnThisDay";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { NextSteps, PageHero } from "@/components/ui/Page";
 import { PunchLine } from "@/components/ui/PunchLine";
@@ -70,6 +71,20 @@ export default function Page() {
               </li>
             ))}
           </ol>
+        </div>
+      </section>
+
+      {/* the same history by the calendar: one dated event for today's date, read from the visitor's own clock */}
+      <section className="section-quiet hairline" aria-labelledby="day-h">
+        <div className="wrap grid grid-cols-[minmax(0,1fr)] gap-x-55 gap-y-21 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.618fr)] lg:items-center">
+          <div>
+            <p className="eyebrow">By the calendar</p>
+            <h2 id="day-h" className="h3 mt-13 max-w-[20ch]">
+              The same history, a day at a time.
+            </h2>
+            <p className="mt-8 max-w-narrow text-sm text-ink-2">Beside the eleven episodes there is a list of dated events, shown by today’s date. Exact, certain dates only.</p>
+          </div>
+          <OnThisDayCard />
         </div>
       </section>
 

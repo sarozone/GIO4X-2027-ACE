@@ -477,7 +477,7 @@ const LOCAL_KEY_PURPOSE: Record<(typeof LOCAL_KEYS)[number], { holds: string; wh
     why: "So My desk can list them for you to return to. Until you switch the list on, this key does not exist and nothing about the pages you open is recorded; “Stop and clear this list” removes it again.",
   },
   "gx:saved": {
-    holds: "The path and title of each article, lesson, glossary term or tool you chose to save for later.",
+    holds: "The path and title of each article, blog post, lesson, primer, glossary term or tool you chose to save for later.",
     why: "So My desk can list them when you return.",
   },
   "gx:calc": {
@@ -520,6 +520,10 @@ const LOCAL_KEY_PURPOSE: Record<(typeof LOCAL_KEYS)[number], { holds: string; wh
     holds: "The last day you answered the Academy’s question of the day, your run of days in a row, the longest run, and which answer you chose on that day and whether it was right. No addresses, no times and nothing about you.",
     why: "So the question of the day can show your run on its own page, on the Academy page and on My desk, and show the same result if you open it again the same day. Written only when you answer the day’s question; “Start over” on that page removes it. There is no account and no leaderboard, and nothing is sent anywhere.",
   },
+  "gx:cards": {
+    holds: "For each glossary flashcard you have graded: the term’s short name, which of the five boxes the card is in, and the day it is next due. No addresses, no times and nothing about you.",
+    why: "So the glossary flashcards can show the cards that are due today, on their own page, on the glossary page and on My desk, and bring a card back later when you knew it and the next day when you did not. Written only when you grade a card; “Start over” on that page removes it. There is no account and no score, and nothing is sent anywhere.",
+  },
   "gx:sim": {
     holds: "The state of the Practice desk simulation in Labs: its invented prices, the example account, example positions and orders, and the newest journal entries. No real prices, no real account and nothing about you.",
     why: "So a practice session survives a reload. Written only if you tick “Keep this practice session in this browser” on that page, which is off by default; unticking it deletes the key.",
@@ -533,7 +537,7 @@ const cookies: LegalDoc = {
   short: "Cookie Notice",
   category: "Privacy",
   summary: "Everything this website stores in your browser, key by key, and how to clear it. There are no advertising or analytics cookies; page views are counted as daily totals without a cookie or an identifier, and that can be switched off.",
-  version: "1.9",
+  version: "1.11",
   updated: "5 October 2026",
   origin: "new",
   keywords: ["cookies", "local storage", "offline", "service worker", "cache storage", "tracking", "analytics", "advertising", "preferences", "consent"],
@@ -549,7 +553,7 @@ const cookies: LegalDoc = {
             "It loads no third-party scripts, so no third party can set a cookie through a script on these pages.",
             "It counts page views, accepted forms and searches itself, as daily totals, with no cookie and no identifier of any kind. Counting is on by default; you can switch it off, and a Global Privacy Control or Do Not Track signal from your browser is honoured.",
             "It keeps a small number of display and convenience settings in your browser’s local storage. They stay on your device and are not sent to GIO4X.",
-            "For the length of a visit it may keep three items in session storage: an announcement you closed, a live chat you started, and the stop a guided tour has reached.",
+            "For the length of a visit it may keep four items in session storage: an announcement you closed, a live chat you started, the stop a guided tour has reached, and the pages on which you answered “Was this page helpful?”.",
             "An authentication cookie is set only for GIO4X staff who sign in to the internal console. Visitors to the public site do not receive it.",
             "So that the calculators and pages you have opened still open without a connection, it keeps copies of them in your browser’s cache storage. The copies are sent nowhere and can be removed or switched off.",
           ],
@@ -592,7 +596,7 @@ const cookies: LegalDoc = {
       id: "session-storage",
       title: "Session storage",
       body: [
-        p("Session storage is like local storage, but the browser empties it when you close the tab. This website uses three keys there."),
+        p("Session storage is like local storage, but the browser empties it when you close the tab. This website uses four keys there."),
         {
           kind: "table",
           caption: "Session-storage keys used by this website",
@@ -605,9 +609,14 @@ const cookies: LegalDoc = {
               "So the conversation continues when you move to another page. The token is sent to GIO4X’s database with each chat message, which is how the conversation is recognised as yours. It is removed when the chat ends.",
             ],
             ["gx:tour", "The number of the stop a guided tour has reached.", "So the tour continues when it takes you to the next page, and after a reload. It is removed when the tour ends, and it is not sent anywhere."],
+            [
+              "gx:helpful",
+              "The paths of the pages on which you answered “Was this page helpful?” during this visit. No answer, no comment and nothing about you.",
+              "So the question is asked once per page per visit. The list stays in your browser and is not sent anywhere. The answer itself is sent to GIO4X when you give it, as the page’s address, yes or no, and any comment you add, with nothing that identifies you or your browser.",
+            ],
           ],
         },
-        p("None of the three is written unless you close an announcement, start a chat or start the guided tour."),
+        p("None of the four is written unless you close an announcement, start a chat, start the guided tour or answer “Was this page helpful?”."),
       ],
     },
     {

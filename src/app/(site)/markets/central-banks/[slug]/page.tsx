@@ -59,6 +59,7 @@ export default async function CentralBankPage({ params }: Params) {
     { label: "Policy body", value: b.committee },
     { label: "Policy instrument", value: b.instrument },
     { label: "Mandate", value: b.mandate },
+    ...(b.note ? [{ label: "How it works", value: b.note }] : []),
     { label: "City", value: b.city },
     { label: "Local time now", value: <ZoneTime tz={b.tz} withDay className="font-medium" /> },
   ];

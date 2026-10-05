@@ -346,7 +346,7 @@ export function HiddenRiddle({ id }: { id: keyof typeof HUNT }) {
         <span className="sr-only">{found ? "A hidden riddle, already solved" : "A hidden riddle"}</span>
       </button>
       {open && (
-        <div className="mt-13 max-w-[34rem] rounded-[8px] border border-line bg-surface p-21">
+        <div className="mt-13 max-w-[46rem] rounded-[8px] border border-line bg-surface p-21">
           <p className="label">Hidden riddle · {found ? "found" : "one of five"}</p>
           <p className="gx-couplet mt-8 !mb-0">
             <span>{r.a}</span>

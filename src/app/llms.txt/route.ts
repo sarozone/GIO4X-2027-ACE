@@ -3,6 +3,7 @@ import { COMMODITIES, TRADED_COMMODITIES } from "@/data/commodities";
 import { CURRENCY_PROFILES, PAIRED_CURRENCIES } from "@/data/currency-profiles";
 import { ECONOMIES } from "@/data/economies";
 import { assetClasses } from "@/data/instruments";
+import { centralBanks } from "@/data/knowledge";
 import { tools } from "@/data/tools";
 
 export const dynamic = "force-static";
@@ -29,7 +30,7 @@ export function GET() {
     `- [Currency profiles](${u("/markets/currencies")}): a general reference to ${CURRENCY_PROFILES.length} currencies (who issues each, how it is commonly described, what typically moves it, the releases read for it); ${PAIRED_CURRENCIES.length} are in GIO4X currency pairs and each page says which; no exchange rates, interest rates or forecasts`,
     `- [Economy profiles](${u("/markets/economies")}): a qualitative reference to ${ECONOMIES.length} economies (what each is known for, its central bank and mandate, the releases that matter and who publishes them); no GDP figures, rankings or rates`,
     `- [World Market Clock](${u("/markets/clock")}): regular trading hours of nine financial centres`,
-    `- [Central Bank Watch](${u("/markets/central-banks")}): mandate and policy instrument of nine central banks, with primary sources`,
+    `- [Central Bank Watch](${u("/markets/central-banks")}): mandate and policy instrument of ${centralBanks.length} central banks and monetary authorities, with primary sources`,
     `- [Economic Events](${u("/markets/events")}): what major data releases measure and who publishes them`,
     "",
     "## Platforms",

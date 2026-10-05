@@ -21,7 +21,7 @@ function assignee(lead: LeadListItem, names: Map<string, string>, me: string): s
  * With `selectForm` (the id of a bulk bar's form, see BulkBar.tsx) every row
  * also carries a box to tick; without it the list is exactly as it was.
  */
-export function LeadsTable({ leads, names, me, caption, selectForm }: { leads: LeadListItem[]; names: Map<string, string>; me: string; caption: string; selectForm?: string }) {
+export function LeadsTable({ leads, names, me, caption, selectForm, callbacks }: { leads: LeadListItem[]; names: Map<string, string>; me: string; caption: string; selectForm?: string; /** id → when, for the enquiries that ask for a call back (lib/callback.ts); without it nothing is marked */ callbacks?: ReadonlyMap<string, string> }) {
   return (
     <>
       <div className="scroll-x hidden md:block">
@@ -57,6 +57,7 @@ export function LeadsTable({ leads, names, me, caption, selectForm }: { leads: L
                     {lead.reference}
                   </Link>
                   {lead.origin === "staff" && <span className="mt-3 block whitespace-nowrap text-xs text-ink-3">Entered by staff</span>}
+                  {callbacks?.has(lead.id) && <span className="mt-3 block max-w-[16rem] text-xs font-medium text-ink">Callback requested: {callbacks.get(lead.id)}</span>}
                 </td>
                 <td className="num whitespace-nowrap text-ink-2">{fmtDateTime(lead.created_at)}</td>
                 <td className="max-w-[14rem]">
@@ -108,6 +109,7 @@ export function LeadsTable({ leads, names, me, caption, selectForm }: { leads: L
               <span className="mt-5 flex flex-wrap gap-x-13 text-xs text-ink-3">
                 <span>{lead.topic}</span>
                 {lead.origin === "staff" && <span>Entered by staff</span>}
+                {callbacks?.has(lead.id) && <span className="font-medium text-ink">Callback requested: {callbacks.get(lead.id)}</span>}
                 <span className="num">{fmtDateTime(lead.created_at)}</span>
                 <span>{assignee(lead, names, me)}</span>
               </span>

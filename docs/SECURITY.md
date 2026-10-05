@@ -18,6 +18,7 @@ Related: `docs/CONTROL.md` (operating the console), `supabase/migrations/` (the 
 | Internal notes | Confidential | `public.lead_notes` |
 | Staff list and roles | Internal | `public.staff` |
 | Audit trail | Internal, integrity-critical | `public.audit_log` |
+| Page feedback: a page's path, yes or no, an optional comment, a time | Internal (no personal data by design; a comment is free text) | `public.page_feedback` (section 12) |
 | Staff sessions | Restricted | HttpOnly cookies scoped to `/control` |
 
 **Actors:** an anonymous visitor; an automated sender (spam, flooding); another website acting through a
@@ -60,7 +61,9 @@ sections read the client portal's database with that project's secret key. See s
 With the publishable key and no session, a caller **can**:
 - insert one row into `leads` or `newsletter_subscribers`, supplying only the visitor columns, passing every
   CHECK constraint and the throttles;
-- add 1 to a visit-counter total by calling `pulse_hit`, `pulse_form_hit` or `pulse_search_hit` (section 11).
+- add 1 to a visit-counter total by calling `pulse_hit`, `pulse_form_hit` or `pulse_search_hit` (section 11);
+- insert one row into `page_feedback`, supplying a path, yes or no and a comment, and read nothing back
+  (section 12).
 
 They **cannot**: read any table; update or delete anything; set `status`, `assigned_to`, `created_at`,
 `updated_at` or `unsubscribed_at`; back-date consent; write notes; read or write `staff` or `audit_log`; call
@@ -348,3 +351,47 @@ checks `Sec-GPC` and `DNT` again, for views, searches and form totals.
 The counter also runs in development against the same database, for browsers that are not automated.
 Checks: `node scripts/test-pulse.mjs` (the path normaliser and the term matcher, against the real index and
 sitemaps) and `supabase/tests/0014_pulse.sql`.
+
+## 12. Page feedback and callback requests (`0032_page_feedback.sql`, `src/lib/feedback.ts`, `src/lib/callback.ts`)
+
+**"Was this page helpful?"** A content page of the website (a lesson, a primer, a glossary entry, a tool, the
+FAQ, a blog post, an instrument page, a legal page; never the homepage, a form or Control) ends with the
+question, drawn by `src/components/shell/PageFeedback.tsx`, which the site shell mounts once.
+
+**Stored:** `page_feedback (id, created_at, path, helpful, comment)`. The path is one of the site's own
+published pages, without query string or fragment; the comment is optional, at most 500 characters, with
+control characters and `<` `>` removed. The time is the database's.
+
+**Not stored, not logged:** IP address, user agent, any identifier, any cookie or session value. Two answers
+from one person cannot be told from two answers from two people. The address is used in memory for the
+per-address limit and goes no further. A visitor can still type something personal into the comment; the
+form asks them not to, and such a row is removed in SQL by the owner.
+
+**In the browser:** one session-storage key, `gx:helpful`, a list of the paths answered in this tab, so the
+question is asked once per page per visit. It is never sent anywhere, the browser empties it when the tab
+closes, and it is listed in the Cookie & Storage Notice (`/legal/cookies`, "Session storage").
+
+**The endpoint:** `POST /api/feedback` passes the same gate as the other public forms (JSON only, same
+origin, 30 attempts per address per 10 minutes, a 4 KB body, exact field allow-list, honeypot), then a
+per-address limit of 20 stored answers per 10 minutes. There is no minimum fill time: the form is one
+button. `GET /api/feedback` answers only `{ ok: true | false }`: whether answers can be stored at all. The
+control asks it once before drawing anything, so until the migration is applied the question is not shown.
+
+| Abuse case | Controls | Honest limit |
+|---|---|---|
+| Storing something personal or a link target through the path | The API takes only a path that is one of the site's published pages in a section that asks the question; the database repeats a lower-case path character set (no `?`, `=`, `&`, `@`, `%`) and a length | Anyone holding the publishable key can insert directly, skipping the API's list of pages, and so store any path-shaped string of up to 200 characters |
+| Markup or script in a comment, shown later to staff | `<` and `>` removed by the API and refused by the database; React escapes all output; CSV cells are quoted and formula-guarded | |
+| Filling the table, or inflating a tally | Per-address limit in the API; a database throttle of 60 rows a minute (`PT429`); one answer per page per tab in the browser | The browser rule is a courtesy, not a control: a deliberate sender can add answers up to the throttle. The tallies are for orientation, not audited figures, and the console says so. There is no retention rule yet |
+| Reading other people's answers | No SELECT privilege for `anon`; the SELECT policy and `page_feedback_tallies()` require `feedback.read` | |
+| Changing or deleting an answer | No UPDATE or DELETE privilege and no such policy, for any API role | |
+| Exporting without a trace | `/control/feedback/export` is POST-only, same-origin, `feedback.read`, and written to the audit log (`feedback.export`) before the file is produced | |
+
+**Callback requests.** "Ask for a call back" on `/contact` posts to `POST /api/callback`, which is gated
+exactly as `/api/contact` (gate, honeypot, minimum fill time, 5 stored per address per 10 minutes, the
+database's throttles and CHECK constraints) and stores a row in `leads` with the same columns and consent
+evidence. No column was added. The telephone number (required here, with its country code), the country, a
+part of the day and a time zone are personal data of the same class as any enquiry. The first line of the
+message, `Callback requested: …`, is written by the server, never taken from the visitor. A country on the
+restricted list (`restrictedJurisdictions`, with the aliases in `src/lib/restricted.ts`) is refused by the
+form and again by the endpoint; a typed country is the visitor's statement, not a verification. The page
+promises no time for the call. Nothing is logged but an error code.

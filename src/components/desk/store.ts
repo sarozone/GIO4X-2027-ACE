@@ -31,7 +31,7 @@ export const RECENT_KEY = "gx:recent";
 
 export type PageRef = { h: string; t: string };
 export type Recent = { p: PageRef[]; s: string[] };
-export type SavedKind = "article" | "lesson" | "term" | "tool";
+export type SavedKind = "article" | "post" | "lesson" | "primer" | "term" | "tool";
 
 export const MAX_WATCH = 40;
 export const MAX_SAVED = 60;
@@ -42,7 +42,7 @@ const MAX_QUERY = 120;
 
 const WATCH_ID = /^(forex|metals|indices|energy|equities|crypto)\/[a-z0-9][a-z0-9-]{0,39}$/;
 /** the kinds of page that carry a Save button: nothing else can be stored as saved */
-const SAVED_PATH = /^\/(intelligence\/blog|intelligence|academy|glossary|tools)\/[a-z0-9][a-z0-9-]{0,119}$/;
+const SAVED_PATH = /^\/(intelligence\/blog|intelligence|academy|primers|glossary|tools)\/[a-z0-9][a-z0-9-]{0,119}$/;
 /** a path on this site: no host, no query, no fragment */
 const SITE_PATH = /^\/(?:[a-z0-9][a-z0-9-]{0,119}(?:\/[a-z0-9][a-z0-9-]{0,119}){0,5})?$/;
 /** never listed as recently viewed: the desk itself, utilities, gateways and the staff console */
@@ -53,8 +53,11 @@ const cleanText = (s: string, max: number) => s.replace(/\s+/g, " ").trim().slic
 
 export function savedKind(h: string): SavedKind | null {
   if (!SAVED_PATH.test(h)) return null;
+  // the reading list is grouped by these: a blog post is not filed with the articles, nor a primer with the lessons
+  if (h.startsWith("/intelligence/blog/")) return "post";
   if (h.startsWith("/intelligence/")) return "article";
   if (h.startsWith("/academy/")) return "lesson";
+  if (h.startsWith("/primers/")) return "primer";
   if (h.startsWith("/glossary/")) return "term";
   return "tool";
 }

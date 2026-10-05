@@ -48,7 +48,7 @@ export const isLocale = (value: string): value is Locale => LOCALES.some((l) => 
 export const localeInfo = (lang: Locale): LocaleInfo => LOCALES.find((l) => l.code === lang)!;
 
 /** The pages that exist in every language. "" is the home page of that language. */
-export const LOCALE_PAGES = ["", "guide", "risk-warning", "contact"] as const;
+export const LOCALE_PAGES = ["", "guide", "risk-warning", "contact", "glossary"] as const;
 export type LocalePage = (typeof LOCALE_PAGES)[number];
 
 /** Where "English" leads from a translated page: the nearest English page, never a translation of it. */
@@ -57,6 +57,7 @@ export const ENGLISH_EQUIVALENT: Record<LocalePage, string> = {
   guide: "/explore",
   "risk-warning": "/legal/risk",
   contact: "/contact",
+  glossary: "/glossary",
 };
 
 export const localePath = (lang: Locale, page: LocalePage = ""): string => (page ? `/${lang}/${page}` : `/${lang}`);

@@ -6,6 +6,7 @@ import { LeadsTable, type LeadListItem } from "@/components/control/LeadsTable";
 import { scoreParts } from "@/components/control/score";
 import { SubmitButton } from "@/components/control/SubmitButton";
 import { TaskList, type TaskItem } from "@/components/control/TaskList";
+import { readCallback } from "@/lib/callback";
 import { LEAD_STAGE_LABEL, LEAD_STAGES, LEAD_STATUS_LABEL, LEAD_STATUSES, LOST_REASON_LABEL, LOST_REASONS, MANUAL_LEAD_SOURCE_LABEL, MANUAL_LEAD_SOURCES } from "@/lib/server/constants";
 import type { AuditRow, LeadNoteRow, LeadRow, LeadStage, LostReason } from "@/lib/supabase/types";
 
@@ -59,6 +60,8 @@ export function LeadView({ lead, notes, notesFailed, audit, tasks, tasksFailed, 
   const howRaw = byStaff ? (utm.find((u) => u.key === "utm_source")?.value ?? "") : "";
   const how = isManualSource(howRaw) ? MANUAL_LEAD_SOURCE_LABEL[howRaw] : howRaw || "Not recorded";
   const score = scoreParts(lead);
+  // only an enquiry the website stored can be a callback request; a member of staff's own note is not read as one
+  const callback = byStaff ? null : readCallback(lead.message);
   const openTasks = tasks.filter((t) => !t.done);
   const doneTasks = tasks.filter((t) => t.done);
   // tomorrow, in UTC, as the suggested due date
@@ -98,6 +101,12 @@ export function LeadView({ lead, notes, notesFailed, audit, tasks, tasksFailed, 
         {notice && !error && <Notice title={notice} tone="ok" />}
         {error && <Notice title={error} tone="error" />}
         {!writable && <Notice title="Read-only">Your role can read enquiries but cannot change them or add notes.</Notice>}
+        {/* a request to be telephoned, sent from the callback form on /contact: marked by the first line of its message (lib/callback.ts) */}
+        {callback && (
+          <Notice title={`Callback requested: ${callback}`}>
+            The enquirer asked to be telephoned{lead.phone ? <> on <span className="num font-medium text-ink">{lead.phone}</span></> : null} and was promised no time for the call. The part of the day is in their own time zone. Note the call, or the attempt, below.
+          </Notice>
+        )}
       </div>
 
       <div className="mt-34 grid gap-55 lg:grid-cols-[minmax(0,1.618fr)_minmax(0,1fr)] lg:gap-55">

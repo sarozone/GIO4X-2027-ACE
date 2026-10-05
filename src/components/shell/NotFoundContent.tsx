@@ -19,7 +19,7 @@ const routes = [
  */
 export function NotFoundContent() {
   return (
-    <section className="relative overflow-hidden">
+    <section data-gx-404 className="relative overflow-hidden">
       <div aria-hidden className="grid-field pointer-events-none absolute inset-0 [mask-image:radial-gradient(60%_60%_at_50%_40%,black,transparent)]" />
       <div className="wrap relative grid min-h-[70svh] items-center gap-34 py-55 lg:grid-cols-phi lg:py-89">
         <div>

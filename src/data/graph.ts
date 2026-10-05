@@ -215,10 +215,11 @@ function buildNodes(): GraphNode[] {
     const lower = e.name.toLowerCase();
     // A policy decision is one of many: it reads best in the plural ("interest rate decisions").
     const many = e.kind === "Monetary policy" && !looksPlural(lower);
-    const phrase = isAcronym(e.short) ? e.short : many ? `${lower}s` : looksPlural(lower) ? lower : `the ${lower}`;
+    // An entry may give its own phrase, where lower-casing the name would spoil a proper name ("the Tankan survey").
+    const phrase = e.phrase ?? (isAcronym(e.short) ? e.short : many ? `${lower}s` : looksPlural(lower) ? lower : `the ${lower}`);
     out.push({
       id: `ev:${e.slug}`, kind: "event", label: e.name, short: e.short, sub: `${e.kind} · ${e.cadence}`,
-      href: `/markets/events/${e.slug}`, blurb: firstSentence(e.what), phrase, plural: !isAcronym(e.short) && (many || looksPlural(lower)), aliases: [e.short],
+      href: `/markets/events/${e.slug}`, blurb: firstSentence(e.what), phrase, plural: e.phrase ? looksPlural(e.phrase) : !isAcronym(e.short) && (many || looksPlural(lower)), aliases: [e.short],
     });
   }
 

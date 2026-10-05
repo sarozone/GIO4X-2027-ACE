@@ -58,6 +58,7 @@ export const nav: NavSection[] = [
           { label: "Economic Events", href: "/markets/events", note: "What the releases mean" },
           { label: "Economy profiles", href: "/markets/economies", note: "The economies behind the currencies" },
           { label: "Market history", href: "/history", note: "Eleven crashes and bubbles, 1637 to 2020" },
+          { label: "On this day in markets", href: "/on-this-day", note: "Dated events, by today’s date" },
           { label: "Commodities A to Z", href: "/markets/commodities", note: "From aluminium to zinc, explained" },
         ],
       },
@@ -108,6 +109,7 @@ export const nav: NavSection[] = [
       {
         title: "Plan and review",
         items: [
+          { label: "Risk management", href: "/risk", note: "Per trade, per day, drawdown, ruin" },
           { label: "Trading journal", href: "/journal", note: "A private log kept in your browser" },
           { label: "Trading plan builder", href: "/trading-plan", note: "Your rules in your words, to print" },
           { label: "Strategy library", href: "/strategies", note: "Twelve approaches, described" },
@@ -201,6 +203,7 @@ export const nav: NavSection[] = [
       {
         title: "Start here",
         items: [
+          { label: "Beginner’s roadmap", href: "/start-here", note: "Six stages across the site, in order" },
           { label: "Academy", href: "/academy", note: "Lessons, level by level" },
           { label: "Your first trade", href: "/academy/first-trade", note: "A ten-minute course" },
           { label: "Leverage, in six steps", href: "/academy/leverage-story", note: "A story told as you scroll" },
@@ -228,6 +231,7 @@ export const nav: NavSection[] = [
         items: [
           { label: "Glossary", href: "/glossary", note: "153 terms, plainly defined" },
           { label: "Glossary star map", href: "/glossary/map", note: "The glossary as a night sky" },
+          { label: "Glossary flashcards", href: "/glossary/flashcards", note: "Every term as a card, a few a day" },
           { label: "A to Z index", href: "/a-z", note: "Everything, alphabetically" },
           { label: "Cheat sheets", href: "/academy/cheat-sheets", note: "One-page summaries to print" },
           { label: "Reading list", href: "/academy/books", note: "Books worth the time" },
@@ -289,6 +293,7 @@ export const secondaryNav: NavGroup[] = [
       { label: "System status", href: "/status" },
       { label: "My desk", href: "/desk" },
       { label: "Display & privacy preferences", href: "/preferences" },
+      { label: "Accessibility statement", href: "/accessibility" },
       { label: "Take the tour", href: "/#tour" },
     ],
   },

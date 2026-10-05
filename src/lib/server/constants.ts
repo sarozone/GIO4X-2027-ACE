@@ -120,6 +120,8 @@ export const CAPABILITIES = [
   "fees.charge",
   // sending service e-mail (0028_portal_trade_email.sql)
   "emailer.send",
+  // readers' answers to "Was this page helpful?" (0032_page_feedback.sql)
+  "feedback.read",
 ] as const;
 export type Capability = (typeof CAPABILITIES)[number];
 

@@ -13,7 +13,7 @@ import { webPageSchema } from "@/lib/schema";
  * and does not list. Nothing here recommends anything.
  */
 const DESCRIPTION =
-  "Market primers: plain explanations of how markets work, one subject to a page. How commodities trade, bonds and interest rates, ETFs and funds, order types in depth, market microstructure, algorithmic trading, trading psychology, what moves a currency, Islamic finance and record keeping for tax. Each with a worked example and a note of what it does not cover.";
+  "Market primers: plain explanations of how markets work, one subject to a page. How commodities trade, bonds and interest rates, ETFs and funds, order types in depth, market microstructure, algorithmic trading, trading psychology, what moves a currency, Islamic finance, record keeping for tax, regulation, choosing a broker and trading myths. Each with a worked example and a note of what it does not cover.";
 
 export const metadata = pageMeta({ title: "Market primers: how markets work, one subject to a page", description: DESCRIPTION, path: "/primers" });
 

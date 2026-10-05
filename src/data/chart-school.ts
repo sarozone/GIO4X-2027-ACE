@@ -11,6 +11,9 @@
  * are what the arithmetic in components/chart-school/indicators.ts was
  * checked against. To add a page, add an entry here and a machine of the same
  * slug in components/chart-school/IndicatorMachine.tsx.
+ *
+ * Two pages use volume. The volume on their charts is invented with the
+ * prices, and both say what volume is, and is not, in spot foreign exchange.
  */
 
 export type LessonSlug =
@@ -27,12 +30,15 @@ export type LessonSlug =
   | "cci"
   | "williams-r"
   | "donchian-channels"
-  | "keltner-channels";
+  | "keltner-channels"
+  | "ichimoku"
+  | "obv"
+  | "vwap";
 
 export type Lesson = {
   slug: LessonSlug;
   name: string;
-  family: "Trend" | "Momentum" | "Volatility" | "Levels";
+  family: "Trend" | "Momentum" | "Volatility" | "Levels" | "Volume";
   /** the page's heading and title: the phrase people search for */
   title: string;
   description: string;
@@ -1009,6 +1015,229 @@ export const LESSONS: readonly Lesson[] = [
       { q: "Does a close outside a Keltner channel mean a reversal?", a: "Not reliably. It means the close is unusually far from its recent average compared with the usual size of a bar. Sometimes the price returns towards the average; in a strong trend it can stay outside for many bars." },
     ],
     terms: ["atr", "ema", "volatility", "bollinger-bands", "breakout", "indicator"],
+  },
+  {
+    slug: "ichimoku",
+    name: "Ichimoku cloud",
+    family: "Trend",
+    title: "Ichimoku Kinko Hyo: the five lines and the cloud, calculated",
+    description:
+      "Ichimoku Kinko Hyo explained: the conversion line, the base line, leading spans A and B and the lagging span, each with its exact formula. Why the cloud is drawn 26 bars ahead of the last bar, what 9, 26 and 52 mean, a worked example by hand, how people read it and what it cannot tell you. With an interactive chart of invented prices.",
+    also: ["Ichimoku cloud formula", "tenkan-sen and kijun-sen", "senkou span A and B", "chikou span", "Ichimoku 9 26 52", "kumo"],
+    is: "Ichimoku Kinko Hyo is five lines drawn from one simple sum: the midpoint between the highest high and the lowest low of a number of bars. Two of the lines are drawn ahead of the last bar and the space between them is shaded, which is the cloud. One line is the close itself, drawn behind.",
+    card: "Five lines from one sum, the midpoint of a range. Two are drawn ahead of the last bar: the cloud.",
+    facts: [
+      { label: "Family", value: "Trend" },
+      { label: "Drawn", value: "On the price, and ahead of it" },
+      { label: "Made from", value: "Highs, lows and closes" },
+      { label: "Usual settings", value: "9, 26, 52" },
+      { label: "Unit", value: "Price" },
+      { label: "First described", value: "Goichi Hosoda, published 1969" },
+    ],
+    measures: [
+      "The name is usually translated as ‘equilibrium chart at a glance’. It was worked out over many years by the Japanese journalist Goichi Hosoda, who wrote as Ichimoku Sanjin, and published in 1969. It looks crowded, and it is made of very little.",
+      "Every line but one comes from the same sum: take the highest high and the lowest low of the last N bars and find the point halfway between them. That midpoint is where the middle of the market’s recent range has been. It is not an average of closes: one bar with an extreme high moves it as much as it can be moved, and then nothing moves it until that bar leaves the window.",
+      "The conversion line is the midpoint of 9 bars and the base line the midpoint of 26. Leading span A is halfway between those two, and leading span B is the midpoint of 52 bars. What makes the chart unusual is where the two spans are put: 26 bars to the right of the bar they were calculated at. The fifth line, the lagging span, is the close, put 26 bars to the left.",
+      "So the cloud that stands beyond the last bar is not a forecast. It is the midpoints of bars that have already closed, drawn 26 bars later than they were worked out. The machine on this page leaves that space empty of candles, because no prices exist there.",
+    ],
+    steps: [
+      { t: "Learn the one sum it uses.", d: "Midpoint of N bars = (highest high of the last N bars + lowest low of the last N bars) ÷ 2. The latest bar is included." },
+      { t: "Conversion line (tenkan-sen).", d: "The midpoint of 9 bars. It is the quickest of the lines." },
+      { t: "Base line (kijun-sen).", d: "The midpoint of 26 bars." },
+      { t: "Leading span A (senkou span A).", d: "(Conversion line + base line) ÷ 2, drawn 26 bars ahead: the value worked out at this bar is placed 26 bars to its right." },
+      { t: "Leading span B (senkou span B).", d: "The midpoint of 52 bars, also drawn 26 bars ahead. It is the slowest line, and it runs flat for long stretches." },
+      { t: "Shade the space between the two spans.", d: "That is the cloud (kumo). It is given one tone where span A is above span B and another where span B is above span A. Where they cross, the cloud narrows to nothing and changes tone." },
+      { t: "Lagging span (chikou span).", d: "The close, drawn 26 bars back: this bar’s close is placed 26 bars to its left. Nothing is calculated." },
+    ],
+    stepsNote: "Programs differ on how the 26 is counted. Many count the latest bar as the first of the 26 and so move the spans 25 bars; this page moves them a full 26. On this page the displacement always equals the length of the base line, which is the usual convention; some programs let it be set separately. The numbers 9, 26 and 52 are commonly explained by the six-day trading week of the time: a week and a half, a month and two months.",
+    worked: {
+      intro: "Five bars, written high / low / close: 10 / 8 / 9, then 12 / 9 / 11, then 11 / 9 / 10, then 13 / 10 / 12, then 14 / 11 / 13. Small settings so it fits on a page: conversion 2, base 3, span B 4, and a displacement of 3 bars.",
+      lines: [
+        "Conversion (2 bars): bar 2 = (12 + 8) ÷ 2 = 10; bar 3 = (12 + 9) ÷ 2 = 10.5; bar 4 = (13 + 9) ÷ 2 = 11; bar 5 = (14 + 10) ÷ 2 = 12",
+        "Base (3 bars): bar 3 = (12 + 8) ÷ 2 = 10; bar 4 = (13 + 9) ÷ 2 = 11; bar 5 = (14 + 9) ÷ 2 = 11.5",
+        "Span A, worked out at bars 3, 4 and 5: (10.5 + 10) ÷ 2 = 10.25; (11 + 11) ÷ 2 = 11; (12 + 11.5) ÷ 2 = 11.75. Drawn 3 bars ahead, at bars 6, 7 and 8",
+        "Span B (4 bars), worked out at bars 4 and 5: (13 + 8) ÷ 2 = 10.5; (14 + 9) ÷ 2 = 11.5. Drawn at bars 7 and 8",
+        "The cloud at bar 7 lies between 10.5 and 11, and at bar 8 between 11.5 and 11.75, with span A on top both times",
+        "Lagging span: the close of bar 4, 12, is drawn at bar 1; the close of bar 5, 13, is drawn at bar 2",
+      ],
+      result: "There are five bars, and the cloud reaches bar 8. Nothing in it comes from bars 6, 7 or 8, which do not exist: it is the midpoints of bars 1 to 5, drawn three bars to the right.",
+    },
+    read: [
+      "The price against the cloud. A price above the cloud is described as an uptrend, one below it as a downtrend, and one inside it as a market without a clear direction. The cloud under or over today’s bar was calculated 26 bars ago.",
+      "The cloud itself. Its tone shows which span is on top, and so whether the shorter midpoints are above the longer one. A thick cloud means the two have been far apart; a thin one, or a change of tone, means they have met. Readers treat the cloud’s edges as areas where a move may pause.",
+      "The conversion line against the base line. The quicker midpoint crossing the slower one is read like the crossing of two moving averages, and is given more weight when it happens on the side of the cloud that agrees with it.",
+      "The lagging span. Because it is today’s close drawn 26 bars back, seeing it above the candles there says one thing: the latest close is higher than the price was 26 bars ago.",
+      "The cloud ahead. It shows where the midpoints calculated up to now will be drawn. Readers look at its tone and thickness; neither says anything about the bars that will be drawn in front of it.",
+    ],
+    cannot: [
+      "It cannot see ahead. The part of the cloud to the right of the last bar is made entirely from bars that have closed. If the price falls sharply tomorrow, that cloud does not move: it was fixed when its bars closed.",
+      "It cannot be early. Span B needs 52 bars, and the cloud beside any bar is 26 bars old. By the time the price is clear of the cloud, much of a move has happened.",
+      "It cannot count as five opinions. All five lines are made from the same highs, lows and closes, and four of them from the same sum. When they agree, that is one fact drawn five ways.",
+      "It cannot tell a pause from a turn. In a sideways market the price passes into and out of the cloud repeatedly, and the conversion and base lines cross again and again.",
+      "It cannot say that 9, 26 and 52 are right. They were chosen for one market’s calendar in another century, and they are kept by convention.",
+    ],
+    mistakes: [
+      "Reading the cloud ahead as the place the price is expected to go. It is a record, displaced.",
+      "Testing a rule with the lagging span as if it were known at the bar where it is drawn. The value drawn at a bar is a close from 26 bars later. A test that uses it there is using prices that had not happened.",
+      "Treating agreement among the five lines as confirmation.",
+      "Comparing two charts that displace by 25 and by 26 bars, or that use different settings, as if they showed the same cloud.",
+      "Treating the edge of the cloud as a level the market must respect. It is a midpoint of old highs and lows, and it is flat only because nothing has exceeded them yet.",
+    ],
+    machine: { title: "Five lines and a cloud, on an invented price.", lead: "The cloud runs past the last bar into space with no candles in it. Change the three lengths and watch the cloud thicken, thin and change tone while the prices stay the same." },
+    faq: [
+      { q: "What do 9, 26 and 52 mean in Ichimoku?", a: "They are three lengths, in bars. The conversion line is the midpoint of the highest high and lowest low of 9 bars, the base line of 26 bars and leading span B of 52 bars. The 26 is also how far the two leading spans are drawn ahead and the lagging span behind. The numbers are the published settings, commonly explained by the six-day trading week of the time, and are kept by convention." },
+      { q: "Does the Ichimoku cloud predict where the price will go?", a: "No. The cloud drawn ahead of the last bar is calculated only from bars that have already closed: it is the midpoint of the conversion and base lines, and the midpoint of the last 52 bars, drawn 26 bars to the right. It shows where past midpoints will be plotted, not where future prices will be." },
+      { q: "What is the lagging span (chikou span) for?", a: "It is the latest close drawn 26 bars back, so that it can be compared by eye with the candles of that time. Above them, the close is higher than the price was 26 bars ago; below them, lower. It contains no calculation, and at the place where it is drawn it shows a close that had not yet happened then." },
+      { q: "Why is the cloud two colours?", a: "The cloud is the space between leading span A and leading span B. It is shaded one tone where span A is the higher and another where span B is. Span A follows the shorter midpoints and span B the 52-bar one, so the tone shows which has been above the other, 26 bars before the place where it is drawn." },
+    ],
+    terms: ["ichimoku", "trend", "support", "resistance", "moving-average", "indicator"],
+  },
+  {
+    slug: "obv",
+    name: "On-balance volume",
+    family: "Volume",
+    title: "On-balance volume (OBV): the running total, step by step",
+    description:
+      "On-balance volume (OBV) explained: a running total that adds a bar’s volume when the close is up and subtracts it when the close is down. The formula step by step, a worked example by hand, how people read it, what it cannot tell you, and why volume in spot forex is tick volume, not traded volume. With an interactive chart of invented prices and invented volume.",
+    also: ["on-balance volume formula", "OBV indicator", "OBV divergence", "volume indicator", "tick volume in forex"],
+    is: "On-balance volume is a running total. When a bar closes higher than the one before, its whole volume is added; when it closes lower, its whole volume is taken away. The line that results shows whether more volume has been arriving on rising bars or on falling ones.",
+    card: "A running total: volume added on a higher close, taken away on a lower one.",
+    facts: [
+      { label: "Family", value: "Volume" },
+      { label: "Drawn", value: "Under the price" },
+      { label: "Made from", value: "Closes and volume" },
+      { label: "Settings", value: "None; an average of it is often added" },
+      { label: "Unit", value: "Volume, as a running total" },
+      { label: "First described", value: "Joseph Granville, 1963" },
+    ],
+    measures: [
+      "Most pages in this school use prices alone. On-balance volume brings in a second column of figures: how much was traded in each bar. It asks one question of each bar, whether it closed up or down, and then moves the bar’s entire volume to one side of the ledger or the other.",
+      "Joseph Granville set it out in 1963, in Granville’s New Key to Stock Market Profits. His claim was that volume moves before price does. That is a claim, and the line does not depend on it: OBV is a record of which way the close went on the bars that had the most volume.",
+      "The level of the line means nothing. The total starts wherever the chart’s history starts, so two programs with different amounts of history show different numbers for the same bar. Only the shape matters: whether the line has been rising, falling or going sideways, and whether it has done so in step with the price.",
+      "The line is only as good as the volume under it. Shares and futures trade on exchanges that publish how much changed hands. Spot foreign exchange has no central exchange and no such record: the ‘volume’ on a currency chart is tick volume, a count of how many times the price from one broker’s feed changed during the bar. More is said about that below.",
+    ],
+    steps: [
+      { t: "Start the total somewhere.", d: "Zero is usual, at the first bar. The choice changes every number that follows by the same amount and changes the shape of the line not at all." },
+      { t: "Compare each close with the close before.", d: "Only the direction is used. A rise of 0.01 and a rise of 10 are treated alike." },
+      { t: "If the close is higher, add the bar’s volume.", d: "OBV = previous OBV + volume." },
+      { t: "If the close is lower, take it away.", d: "OBV = previous OBV − volume." },
+      { t: "If the close is the same, leave the total alone.", d: "OBV = previous OBV. The bar’s volume is not counted at all." },
+      { t: "Optionally, average it.", d: "A simple moving average of OBV over N bars is often drawn beside it, to make its direction easier to see. It is the one setting on this page’s chart." },
+    ],
+    stepsNote: "The arithmetic is the same in every program; what differs is the starting bar, and therefore the level, and the volume itself. On a currency pair two brokers count different ticks and draw different OBV lines for the same market. On this page the volume is invented along with the prices and is in no unit.",
+    worked: {
+      intro: "Five bars. Closes: 10, 11, 11, 10, 12. Volumes: 100, 150, 120, 200, 180.",
+      lines: [
+        "Bar 1: there is no close before it, so OBV starts at 0",
+        "Bar 2: 11 is above 10, so add its volume: 0 + 150 = 150",
+        "Bar 3: 11 is the same as 11, so nothing changes: 150",
+        "Bar 4: 10 is below 11, so take its volume away: 150 − 200 = −50",
+        "Bar 5: 12 is above 10, so add its volume: −50 + 180 = 130",
+      ],
+      result: "Bar 4 fell by 1 and all 200 of its volume was taken away; it would have been the same had it fallen by 0.01. Bar 3’s volume of 120 was not counted at all. OBV is a blunt instrument, and it is meant to be.",
+    },
+    read: [
+      "Its direction beside the price’s. A rising price with a rising OBV is described as a move that volume has gone along with: the up-bars have carried more volume than the down-bars.",
+      "Divergence. The price makes a new high and OBV does not, or the mirror image. It is read as a move that volume has stopped supporting. It is clearer afterwards than at the time, and it is often followed by nothing.",
+      "A break in OBV. Some readers draw levels and trend lines on the OBV line itself and watch for it to pass them before the price passes its own.",
+      "Against its average. OBV above its own moving average has been rising faster than it had been.",
+    ],
+    cannot: [
+      "It cannot weigh a bar. A close that is higher by the smallest possible amount adds the whole volume, exactly as a large rise would. A bar that ranged widely and closed unchanged adds nothing.",
+      "It cannot tell buying from selling. Every unit of volume is a purchase and a sale at once. OBV assigns the bar’s volume to one side by the direction of its close, which is a convention, not a measurement.",
+      "It cannot give a level that means anything. The figure depends on where the total began.",
+      "It cannot measure traded volume in spot forex. There the input is tick volume: a count of price changes on one broker’s feed. A busy market does produce more price changes, but a count of changes is not an amount traded, a single very large deal can be one tick, and another broker’s count for the same bar will differ. OBV on a currency pair is a running total of how often that feed’s price moved on up-bars less how often on down-bars.",
+      "It cannot recover from one odd bar. A single bar with unusual volume shifts the line by that amount for the rest of the chart.",
+    ],
+    mistakes: [
+      "Reading the number. An OBV of 2,000,000 on one chart and 50,000 on another says nothing about either.",
+      "Treating forex tick volume as if it were the volume of the market. It is one feed’s count of quotes.",
+      "Taking a divergence as a signal with a known outcome. Divergences are found on every chart, most easily after the event.",
+      "Comparing OBV across time frames or instruments. The totals are built from different bars and different volumes.",
+      "Forgetting that the line is half made of price. When the price rises for many bars OBV must rise too, whatever the volume was: every one of those bars is added.",
+    ],
+    machine: { title: "A running total under an invented price and an invented volume.", lead: "The bars in the middle are volume, toned by whether each was added or taken away. Change where the total starts and watch every number change while the shape does not." },
+    faq: [
+      { q: "How is on-balance volume calculated?", a: "Start a total at zero. For each bar, compare its close with the previous close: if it is higher, add the bar’s volume to the total; if it is lower, subtract it; if it is the same, leave the total unchanged. The running total, drawn as a line, is OBV." },
+      { q: "Does OBV work in forex?", a: "The arithmetic can be done, but on a different input. Spot foreign exchange is traded between banks and dealers with no central exchange, so there is no published figure for how much was traded in a bar. Charting platforms show tick volume instead: the number of price changes on that broker’s feed. OBV built on it adds up counts of quotes, not amounts traded, and differs from broker to broker. Exchange-traded currency futures do report traded volume." },
+      { q: "Why is my OBV value different from another chart’s?", a: "Because OBV is a running total, its value depends on the bar at which the total began. A chart with more history loaded starts earlier and shows a different number for the same bar. The shape of the line over the bars the two charts share is the same, provided they use the same volume." },
+      { q: "What is OBV divergence?", a: "The price and OBV moving out of step: for example, the price makes a higher high while OBV makes a lower one. It is read as a rise that less volume is going along with. It describes the bars so far; what follows can be a fall, a pause or a further rise." },
+    ],
+    terms: ["volume", "obv", "divergence", "trend", "liquidity", "indicator"],
+  },
+  {
+    slug: "vwap",
+    name: "VWAP",
+    family: "Volume",
+    title: "VWAP (volume-weighted average price): the formula and the session reset",
+    description:
+      "VWAP, the volume-weighted average price, explained: typical price times volume, added up from the start of the session and divided by the volume so far. The formula step by step, why it resets each session, a worked example by hand, how people read it, what it cannot tell you, and what it means on spot forex, where volume is tick volume. With an interactive chart of invented prices and invented volume.",
+    also: ["volume-weighted average price formula", "VWAP reset", "VWAP vs moving average", "anchored VWAP", "VWAP in forex"],
+    is: "VWAP is the average price of a session so far, with each bar counted in proportion to its volume. A bar with three times the volume counts three times as much. The sum begins again at the start of every session, so the line has no memory of the day before.",
+    card: "The session’s average price, each bar weighted by its volume. It begins again every session.",
+    facts: [
+      { label: "Family", value: "Volume" },
+      { label: "Drawn", value: "On the price" },
+      { label: "Made from", value: "High, low, close and volume" },
+      { label: "Setting", value: "Where the session starts" },
+      { label: "Unit", value: "Price" },
+      { label: "As a benchmark", value: "Berkowitz, Logue and Noser, 1988" },
+    ],
+    measures: [
+      "A plain average of the session’s prices treats a quiet bar and a crowded bar alike. VWAP does not: it asks at what price the session’s volume changed hands, on average. If most of the volume traded high in the range, VWAP is high in the range.",
+      "It began as a yardstick for dealing, not for charts. Someone who has to buy a large amount over a day can compare the average price they paid with the day’s VWAP: below it, they paid less than the volume-weighted average of everyone’s trades. Its use as a benchmark is usually traced to a 1988 paper by Berkowitz, Logue and Noser.",
+      "Because it is a running average from the session’s first bar, each new bar counts for less as the session goes on. Early in a session the line follows the price closely; late in it, the line hardly moves. Then the session ends, both sums are thrown away, and the next one starts from its own first bar.",
+      "A session is a day’s trading on an exchange, from the open to the close. The invented chart on this page has no clock and no days, so a session is defined plainly: a fixed number of bars, counted from the chart’s first bar. With a session of 20 bars, bars 1 to 20 are the first session, bars 21 to 40 the second, and so on. The length is the setting.",
+    ],
+    steps: [
+      { t: "Work out each bar’s typical price.", d: "TP = (high + low + close) ÷ 3. It stands in for the prices traded inside the bar, which a chart of bars does not record." },
+      { t: "Multiply it by the bar’s volume.", d: "TP × volume. A bar with more volume contributes more." },
+      { t: "Add those products up from the session’s first bar.", d: "Running sum of TP × volume." },
+      { t: "Add the volumes up from the same bar.", d: "Running sum of volume." },
+      { t: "Divide.", d: "VWAP = sum of (TP × volume) ÷ sum of volume. At the session’s first bar it is simply that bar’s typical price." },
+      { t: "At the next session’s first bar, start both sums again from zero.", d: "This is the reset. The line jumps to the new bar’s typical price and the previous session plays no further part." },
+    ],
+    stepsNote: "The exact figure uses every trade: each trade’s price times its size. From bars it is an approximation, closer the shorter the bars are. Some programs use the close in place of the typical price. An anchored VWAP is the same sum begun at a bar the reader chooses and never reset. If a stretch has no volume at all the formula divides by zero; this page shows the typical price for such a bar.",
+    worked: {
+      intro: "Five bars, written high / low / close, each with its volume: 11 / 9 / 10 with 100, then 13 / 10 / 13 with 100, then 16 / 12 / 14 with 300; then 15 / 11 / 13 with 200, then 17 / 13 / 15 with 600. A session here is three bars, so bar 4 begins a new one.",
+      lines: [
+        "Typical prices: (11 + 9 + 10) ÷ 3 = 10; then 12, 14, 13 and 15",
+        "Bar 1: 10 × 100 = 1,000. VWAP = 1,000 ÷ 100 = 10",
+        "Bar 2: add 12 × 100 = 1,200. VWAP = 2,200 ÷ 200 = 11",
+        "Bar 3: add 14 × 300 = 4,200. VWAP = 6,400 ÷ 500 = 12.8",
+        "Bar 4, a new session: both sums start again. 13 × 200 = 2,600. VWAP = 2,600 ÷ 200 = 13",
+        "Bar 5: add 15 × 600 = 9,000. VWAP = 11,600 ÷ 800 = 14.5",
+      ],
+      result: "The plain average of the first three typical prices is 12. VWAP is 12.8, because the bar with the most volume was the highest. At bar 4 the line steps to 13 for no reason in the market: the first session has been forgotten.",
+    },
+    read: [
+      "As a benchmark for a fill. A purchase below the session’s VWAP was made below the volume-weighted average price of the session so far; a sale above it, above. This is its original use.",
+      "The price against the line. A price above VWAP is above the session’s volume-weighted average: on balance, those who bought during the session are showing a gain on paper. Below it, the reverse.",
+      "The slope. A rising VWAP means recent volume has traded above the session’s average so far.",
+      "As a reference within the day. Some readers watch for the price to return to VWAP after moving away from it. Sometimes it does, and sometimes the line moves to the price instead.",
+    ],
+    cannot: [
+      "It cannot carry over. Each session’s line is built only from that session’s bars. Where one session’s VWAP ended and where the next begins are unrelated numbers.",
+      "It cannot mean much early in a session. At the first bar it is that bar’s typical price, and for some bars after it is an average of very little.",
+      "It cannot turn quickly late in a session. By then each new bar is a small fraction of the total, so the line is slow by construction.",
+      "It cannot be the benchmark it is named after in spot forex. There is no central exchange and no record of the amounts traded, so platforms weight by tick volume: the number of price changes on one broker’s feed in each bar. The result is an average weighted by how often that feed’s price moved, not by how much was dealt. It differs from broker to broker, and it is not the figure a dealing desk means by VWAP.",
+      "It cannot draw the price to it. The line is an average of where the price has been. The two meet often because one is made from the other.",
+    ],
+    mistakes: [
+      "Reading VWAP across a session boundary as one continuous line. The step at the reset is arithmetic, not a market event.",
+      "Using it on a daily chart without saying where it starts. With one bar to a session, VWAP is each bar’s typical price.",
+      "Treating a forex ‘VWAP’ as volume-weighted. It is weighted by a count of quote changes, and the session it resets on is the broker’s server day, which differs between brokers.",
+      "Comparing the VWAP on two platforms that start the session at different times.",
+      "Treating the line as a level the price must return to before the session ends.",
+    ],
+    machine: { title: "A session’s average, weighted by an invented volume.", lead: "The dashed uprights mark where each session begins and the line starts again. Change the length of the session and watch the same prices and volumes give a different line." },
+    faq: [
+      { q: "How is VWAP calculated?", a: "For each bar, multiply the typical price, (high + low + close) ÷ 3, by the bar’s volume. Add those products up from the first bar of the session, add the volumes up from the same bar, and divide the first sum by the second. Both sums start again from zero at the first bar of the next session." },
+      { q: "Why does VWAP reset every day?", a: "Because it answers a question about one session: at what average price has this session’s volume traded? Yesterday’s trades are not part of that. Resetting also keeps the line responsive: a total that was never reset would grow so large that no new bar could move it." },
+      { q: "What is the difference between VWAP and a moving average?", a: "A moving average covers a fixed number of bars, moves its window forward each bar and gives each bar the same weight, or a weight set by its age. VWAP covers every bar since the session began, however many that is, and weights each by its volume. A moving average runs on across sessions; VWAP starts again." },
+      { q: "Is VWAP meaningful in forex?", a: "Less than the name suggests. Spot foreign exchange has no central exchange, so there is no figure for traded volume; charting platforms use tick volume, a count of price changes on the broker’s own feed. A forex VWAP is therefore a price average weighted by quote activity, different on each broker, with a session that starts whenever that broker’s server day does. Exchange-traded currency futures have reported volume and a defined session." },
+    ],
+    terms: ["vwap", "volume", "liquidity", "moving-average", "slippage", "indicator"],
   },
 ];
 

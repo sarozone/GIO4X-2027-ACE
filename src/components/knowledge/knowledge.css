@@ -142,4 +142,34 @@
   .prose-gx a.gloss::after {
     content: none;
   }
+  /* A lesson, an article or a blog post on paper ("Print or save as PDF"): the
+     title and byline, the text, then what is marked print-keep in the side
+     column (how to cite the page, what kind of page it is) and the line that
+     says where and when it was printed (components/ui/PrintLine.tsx). The rest
+     of the side column, and the tiles that lead on to other pages, are for the
+     screen. */
+  [data-read-rail] {
+    margin-top: 1.3125rem;
+    border: 0 !important;
+    padding: 0 !important;
+  }
+  [data-read-rail] > div {
+    display: block;
+    position: static;
+    max-height: none;
+    overflow: visible;
+    padding: 0;
+  }
+  [data-read-rail] :is(section, nav):not(.print-keep) {
+    display: none !important;
+  }
+  [data-read-rail] .print-keep {
+    margin-bottom: 0.8125rem;
+    border-top: 1px solid var(--line);
+    padding-top: 0.8125rem;
+    break-inside: avoid;
+  }
+  main:has([data-read-rail]) > section[aria-labelledby="next-steps"] {
+    display: none !important;
+  }
 }

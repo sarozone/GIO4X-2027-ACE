@@ -68,6 +68,8 @@ export function buildSearchIndex(): SearchEntry[] {
   for (const g of glossary) {
     add({ t: g.term, d: g.definition.length > 240 ? `${g.definition.slice(0, 237).replace(/\s+\S*$/, "")}…` : g.definition, h: `/glossary/${g.slug}`, g: "Glossary", k: [g.slug.replace(/-/g, " "), ...(g.aliases ?? [])], w: 0.95 });
   }
+  // the glossary as flashcards: before the menu adds the same page, so it carries the words people look for it by
+  add({ t: "Glossary flashcards", d: "Every glossary term as a card, with a simple spaced-repetition schedule kept in your browser.", h: "/glossary/flashcards", g: "Glossary", k: ["flashcards", "flash cards", "spaced repetition", "leitner", "revision", "revise", "memorise", "learn the terms"] });
   for (const a of articles) {
     add({ t: a.title, d: a.excerpt, h: `/intelligence/${a.slug}`, g: "Intelligence", k: a.tags.map((x) => x.toLowerCase()), w: 0.9 });
   }
@@ -77,6 +79,11 @@ export function buildSearchIndex(): SearchEntry[] {
   for (const p of SECTION_PAGES) {
     add({ t: p.label, d: p.description.length > 240 ? `${p.description.slice(0, 237).replace(/\s+\S*$/, "")}…` : p.description, h: p.href, g: p.kind === "Calculator" ? "Tools" : "Academy", k: [p.kind.toLowerCase(), ...p.words], w: 0.9 });
   }
+  // four pages the navigation lists, entered here first so that they carry the words people type for them (the navigation's own row for each is then the same entry, and is passed over)
+  add({ t: "Start here: the beginner’s roadmap", d: "Six stages across the site, in order: what is traded, how a trade works, risk, practice, choosing an account, and keeping a record.", h: "/start-here", g: "Academy", k: ["start here", "beginner", "beginners", "roadmap", "new to trading", "where to start", "getting started", "learn to trade"] });
+  add({ t: "Risk management", d: "Per trade, per day, drawdown and ruin, with every calculator, lab, lesson and term on risk in one place.", h: "/risk", g: "Trading", k: ["risk", "risk management", "money management", "position sizing", "stop loss", "drawdown", "risk of ruin", "expectancy", "risk hub"] });
+  add({ t: "On this day in markets", d: "Dated events from market history for today’s date, and the whole list month by month.", h: "/on-this-day", g: "Markets", k: ["on this day", "today in history", "market history", "anniversary", "this day in markets", "calendar of events"] });
+  add({ t: "Accessibility statement", d: "Keyboard, focus, contrast, text size, reduced motion and screen readers; the known limits; how to report a problem.", h: "/accessibility", g: "Help", k: ["accessibility", "a11y", "screen reader", "keyboard", "contrast", "reduced motion", "large text", "wcag"] });
   for (const s of nav) {
     const g = groupOfSection[s.key] ?? "Company";
     add({ t: s.label, d: s.blurb, h: s.href, g });

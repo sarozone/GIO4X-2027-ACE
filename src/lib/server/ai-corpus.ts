@@ -22,8 +22,10 @@ import { legalDocs, type LegalBlock } from "@/data/legal-docs";
 import { gioFacts, type Fact } from "@/data/platforms";
 import { tools } from "@/data/tools";
 import { accountCharacter, accountEligibility, costConcepts, fundingConfirmed, fundingCurrencies, fundingExplainers, fundingPending } from "@/data/trading";
-import { prepareCorpus, type Corpus, type Passage } from "@/lib/ai";
+import { AI_LIMITS, prepareCorpus, type Corpus, type Passage } from "@/lib/ai";
 import { buildSearchIndex } from "@/lib/search-index";
+import { aiBlogPassages } from "@/lib/server/ai-blog";
+import { BLOG_REVALIDATE } from "@/lib/server/blog";
 
 /** A passage is cut at a sentence or a word, never mid-word. */
 const CHUNK = 800;
@@ -168,4 +170,47 @@ let corpus: Corpus | null = null;
 export function aiCorpus(): Corpus {
   corpus ??= prepareCorpus(build());
   return corpus;
+}
+
+/* ---- with the blog ------------------------------------------------------------ */
+
+/** The corpus with the blog's passages added, and what those passages were, so that it is tokenised again only when they change. */
+let live: { corpus: Corpus; mark: string } | null = null;
+let asked = 0;
+let reading: Promise<void> | null = null;
+
+/**
+ * The corpus a question is answered from: the site's own pages and, when the
+ * blog can be read, its published posts (ai-blog.ts).
+ *
+ * The blog is looked at again at most once every BLOG_REVALIDATE seconds in
+ * one server instance, and then through the blog's own cache, never once per
+ * question. A question does not wait for it, except the first after a start,
+ * and that one for AI_LIMITS.blogWaitMs at most. If the read fails, or there
+ * is nothing published, this is aiCorpus(): the assistant as it was before
+ * the blog was a source.
+ */
+export async function aiCorpusLive(): Promise<Corpus> {
+  const now = Date.now();
+  if (!reading && now - asked >= BLOG_REVALIDATE * 1000) {
+    asked = now;
+    reading = aiBlogPassages()
+      .then((posts) => {
+        if (!posts.length) {
+          live = null;
+          return;
+        }
+        const mark = posts.map((p) => `${p.url} ${p.text.length} ${p.title}`).join("\n");
+        if (live?.mark !== mark) live = { corpus: prepareCorpus([...aiCorpus().passages, ...posts]), mark };
+      })
+      .catch(() => {
+        // could not be read: no post is a source until it can be
+        live = null;
+      })
+      .finally(() => {
+        reading = null;
+      });
+    if (!live) await Promise.race([reading, new Promise((resolve) => setTimeout(resolve, AI_LIMITS.blogWaitMs))]);
+  }
+  return live?.corpus ?? aiCorpus();
 }

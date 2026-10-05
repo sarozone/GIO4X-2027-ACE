@@ -16,7 +16,7 @@ import { ALERT, AMBER, TAU, arrow, clamp, disc, lerp, mix, rgba, ring, rr, seg, 
  * draws inside the box it is handed and knows two things about the reader:
  * `k`, how much the pointer is on this chapter (0 to 1), and the pointer's
  * own position in the frame. Everything else (the layout, the heading, the
- * spine, the drifting field behind, the arrival of each chapter in turn) is
+ * spine, the arrival of each chapter in turn) is
  * done here, once, for all of them.
  *
  * The rules of the small figures still hold: an illustration, never data. No
@@ -100,30 +100,9 @@ export function wander(t: number, phase = 0): number {
   return (Math.sin(t * 0.9 + phase) + 0.55 * Math.sin(t * 2.3 + phase * 1.7) + 0.3 * Math.sin(t * 4.1 + phase * 0.6)) / 1.85;
 }
 
-/** the faint drifting currents behind the whole scene: they lean towards the pointer */
-function field(f: FigureFrame, v: Vary, tall: boolean): void {
-  const { ctx, w, h, t, pal } = f;
-  const long = tall ? h : w;
-  const across = tall ? w : h;
-  const n = 4;
-  ctx.lineWidth = 1;
-  for (let i = 0; i < n; i++) {
-    const base = ((i + 0.5) / n) * across;
-    const pull = f.hover * ((tall ? f.mx : f.my) - base) * 0.12;
-    ctx.strokeStyle = rgba(i % 2 ? pal.accent : pal.ink3, 0.16 + 0.08 * f.hover);
-    ctx.beginPath();
-    for (let s = 0; s <= long; s += 14) {
-      const a = base + pull + Math.sin(s * 0.011 + t * 0.22 * v.speed + i * 1.9 + v.phase) * across * 0.055 + Math.sin(s * 0.027 - t * 0.13 + i) * across * 0.02;
-      if (tall) (s === 0 ? ctx.moveTo(a, s) : ctx.lineTo(a, s));
-      else (s === 0 ? ctx.moveTo(s, a) : ctx.lineTo(s, a));
-    }
-    ctx.stroke();
-  }
-}
-
 /**
  * Draws a story to the whole frame. `v` is what the scene's seed decided, so two
- * pages that tell the same story draw its field and its pulses differently.
+ * pages that tell the same story time its pulses differently.
  */
 export function story(f: FigureFrame, s: Story, v: Vary): void {
   const { ctx, w, h, pal, t } = f;
@@ -143,7 +122,6 @@ export function story(f: FigureFrame, s: Story, v: Vary): void {
   const rows = Math.min(maxRows, n);
   const cols = Math.ceil(n / rows);
   const tall = cols === 1;
-  field(f, v, h >= w);
 
   setFont(f, 11, 700, 1.1);
   ctx.textAlign = "left";

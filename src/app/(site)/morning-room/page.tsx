@@ -5,6 +5,7 @@ import { Cadence } from "@/components/figures/company/Cadence";
 import { FigureNote } from "@/components/figures/Figure";
 import { DayWheel } from "@/components/figures/markets/DayWheel";
 import { HeroCompanion } from "@/components/figures/markets/HeroCompanion";
+import { OnThisDayCard } from "@/components/history/OnThisDay";
 import { DepthRoom, FxSessionsToday } from "@/components/knowledge/MorningRoom";
 import { EditionDate, Greeting, LocalClock } from "@/components/knowledge/Today";
 import { firstSentence } from "@/components/markets/graph";
@@ -304,6 +305,10 @@ export default function MorningRoomPage() {
           <p className="mt-13 max-w-measure text-xs text-ink-3" data-show="deep">
             The lesson and the term change each day at 00:00 UTC. They are picked by the calendar date, in rotation: nothing here is personalised, ranked or tracked.
           </p>
+        </Module>
+
+        <Module n="05" id="mr-day" title="On this date" lead="A dated event from market history, by today’s date on your own calendar.">
+          <OnThisDayCard className="max-w-measure" />
         </Module>
       </DepthRoom>
 

@@ -186,7 +186,8 @@ svg[data-fx-in][data-draw="stroke"] :is(path, polyline, line) {
 }
 .gx-punch-line {
   margin-inline: auto;
-  max-width: 20ch;
+  /* wide enough that a sentence sits on a line or two and is not chopped (owner, 5 October 2026) */
+  max-width: 34ch;
   font-size: clamp(1.75rem, 5.2vw, 3.4375rem);
   line-height: 1.08;
   letter-spacing: -0.015em;

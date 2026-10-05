@@ -55,8 +55,8 @@ internal systems (CRM operating system, CMS, communications, generative AI) are 
 | Currency Strength Matrix | IMPLEMENTED | `/markets/currency-strength` |
 | Correlation Lab | PARTIAL | Correlation matrix for the USD pairs from ECB fixings |
 | Economic calendar | BLOCKED: EXTERNAL SERVICE | Honest "not connected" state; explainers built |
-| Economic event detail pages | IMPLEMENTED | 7 events, without release values |
-| Central Bank Watch | PARTIAL | 9 banks: institutional facts and primary sources; rates need a feed |
+| Economic event detail pages | IMPLEMENTED | 27 events (7, then 20 added 5 October 2026), without release values |
+| Central Bank Watch | PARTIAL | 16 banks (9, then 7 added 5 October 2026): institutional facts and primary sources; rates need a feed |
 | Global rate map, Macro dashboard, Volatility centre, Movers | BLOCKED: EXTERNAL SERVICE | Not shown |
 | Market hours & holidays | PARTIAL | Regular hours; holidays not modelled (stated) |
 | Trader tools hub, shared values | IMPLEMENTED | `/tools`, 12 tools, `gx:calc` |

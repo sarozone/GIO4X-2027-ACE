@@ -42,7 +42,7 @@ const machines = [
     eyebrow: "Guess the candle",
     title: "Up or down? Nobody can know.",
     lead: "Sixteen candles and one you cannot see. The hidden one is a coin flip, so the chart cannot help you. That is the lesson.",
-    go: { href: "/intelligence/blog/reading-a-candle-in-ten-seconds", label: "Reading a candle in ten seconds" },
+    go: { href: "/academy/candlestick-patterns-masterclass", label: "Candlestick patterns masterclass" },
     body: <GuessCandle />,
   },
   {
@@ -60,7 +60,7 @@ const machines = [
     eyebrow: "Sixty seconds",
     title: "One minute to beat the desk.",
     lead: "An invented price, one position at a time, and one pip of spread on every trade. See what is left when the minute ends, and why.",
-    go: { href: "/intelligence/blog/what-the-spread-costs-you-over-a-year", label: "What the spread costs you over a year" },
+    go: { href: "/tools/cost-lab", label: "The Cost Lab: what a trade costs in all" },
     body: <SixtySeconds />,
   },
   {
@@ -145,7 +145,7 @@ export default function WorkshopPage() {
         items={[
           { kind: "Labs", label: "Practice desk", href: "/labs/simulator", note: "A practice trade on invented prices, told step by step." },
           { kind: "Tool", label: "Position size", href: "/tools/position-size", note: "The size that fits a stop and a risk amount." },
-          { kind: "Blog", label: "Leverage: the loan nobody reads", href: "/intelligence/blog/leverage-the-loan-nobody-reads", note: "What leverage changes, and what it does not." },
+          { kind: "Lesson", label: "Leverage, in six steps", href: "/academy/leverage-story", note: "What leverage changes, and what it does not." },
           { kind: "Labs", label: "All experiments", href: "/labs", note: "What Labs is, and what is on the bench." },
         ]}
       />

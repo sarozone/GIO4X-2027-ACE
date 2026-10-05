@@ -572,6 +572,15 @@ export type CommandSummary = {
   audit_24h: number;
 };
 
+/**
+ * One answer to "Was this page helpful?" (0032_page_feedback.sql): a page's
+ * path, yes or no, an optional comment and a time. Nothing about the visitor.
+ */
+export type PageFeedbackRow = { id: number; created_at: string; path: string; helpful: boolean; comment: string };
+
+/** One row of page_feedback_tallies(): a page's answers, over all time and over the last 30 days. */
+export type PageFeedbackTally = { path: string; yes_all: number; no_all: number; yes_30: number; no_30: number; last_at: string };
+
 export type Database = {
   public: {
     Tables: {
@@ -719,6 +728,12 @@ export type Database = {
         Update: { [_ in never]: never };
         Relationships: [];
       };
+      page_feedback: {
+        Row: PageFeedbackRow;
+        Insert: { path: string; helpful: boolean; comment?: string };
+        Update: { [_ in never]: never };
+        Relationships: [];
+      };
     };
     Views: { [_ in never]: never };
     Functions: {
@@ -777,6 +792,8 @@ export type Database = {
       my_activity: { Args: { p_days?: number }; Returns: StaffActivityRow[] };
       report_month: { Args: { p_month: string }; Returns: Json };
       record_report_download: { Args: { p_month: string }; Returns: undefined };
+      page_feedback_tallies: { Args: { [_ in never]: never }; Returns: PageFeedbackTally[] };
+      record_page_feedback_export: { Args: { p_rows: number }; Returns: undefined };
       notifications_mark_read: { Args: { p_ids?: number[] | null }; Returns: number };
       lead_add_manual: {
         Args: { p_name: string; p_email: string; p_phone: string | null; p_country: string | null; p_topic: string; p_message: string; p_how: string };

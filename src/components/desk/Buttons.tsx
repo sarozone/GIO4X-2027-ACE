@@ -13,7 +13,7 @@ import { MAX_SAVED, MAX_WATCH, savedKind, toggleSaved, toggleWatch, useSaved, us
  * everyone. The state is carried by the label and aria-pressed, not by colour.
  */
 
-const NOUN: Record<NonNullable<ReturnType<typeof savedKind>>, string> = { article: "article", lesson: "lesson", term: "term", tool: "tool" };
+const NOUN: Record<NonNullable<ReturnType<typeof savedKind>>, string> = { article: "article", post: "post", lesson: "lesson", primer: "primer", term: "term", tool: "tool" };
 
 function DeskLink({ show }: { show: boolean }) {
   // offered once, straight after the press that put the first thing on the desk
@@ -58,7 +58,7 @@ export function WatchButton({ id, symbol, className = "btn btn-ghost" }: { id: s
 }
 
 /**
- * On an article, lesson, glossary term or tool: keep the page for later.
+ * On an article, blog post, lesson, primer, glossary term or tool: keep the page for later.
  * `href` may be the absolute address of the page; only its path is stored.
  * Renders nothing for a page of a kind the desk does not keep.
  */

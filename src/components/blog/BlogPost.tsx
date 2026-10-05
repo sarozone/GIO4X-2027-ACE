@@ -4,11 +4,14 @@ import { ReadingProgress } from "@/components/knowledge/ReadingProgress";
 import { SideBlock } from "@/components/knowledge/Reader";
 import { Share } from "@/components/knowledge/Share";
 import { PageHero } from "@/components/ui/Page";
+import { PrintButton } from "@/components/ui/PrintButton";
+import { PrintLine } from "@/components/ui/PrintLine";
 import { educationalNote, riskWarning } from "@/config/legal";
 import type { BlogSeriesPlace } from "@/data/blog-series";
 import { BLOG_CATEGORY_LABEL, BLOG_FORMAT_LABEL, BLOG_PATH, blogCategoryPath, readingMinutes } from "@/lib/blog";
 import type { BlogCard, BlogCover, BlogNeighbour, BlogPost } from "@/lib/server/blog";
 import { BlogBody, blogHeadings } from "./BlogBody";
+import { BlogByline, BlogTagChip } from "./BlogLinks";
 import { BlogCards, BlogCoverImage, blogListHref, blogPostHref } from "./BlogList";
 import { BlogSeriesLine, BlogSeriesNav, type BlogSeriesAround } from "./BlogSeries";
 import { blogIso, blogLongDate, blogShortDate } from "./format";
@@ -103,7 +106,7 @@ export function BlogPostView({
           <article id="reading" className="min-w-0">
             {series && <BlogSeriesLine place={series.place} className="mb-5" />}
             <p className="flex max-w-measure flex-wrap items-center gap-x-21 gap-y-5 border-b border-line pb-21 text-sm text-ink-3">
-              <span className="font-medium text-ink-2">{post.byline}</span>
+              <BlogByline byline={post.byline} className="font-medium text-ink-2" />
               {reviewer && (
                 <span data-reviewed-by>
                   Reviewed by <span className="font-medium text-ink-2">{reviewer}</span>
@@ -158,9 +161,10 @@ export function BlogPostView({
               <div className="mt-34 flex max-w-measure flex-wrap items-center gap-8">
                 <h2 className="label mr-5">Tags</h2>
                 <ul className="flex flex-wrap gap-8">
+                  {/* each leads to the page of that tag */}
                   {tags.map((t) => (
-                    <li key={t} className="chip">
-                      {t}
+                    <li key={t} className="flex">
+                      <BlogTagChip tag={t} />
                     </li>
                   ))}
                 </ul>
@@ -200,7 +204,7 @@ export function BlogPostView({
             </nav>
           </article>
 
-          <aside className="min-w-0 lg:border-l lg:border-line lg:pl-34" aria-label="About this post">
+          <aside className="min-w-0 lg:border-l lg:border-line lg:pl-34" aria-label="About this post" data-read-rail>
             <div className="grid gap-34 lg:sticky lg:top-[calc(var(--header-h)+1.3125rem)] lg:max-h-[calc(100dvh-var(--header-h)-2.625rem)] lg:overflow-y-auto lg:pb-13 lg:pr-3">
               {contents.length > 0 && (
                 <nav aria-label="On this page" className="no-print hidden lg:block">
@@ -210,7 +214,7 @@ export function BlogPostView({
                   </div>
                 </nav>
               )}
-              <SideBlock label="About this post">
+              <SideBlock label="About this post" className="print-keep">
                 <p className="text-sm leading-relaxed text-ink-2">
                   A short note from a GIO4X desk, filed under{" "}
                   <Link href={blogCategoryPath(post.category)} className="link">
@@ -224,7 +228,11 @@ export function BlogPostView({
               </SideBlock>
               <SideBlock label="Share" className="no-print">
                 <Share url={url} title={post.title} />
+                {/* the browser's own print dialogue, which also saves a PDF: the post prints as text, without the site around it */}
+                <PrintButton className="btn btn-ghost btn-sm mt-13">Print or save as PDF</PrintButton>
               </SideBlock>
+              {/* on paper only: the post's address and the day it was printed */}
+              <PrintLine url={url} />
             </div>
           </aside>
         </div>

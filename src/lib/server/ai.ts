@@ -6,6 +6,9 @@
  *   the rules of the house (SYSTEM_PROMPT in src/lib/ai.ts)
  *   short passages of this site's own published pages (ai-corpus.ts)
  *   the visitor's question and, at most, the last three exchanges
+ * and, for a question that is not in English and that the site's own word
+ * lists could not match, one small request before that one, carrying the
+ * question alone, for English search words (`searchWords`).
  * Not sent: the visitor's address, user agent, cookies, the page's contents
  * beyond its published passage, or anything that identifies a person.
  *
@@ -18,10 +21,32 @@
  * endpoint answers 503.
  */
 import "server-only";
-import { AI_ENABLED, aiModel } from "@/config/ai";
+import { AI_ENABLED, AI_KEYWORD_MODEL, aiModel } from "@/config/ai";
 import { site } from "@/config/site";
-import { AI_LIMITS, AI_MESSAGES, SYSTEM_PROMPT, buildUserMessage, citedNumbers, linkGuard, rank, siteHosts, toSources, type AiAsk, type AiEvent, type AiSource } from "@/lib/ai";
-import { aiCorpus } from "@/lib/server/ai-corpus";
+import { ENGLISH_EQUIVALENT, LOCALES } from "@/i18n/config";
+import {
+  AI_LIMITS,
+  AI_MESSAGES,
+  KEYWORD_PROMPT,
+  SYSTEM_PROMPT,
+  bridgedQuestion,
+  buildKeywordMessage,
+  buildUserMessage,
+  citedNumbers,
+  cleanKeywords,
+  englishPagePath,
+  isEnglishQuestion,
+  linkGuard,
+  rank,
+  relevance,
+  siteHosts,
+  toSources,
+  type AiAsk,
+  type AiEvent,
+  type AiSource,
+} from "@/lib/ai";
+import { aiBridge } from "@/lib/server/ai-bridge";
+import { aiCorpusLive } from "@/lib/server/ai-corpus";
 
 const ENDPOINT = "https://api.anthropic.com/v1/messages";
 const API_VERSION = "2023-06-01";
@@ -35,10 +60,85 @@ export function aiAvailable(): boolean {
   return AI_ENABLED && apiKey() !== "";
 }
 
-/** The passages a question will be answered from, numbered. No network: the site's own corpus. */
-export function retrieve(ask: AiAsk): { sources: AiSource[]; texts: string[] } {
-  const earlier = ask.history.length ? ask.history[ask.history.length - 1].q : undefined;
-  return toSources(rank(aiCorpus(), ask.question, { page: ask.page, earlier }));
+const LOCALE_CODES: readonly string[] = LOCALES.map((l) => l.code);
+
+/**
+ * The passages a question will be answered from, numbered.
+ *
+ * A question in English is matched on its own words against the site's corpus
+ * (with the blog's published posts, when they can be read), as it always was.
+ *
+ * A question in another language is matched on its own words too (tickers and
+ * loanwords are the same in every language), and on the English words of every
+ * glossary term and section name it contains (ai-bridge.ts). On a translated
+ * page, the English page behind it counts as the current page. Only when all
+ * of that has found nothing above AI_LIMITS.relevanceFloor, and `mayAsk`
+ * allows it, is the provider asked once for English search words
+ * (`searchWords` below) and the question matched again with them.
+ *
+ * `mayAsk` is the endpoint's: it counts that extra call against the limits and
+ * says no when one is reached. It is never consulted for an English question.
+ */
+export async function retrieve(ask: AiAsk, mayAsk: () => boolean = () => false, signal?: AbortSignal): Promise<{ sources: AiSource[]; texts: string[] }> {
+  const corpus = await aiCorpusLive();
+  const page = englishPagePath(ask.page, LOCALE_CODES, ENGLISH_EQUIVALENT);
+  const last = ask.history.length ? ask.history[ask.history.length - 1].q : undefined;
+  if (isEnglishQuestion(ask.question)) return toSources(rank(corpus, ask.question, { page, earlier: last }));
+
+  const bridge = await aiBridge();
+  let question = bridgedQuestion(ask.question, bridge);
+  if (relevance(corpus, question) < AI_LIMITS.relevanceFloor && mayAsk()) {
+    const words = await searchWords(ask.question, signal);
+    if (words) question = `${question} ${words}`;
+  }
+  return toSources(rank(corpus, question, { page, earlier: last ? bridgedQuestion(last, bridge) : undefined }));
+}
+
+/**
+ * The body of the search-words call, exactly as sent: fixed rules and the
+ * question, and nothing else. Not the earlier exchanges, not the page, not a
+ * passage. Thirty tokens of reply at most, not streamed.
+ */
+export function keywordRequest(question: string): Record<string, unknown> {
+  return {
+    model: AI_KEYWORD_MODEL.id,
+    max_tokens: AI_LIMITS.keywordTokens,
+    system: KEYWORD_PROMPT,
+    messages: [{ role: "user", content: buildKeywordMessage(question) }],
+  };
+}
+
+/**
+ * Three to six English search words for a question in another language, or ""
+ * when the provider did not give any (it failed, was too slow, declined, or
+ * the question is not about anything the site covers). The words are used to
+ * find passages and for nothing else: the visitor never sees them, and they
+ * are not sent on to the model that answers. A failure logs a status and an
+ * error type, like every other.
+ */
+export async function searchWords(question: string, signal?: AbortSignal): Promise<string> {
+  const limit = AbortSignal.timeout(AI_LIMITS.keywordTimeoutMs);
+  try {
+    const response = await fetch(ENDPOINT, {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-api-key": apiKey(), "anthropic-version": API_VERSION },
+      body: JSON.stringify(keywordRequest(question)),
+      signal: signal ? AbortSignal.any([signal, limit]) : limit,
+      cache: "no-store",
+    });
+    const parsed = (await response.json().catch(() => null)) as { content?: unknown; stop_reason?: unknown; error?: { type?: unknown } } | null;
+    if (!response.ok) {
+      const kind = typeof parsed?.error?.type === "string" ? parsed.error.type.replace(/[^a-z_]/g, "").slice(0, 40) : "unknown";
+      console.error(`[api/ai] search words failure status=${response.status} type=${kind}`);
+      return "";
+    }
+    if (!parsed || parsed.stop_reason === "refusal" || !Array.isArray(parsed.content)) return "";
+    const text = (parsed.content as { type?: unknown; text?: unknown }[]).map((b) => (b?.type === "text" && typeof b.text === "string" ? b.text : "")).join(" ");
+    return cleanKeywords(text);
+  } catch {
+    // too slow, or no connection: the question is answered from what it found without them
+    return "";
+  }
 }
 
 /**

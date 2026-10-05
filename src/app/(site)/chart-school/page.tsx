@@ -18,7 +18,7 @@ import { faqSchema, webPageSchema } from "@/lib/schema";
  */
 
 const DESCRIPTION =
-  "Chart school: technical indicators explained one page each, with the arithmetic shown. Moving averages, RSI, MACD, Bollinger Bands, ATR, the stochastic oscillator, ADX, parabolic SAR, CCI, Williams %R, Donchian and Keltner channels, support and resistance, and trend lines: what each measures, how it is calculated step by step, how people read it and what it cannot tell you. Every chart is invented.";
+  "Chart school: technical indicators explained one page each, with the arithmetic shown. Moving averages, RSI, MACD, Bollinger Bands, ATR, the stochastic oscillator, ADX, parabolic SAR, CCI, Williams %R, Donchian and Keltner channels, the Ichimoku cloud, on-balance volume, VWAP, support and resistance, and trend lines: what each measures, how it is calculated step by step, how people read it and what it cannot tell you. Every chart is invented.";
 
 export const metadata = pageMeta({ title: "Chart school: technical indicators explained, with the arithmetic", description: DESCRIPTION, path: "/chart-school" });
 

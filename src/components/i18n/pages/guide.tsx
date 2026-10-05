@@ -6,6 +6,7 @@ import { PageHero } from "@/components/ui/Page";
 import { nav } from "@/config/nav";
 import { getDictionary } from "@/i18n";
 import { isLocale, languageAlternates, localeInfo, localePath } from "@/i18n/config";
+import { glossaryPage } from "@/i18n/glossary-page";
 import { pageMeta } from "@/lib/meta";
 
 type Props = { params: Promise<{ lang: string }> };
@@ -74,6 +75,14 @@ export default async function LocaleGuidePage({ params }: Props) {
                         {g.open}
                       </EnglishLink>
                     </p>
+                    {/* the one page of the Academy that exists in the language: its glossary */}
+                    {s.key === "academy" && (
+                      <p className="mt-13">
+                        <Link href={localePath(lang, "glossary")} className="go">
+                          {glossaryPage[lang].title}
+                        </Link>
+                      </p>
+                    )}
                   </div>
                   <div>
                     <p className="label">

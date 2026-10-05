@@ -11,7 +11,7 @@ import { pageMeta } from "@/lib/meta";
 import { webPageSchema } from "@/lib/schema";
 
 const DESCRIPTION =
-  "Seven scheduled economic releases explained in plain language: what each one measures, how it is compiled, why markets commonly watch it and who publishes it. No dates are invented: each explainer links to the publisher’s own calendar, and a dated calendar from TradingView can be loaded on request.";
+  "Scheduled economic releases explained in plain language, from inflation and employment to surveys, trade and central bank communication: what each one measures, how it is compiled, why markets commonly watch it and who publishes it. No dates are invented: each explainer links to the publisher’s own calendar, and a dated calendar from TradingView can be loaded on request.";
 
 export const metadata = pageMeta({ title: "Economic Events", description: DESCRIPTION, path: "/markets/events" });
 

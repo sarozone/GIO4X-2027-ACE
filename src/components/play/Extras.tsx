@@ -37,11 +37,11 @@ export function WeeklyVerse() {
   useEffect(() => setAt(Math.floor((Date.now() / 86400000 - 4) / 7) % VERSES.length), []);
   const v = VERSES[at ?? 0];
   return (
-    <figure className="mx-auto max-w-[34rem] text-center">
+    <figure className="mx-auto max-w-[72rem] text-center">
       <figcaption className="eyebrow justify-center">This week’s verse</figcaption>
       <blockquote className="mt-13 font-display text-xl leading-snug text-ink lg:text-2xl" aria-live="polite">
         {v.map((line) => (
-          <span key={line} className="block">
+          <span key={line} className="block [text-wrap:balance] xl:whitespace-nowrap">
             {line}
           </span>
         ))}

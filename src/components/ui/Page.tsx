@@ -69,7 +69,8 @@ type HeroProps = {
  * statement on the left and that page's own instrument (a canvas scene chosen
  * by the route) on the right, inside its golden-rectangle frame. An `aside`
  * never stands in the stage: it follows it as its own block on the same night
- * material, so nothing covers the instrument.
+ * material (`.cx-tail`), so nothing covers the instrument; the question box
+ * for GIO4X AI stands between the two.
  */
 export function PageHero({ crumbs, eyebrow, title, lead, children, aside, companion, quiet, scene }: HeroProps) {
   return (
@@ -88,12 +89,20 @@ export function PageHero({ crumbs, eyebrow, title, lead, children, aside, compan
             {children && <div className="mt-34 flex flex-wrap items-center gap-13">{children}</div>}
           </div>
         </div>
-        {aside && <div className="cx-aside">{aside}</div>}
-        {aside && companion && <div className="cx-companion">{companion}</div>}
       </div>
     </header>
-    {/* the question box for GIO4X AI stands under every page's opening (owner, 5 October 2026); it renders nothing while the assistant is off */}
+    {/* The question box for GIO4X AI stands under the stage and, where the page has a pane of content, between
+        the stage and that pane (owner, 5 October 2026). It renders nothing while the assistant is off, and
+        the pane then follows the stage directly, as it always did. */}
     <AskAiBox className="hairline-b" />
+    {aside && (
+      <div className="cx-hero cx-tail on-night cx-has-aside">
+        <div className="cx-main">
+          <div className="cx-aside">{aside}</div>
+          {companion && <div className="cx-companion">{companion}</div>}
+        </div>
+      </div>
+    )}
     </>
   );
 }

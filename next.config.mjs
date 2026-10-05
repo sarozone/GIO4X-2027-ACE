@@ -83,7 +83,11 @@ const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "DENY" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=(), browsing-topics=()" },
+  // The microphone is allowed to this site's own pages, and to no frame, only while GIO4X AI is switched
+  // on: its question boxes can take dictation through the browser's own speech recognition
+  // (src/components/shell/Dictate.tsx). The browser still asks the visitor. With the assistant off it is
+  // "microphone=()", as it always was.
+  { key: "Permissions-Policy", value: `camera=(), microphone=(${process.env.GIO4X_AI_ENABLED === "true" ? "self" : ""}), geolocation=(), payment=(), usb=(), interest-cohort=(), browsing-topics=()` },
   { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
   { key: "X-DNS-Prefetch-Control", value: "on" },
 ];

@@ -763,3 +763,22 @@ header[data-site-header] [role="dialog"] [role="switch"][aria-checked="false"] >
 header[data-site-header] [role="dialog"] :is(.label, legend.label) {
   color: rgba(238, 240, 241, 0.78);
 }
+
+/* ---- the pane after the question box ----------------------------------------
+   Since 5 October 2026 the pane of content that follows a stage (`aside`) is a
+   block of its own, `.cx-tail`, so that the question box for GIO4X AI can stand
+   between the two. It keeps the stage's columns and night material and has one
+   row, the pane's: no stage height, no atmosphere wash of its own. */
+.cx-hero.cx-tail,
+.cx-hero.cx-tail:not(.cx-home) {
+  --hero-h: 0px;
+  grid-template-rows: [aside-start] auto [aside-end];
+}
+.cx-hero.cx-tail::after {
+  content: none;
+}
+@media print {
+  .cx-hero.cx-tail .cx-main {
+    padding: 0;
+  }
+}

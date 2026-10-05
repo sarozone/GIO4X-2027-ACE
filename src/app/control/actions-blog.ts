@@ -69,7 +69,8 @@ async function writer() {
 /**
  * The website reads again: the cached lists, every page under the blog (the
  * list, each category's page, each post, the feed), and the Intelligence page that shows the latest
- * posts. Called after a write that touched a post the public can see, or could
+ * posts. The pages by tag and by author, the tag index and the search are under the blog too, and
+ * what they read is kept under the same tag (src/lib/server/blog-browse.ts), so both lines cover them. Called after a write that touched a post the public can see, or could
  * see a moment ago.
  */
 function refreshPublic(): void {

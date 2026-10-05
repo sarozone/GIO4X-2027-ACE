@@ -4,6 +4,7 @@ import { EmptyState } from "@/components/ui/Page";
 import { BLOG_CATEGORIES, BLOG_CATEGORY_LABEL, BLOG_FORMAT_LABEL, BLOG_FORMATS, BLOG_PATH, blogCategoryPath } from "@/lib/blog";
 import type { BlogCard, BlogCover } from "@/lib/server/blog";
 import type { BlogCategory, BlogFormat } from "@/lib/supabase/types";
+import { BlogByline } from "./BlogLinks";
 import { blogIso, blogShortDate } from "./format";
 
 /**
@@ -47,7 +48,8 @@ export function BlogCoverImage({ cover, eager = false, own = false, className = 
 export function BlogCardMeta({ post, date = true, className = "" }: { post: BlogCard; date?: boolean; className?: string }) {
   return (
     <p className={`flex flex-wrap gap-x-13 gap-y-2 text-xs text-ink-3 ${className}`}>
-      <span>{post.byline}</span>
+      {/* a link to the author's page; raised, because a row of a series is itself one stretched link */}
+      <BlogByline byline={post.byline} raised />
       {date && <time dateTime={blogIso(post.published_at)}>{blogShortDate(post.published_at)}</time>}
       <span className="num">{post.minutes} min read</span>
     </p>
@@ -229,7 +231,7 @@ export function BlogCards({ posts, columns = "sm:grid-cols-2 lg:grid-cols-3" }: 
               </span>
               {p.excerpt && <span className="line-clamp-2 text-sm text-ink-2">{p.excerpt}</span>}
               <span className="mt-auto flex flex-wrap items-center gap-x-13 gap-y-2 pt-8 text-xs text-ink-3">
-                <span>{p.byline}</span>
+                <BlogByline byline={p.byline} raised />
                 <span className="num">{p.minutes} min read</span>
               </span>
             </span>
@@ -240,7 +242,8 @@ export function BlogCards({ posts, columns = "sm:grid-cols-2 lg:grid-cols-3" }: 
   );
 }
 
-function Pages({ page, pages, hrefFor }: { page: number; pages: number; hrefFor: (page: number) => string }) {
+/** "Newer posts", "Page 2 of 5", "Older posts". Also under the lists by tag, by author and of a search (BlogBrowse). */
+export function Pages({ page, pages, hrefFor }: { page: number; pages: number; hrefFor: (page: number) => string }) {
   if (pages <= 1) return null;
   const link = "link inline-flex min-h-[2.75rem] items-center text-sm font-medium";
   return (

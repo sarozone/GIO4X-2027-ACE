@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { ContactForm } from "@/components/company/ContactForm";
 import { EnglishLink, TranslationNotice } from "@/components/i18n/Translated";
 import { PageHero } from "@/components/ui/Page";
 import { site } from "@/config/site";
 import { getDictionary } from "@/i18n";
 import { isLocale, languageAlternates, localeInfo, localePath } from "@/i18n/config";
+import { contactForm } from "@/i18n/contact-form";
 import { pageMeta } from "@/lib/meta";
 
 type Props = { params: Promise<{ lang: string }> };
@@ -15,7 +17,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const d = getDictionary(lang);
   return pageMeta({
     title: d.contact.metaTitle,
-    description: d.contact.metaDescription,
+    // the dictionary still speaks of "the English contact form"; the form is now in the language (src/i18n/contact-form.ts)
+    description: contactForm[lang].page.metaDescription,
     path: localePath(lang, "contact"),
     languages: languageAlternates("contact"),
     locale: localeInfo(lang).og,
@@ -25,12 +28,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 /**
  * How to reach GIO4X, in the page's language.
  *
- * The contact form itself is not rendered here. It is one client component
- * with its topics, hints, validation messages and confirmation written in
- * English throughout, and the topic's English label travels to the API with
- * the message; translating it means changing a form that works. So this page
- * gives the public address (site.email), says what the form does and links to
- * it as an English page, and says plainly that a reply may be in English:
+ * The contact form is the English page's own component, handed the words of
+ * this language (src/i18n/contact-form.ts): its labels, hints, validation
+ * messages and confirmation are translated, the topics are shown translated,
+ * and the topic's English label is still what travels to the API, because
+ * that is what the server accepts. The page gives the public address
+ * (site.email) as well and says plainly that a reply may be in English:
  * whether enquiries can be answered in each language is the owner's to decide
  * (docs/I18N.md).
  */
@@ -40,6 +43,7 @@ export default async function LocaleContactPage({ params }: Props) {
   const d = getDictionary(lang);
   const c = d.contact;
   const en = d.common.inEnglish;
+  const form = contactForm[lang];
   const offices: { label: string; lines: readonly string[]; country: string; entity: string | null }[] = [
     { label: c.headOffice, ...site.headOffice, entity: site.legalName },
     { label: c.supportOffice, ...site.supportOffice, entity: null },
@@ -75,15 +79,6 @@ export default async function LocaleContactPage({ params }: Props) {
           </div>
           <div className="grid gap-21">
             <div className="border-s border-line-strong ps-21">
-              <h2 className="h4">{c.formTitle}</h2>
-              <p className="mt-8 max-w-measure text-sm text-ink-2">{c.formBody}</p>
-              <p className="mt-13">
-                <EnglishLink href="/contact" mark={en}>
-                  {c.formLink}
-                </EnglishLink>
-              </p>
-            </div>
-            <div className="border-s border-line-strong ps-21">
               <h2 className="h4">{c.supportTitle}</h2>
               <p className="mt-8 max-w-measure text-sm text-ink-2">{c.supportBody}</p>
               <p className="mt-13">
@@ -93,6 +88,17 @@ export default async function LocaleContactPage({ params }: Props) {
               </p>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* the form, in the page's language; what it sends is what the English form sends */}
+      <section className="section-quiet hairline" aria-labelledby="l10n-form">
+        <div className="wrap">
+          <h2 id="l10n-form" className="h3">
+            {c.formTitle}
+          </h2>
+          <p className="mb-21 mt-13 max-w-measure text-sm text-ink-2">{form.page.intro}</p>
+          <ContactForm email={site.email} words={{ ...form.form, inEnglish: en }} />
         </div>
       </section>
 

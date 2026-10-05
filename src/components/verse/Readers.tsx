@@ -243,7 +243,7 @@ export function Sonnet() {
   }, []);
   const s = SONNETS[at ?? 0];
   return (
-    <figure className="max-w-[38rem]">
+    <figure className="max-w-[54rem]">
       <figcaption className="eyebrow">{s.title}</figcaption>
       <blockquote className="mt-13 font-display text-[0.9375rem] leading-relaxed text-ink sm:text-lg" aria-live="polite">
         {s.lines.map((l, i) => (

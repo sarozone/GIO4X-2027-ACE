@@ -53,6 +53,7 @@ const NAV: Item[] = [
   { key: "media", label: "Media", href: "/control/media", icon: "inbox", cap: "blog.read", built: true },
   { key: "seo", label: "SEO health", href: "/control/seo", icon: "compliance", cap: "blog.read", built: true },
   { key: "content", label: "Content", href: "/control/content", icon: "documents", cap: "content.read", built: true },
+  { key: "feedback", label: "Page feedback", href: "/control/feedback", icon: "chats", cap: "feedback.read", built: true },
   { key: "emailer", label: "Bulk Emailer", href: "/control/emailer", icon: "emailer", cap: "emailer.read", built: true },
   { key: "subscribers", label: "Subscribers", href: "/control/subscribers", icon: "subscribers", cap: "subscribers.read", built: true },
   { key: "config", label: "Configuration", href: "/control/config", icon: "config", cap: "config.manage", built: true },

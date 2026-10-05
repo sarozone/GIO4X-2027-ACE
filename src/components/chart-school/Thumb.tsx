@@ -1,6 +1,6 @@
 import type { LessonSlug } from "@/data/chart-school";
-import { adx, atr, bollinger, cci, donchian, keltner, levels, lineThrough, macd, parabolicSar, rsi, sma, stochastic, swings, williamsR, type Series } from "./indicators";
-import { makeBars } from "./series";
+import { adx, atr, bollinger, cci, donchian, ichimoku, keltner, levels, lineThrough, macd, obv, parabolicSar, rsi, sma, stochastic, swings, vwap, williamsR, type Series } from "./indicators";
+import { makeBars, makeVolumes } from "./series";
 
 /**
  * CHART SCHOOL — the small drawing on each card of the index.
@@ -16,7 +16,8 @@ const H = 96;
 const SHOWN = 60;
 const SEED = 2027;
 
-const path = (values: readonly (number | null)[], from: number, y: (v: number) => number) => {
+/** `slots` is how many bars' width the drawing is divided into: more than are shown when something is drawn ahead of the last one */
+const path = (values: readonly (number | null)[], from: number, y: (v: number) => number, slots: number = SHOWN) => {
   let d = "";
   let pen = false;
   for (let i = from; i < values.length; i++) {
@@ -25,10 +26,49 @@ const path = (values: readonly (number | null)[], from: number, y: (v: number) =
       pen = false;
       continue;
     }
-    d += `${pen ? "L" : "M"}${(((i - from) / (SHOWN - 1)) * W).toFixed(1)} ${y(v).toFixed(1)}`;
+    d += `${pen ? "L" : "M"}${(((i - from) / (slots - 1)) * W).toFixed(1)} ${y(v).toFixed(1)}`;
     pen = true;
   }
   return d;
+};
+
+/** The space between two lines as closed shapes: one path where `a` is the higher and one where `b` is, parted exactly where they cross. */
+const between = (a: Series, b: Series, from: number, y: (v: number) => number, slots: number) => {
+  const x = (i: number) => ((i - from) / (slots - 1)) * W;
+  const out = { a: "", b: "" };
+  let run: [number, number, number][] = [];
+  let aOver = true;
+  let pa = 0;
+  let pb = 0;
+  const close = () => {
+    if (run.length > 1) {
+      const d = `${run.map(([px, ya], k) => `${k ? "L" : "M"}${px.toFixed(1)} ${ya.toFixed(1)}`).join("")}${[...run].reverse().map(([px, , yb]) => `L${px.toFixed(1)} ${yb.toFixed(1)}`).join("")}Z`;
+      if (aOver) out.a += d;
+      else out.b += d;
+    }
+    run = [];
+  };
+  for (let i = from; i < a.length; i++) {
+    const va = a[i];
+    const vb = b[i];
+    if (va == null || vb == null) {
+      close();
+      continue;
+    }
+    if (run.length && va >= vb !== aOver) {
+      const f = (pa - pb) / (pa - pb - (va - vb));
+      const q: [number, number, number] = [x(i - 1) + f * (x(i) - x(i - 1)), y(pa + f * (va - pa)), y(pa + f * (va - pa))];
+      run.push(q);
+      close();
+      run.push(q);
+    }
+    aOver = va >= vb;
+    run.push([x(i), y(va), y(vb)]);
+    pa = va;
+    pb = vb;
+  }
+  close();
+  return out;
 };
 
 const scale = (sets: readonly (readonly (number | null)[])[], from: number, top: number, bottom: number, fixed?: [number, number]) => {
@@ -50,7 +90,7 @@ export function IndicatorThumb({ kind }: { kind: LessonSlug }) {
   const bars = makeBars(SEED);
   const closes = bars.map((b) => b.c);
   const from = bars.length - SHOWN;
-  const under = kind === "rsi" || kind === "macd" || kind === "atr" || kind === "stochastic" || kind === "adx" || kind === "cci" || kind === "williams-r";
+  const under = kind === "rsi" || kind === "macd" || kind === "atr" || kind === "stochastic" || kind === "adx" || kind === "cci" || kind === "williams-r" || kind === "obv";
   const priceBottom = under ? 52 : H - 6;
 
   const on: Series[] = [];
@@ -119,15 +159,45 @@ export function IndicatorThumb({ kind }: { kind: LessonSlug }) {
     }
   }
 
-  const y = scale([closes, ...on], from, 6, priceBottom);
+  // the three that came later: one drawn partly ahead of the last bar, two made with the invented volume
+  let slots = SHOWN;
+  let spans: { a: Series; b: Series } | null = null;
+  if (kind === "ichimoku") {
+    const k = ichimoku(bars, 9, 26, 52);
+    spans = { a: k.a, b: k.b };
+    slots = SHOWN + k.shift;
+  }
+  if (kind === "obv") below = [obv(closes, makeVolumes(SEED, bars))];
+  if (kind === "vwap") {
+    // one path for each session in turn, so that no line is drawn across a reset
+    const v = vwap(bars, makeVolumes(SEED, bars), 20).vwap;
+    on.push(
+      v.map((x, i) => (Math.floor(i / 20) % 2 === 0 ? x : null)),
+      v.map((x, i) => (Math.floor(i / 20) % 2 === 1 ? x : null)),
+    );
+  }
+
+  const y = scale([closes, ...on, ...(spans ? [spans.a, spans.b] : [])], from, 6, priceBottom);
   const yu = scale(below, from, 62, H - 6, fixed);
   const px = (i: number) => ((i / (SHOWN - 1)) * W).toFixed(1);
+  const cloud = spans ? between(spans.a, spans.b, from, y, slots) : null;
+  /** where the prices stop, when something is drawn past them */
+  const edge = (((SHOWN - 0.5) / (slots - 1)) * W).toFixed(1);
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="block h-auto w-full max-w-[13.75rem]" fill="none" strokeLinejoin="round" strokeLinecap="round" aria-hidden focusable="false">
-      <path d={path(closes, from, y)} stroke="var(--ink-3)" strokeWidth="1.25" />
+      {spans && cloud && (
+        <>
+          <path d={cloud.a} fill="var(--teal)" fillOpacity="0.22" />
+          <path d={cloud.b} fill="var(--prestige)" fillOpacity="0.22" />
+          <line x1={edge} x2={edge} y1="6" y2={priceBottom} stroke="var(--ink-3)" strokeWidth="1" strokeDasharray="2 3" />
+          <path d={path(spans.a, from, y, slots)} stroke="var(--teal)" strokeWidth="1" />
+          <path d={path(spans.b, from, y, slots)} stroke="var(--prestige)" strokeWidth="1" />
+        </>
+      )}
+      <path d={path(closes, from, y, slots)} stroke="var(--ink-3)" strokeWidth="1.25" />
       {on.map((s, i) => (
-        <path key={i} d={path(s, from, y)} stroke="var(--accent)" strokeWidth="1.5" />
+        <path key={i} d={path(s, from, y, slots)} stroke="var(--accent)" strokeWidth="1.5" />
       ))}
       {flat.map((p) => (
         <line key={p} x1="0" x2={W} y1={y(p).toFixed(1)} y2={y(p).toFixed(1)} stroke="var(--accent)" strokeWidth="1.5" />

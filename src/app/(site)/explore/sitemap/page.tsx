@@ -8,6 +8,7 @@ import { BLOG_CATEGORIES, BLOG_CATEGORY_LABEL, BLOG_PATH, blogCategoryPath } fro
 import { pageMeta } from "@/lib/meta";
 import { buildSearchIndex } from "@/lib/search-index";
 import { blogPostPath, indexablePosts } from "@/lib/server/blog";
+import { indexableBrowsePages } from "@/lib/server/blog-browse";
 import { SITEMAP_NAMES, type SitemapName } from "@/lib/sitemap";
 import { sitemapEntries } from "@/lib/sitemap-data";
 
@@ -52,7 +53,7 @@ const CHAPTER_TITLE: Record<SitemapName, string> = {
   blog: "Daily blog",
 };
 
-const LOCALE_PAGE_LABEL: Record<LocalePage, string> = { "": "Home", guide: "Guide", "risk-warning": "Risk warning", contact: "Contact" };
+const LOCALE_PAGE_LABEL: Record<LocalePage, string> = { "": "Home", guide: "Guide", "risk-warning": "Risk warning", contact: "Contact", glossary: "Glossary" };
 
 /** "/markets/central-banks" → "Central banks": the last resort, when nothing names the page. */
 function fromPath(path: string): string {
@@ -126,13 +127,15 @@ function chapters(): Chapter[] {
 
 /** The daily blog: its list, the categories and series that have a post, and every post a search engine is told about. */
 async function blogChapter(): Promise<Chapter> {
-  const result = await indexablePosts();
+  // the pages by tag and by author are the ones /sitemap-blog.xml lists, from the same read
+  const [result, browse] = await Promise.all([indexablePosts(), indexableBrowsePages()]);
   const posts = result.state === "ok" ? result.entries : [];
   const slugs = new Set(posts.map((p) => p.slug));
   const pages: Row[] = [
     ...sitemapEntries("blog").map((e) => ({ href: e.path, label: "The daily blog" })),
     ...BLOG_CATEGORIES.filter((c) => posts.some((p) => p.category === c)).map((c) => ({ href: blogCategoryPath(c), label: `Category: ${BLOG_CATEGORY_LABEL[c]}` })),
     ...BLOG_SERIES.filter((s) => s.parts.some((slug) => slugs.has(slug))).map((s) => ({ href: blogSeriesPath(s.slug), label: `Series: ${s.title}` })),
+    ...browse.map((b) => ({ href: b.path, label: b.label })),
   ];
   return {
     id: "blog",

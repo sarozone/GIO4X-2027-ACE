@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useEffect, useId, useRef, useState, type Dispatch, type FormEvent, type ReactNode, type SetStateAction } from "react";
 import { askSuggestions } from "@/components/shell/ask-suggestions";
-import { AI_LIMITS, AI_MESSAGES, type AiEvent, type AiLimit, type AiSource } from "@/lib/ai";
+import { DictateButton } from "@/components/shell/Dictate";
+import { AI_LIMITS, AI_MESSAGES, isEnglishQuestion, type AiEvent, type AiLimit, type AiSource } from "@/lib/ai";
 
 /**
  * ASK GIO4X AI — the one part of the Lens that is a language model.
@@ -92,6 +93,8 @@ const cited = (answer: string, sources: AiSource[]) => sources.filter((s) => ans
 
 function Answer({ x }: { x: Exchange }) {
   const used = cited(x.a, x.sources);
+  // the answer is in the language of the question; the pages it rests on are English, and are said to be
+  const translated = !isEnglishQuestion(x.q);
   return (
     <article className="border-t border-line pt-13">
       <p className="label">You asked</p>
@@ -108,6 +111,11 @@ function Answer({ x }: { x: Exchange }) {
               <Link href={s.url} className="link min-w-0 [overflow-wrap:anywhere]">
                 {s.title}
               </Link>
+              {translated && (
+                <span className="shrink-0 text-xs text-ink-3" lang="en">
+                  in English
+                </span>
+              )}
             </li>
           ))}
         </ul>
@@ -294,6 +302,8 @@ export function LensAsk({
             aria-describedby={`${uid}-hint`}
             disabled={reachedLimit}
           />
+          {/* dictation, where the browser has it: the words land in the box above and wait there to be sent */}
+          <DictateButton value={question} onChange={setQuestion} max={AI_LIMITS.questionMax} disabled={asking || reachedLimit} />
           <button type="submit" className="btn btn-primary shrink-0" disabled={asking || reachedLimit || question.trim().length < 2}>
             {asking ? "Answering" : "Ask"}
           </button>

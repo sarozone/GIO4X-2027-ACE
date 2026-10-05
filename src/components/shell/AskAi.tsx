@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useId, useState, type FormEvent } from "react";
 import { askSuggestions } from "@/components/shell/ask-suggestions";
+import { DictateButton } from "@/components/shell/Dictate";
 import { openLensAsk } from "@/components/shell/Lens";
 import { SUGGESTION, useAiAvailable } from "@/components/shell/LensAsk";
 import { AI_LIMITS } from "@/lib/ai";
@@ -107,6 +108,7 @@ export function AskAiBox({ className = "hairline hairline-b" }: { className?: st
               placeholder="How does a margin call work?"
               aria-describedby={`${uid}-hint`}
             />
+            <DictateButton value={question} onChange={setQuestion} max={AI_LIMITS.questionMax} />
             <button type="submit" className="btn btn-primary shrink-0" disabled={question.trim().length < 2}>
               Ask
             </button>

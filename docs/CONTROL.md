@@ -57,6 +57,7 @@ from it. The screens, the access rules and the database are this project's.
 | `/control/command` | What needs attention now, across every section | `command.read` |
 | `/control/config` | The website's announcement line, the live-chat switch, support hours, and notices for the public Status page | `config.manage` |
 | `/control/blog`, `/control/blog/new`, `/control/blog/[id]` | The daily blog's CMS: write in restricted Markdown, preview, SEO fields (title, description, canonical, noindex, share picture), cover picture with alt text, caption, credit and size, schedule and publish, corrections. Since `0031`: a format beside the category (note, explainer, guide, how-to, analysis, news), a reviewer shown to readers ("Reviewed by"), the lead story (one at a time) and pinned posts, with "Lead" and "Pinned" badges in the list, a format filter and search by tag; a body toolbar (H2, H3, bold, italic, lists, quote, link, table, divider), a paste from Word or Google Docs that keeps the formatting as Markdown (never HTML), and a body field whose size is remembered in the browser. Changing the slug of a published post keeps the old address, which the public page answers with a permanent redirect | `blog.read` (write: `blog.write`; publish, unpublish, archive, edit a published post, choose the lead, pin: `blog.publish`) |
+| `/control/blog/[id]`, "Tags" and "Byline (author)" | What the two fields make on the website, with no further step and no migration: each tag is a page at `/intelligence/blog/tag/<slug of the tag>` (listed on `/intelligence/blog/tags` with its count; a tag only one post carries is `noindex` and not in the sitemap), and the byline is a page at `/intelligence/blog/author/<slug of the byline>` ("@Abe" is `abe`). A name and one line for a byline are in `src/data/blog-authors.ts`; a byline not listed there has a page with the byline alone. The public search (`/intelligence/blog/search?q=`) looks in the title, the excerpt and the tags of live posts. All of it is read again when a public post is saved. A post whose slug is `tags` or `search` is shown at that address in place of the page | `blog.write` (on a published post: `blog.publish`) |
 | `/control/blog/calendar?month=YYYY-MM` | The editorial calendar: one month of UTC days with the posts published or scheduled on each, and a tray of drafts and posts ready for review. Drag a post onto a day to schedule it (09:00 UTC unless changed), onto another day to move it, back to the tray to unschedule it; every chip has a menu that does the same from the keyboard. A dialog states the exact date and time before anything is saved. A past day is refused: publishing immediately is the editor's job. Below 820px the month is an agenda list. A post already on the website is not the calendar's to move | `blog.read` (schedule, move, unschedule: `blog.publish`) |
 | `/control/blog/[id]`, "History of the text" | The post's revisions (who, when, what changed), a word-level comparison of any two or of one with what is in the editor, and "Restore", which copies a revision into the editor's fields as unsaved changes and saves nothing. Written by the database (`0020`): the latest 50 per post and the revision current at each publication | `blog.read` (restore: whoever may edit the post) |
 | `/control/blog/upload` (POST) | Picture upload to the public `blog` storage bucket: 4 MB, JPEG, PNG, WebP or AVIF, checked by content | `blog.write` |
@@ -87,6 +88,8 @@ from it. The screens, the access rules and the database are this project's.
 | `/control/trades` (entry) | With `trading.manage`: enter a closed trade by hand; the portal charges commission and pays rebates on it as on any trade | `trading.manage` |
 | `/control/fees` (by hand) | With `fees.charge`: waive a pending charge; reverse an applied one (two people); confirm a charge another person asked for | `fees.charge` |
 | `/control/content/files`, `/control/content/files/<id>`, `…/download` | Traders' files: the source of an EA, indicator or script sent from the Rule bench page. The list, one file's text, and the file as a plain-text download. Kept to be read: never run, never shown on the website. Mark as read, put away or put back | `content.read` (status: `content.publish`) |
+| `/control/feedback` | Page feedback: what readers answered to “Was this page helpful?” at the foot of the website’s content pages. Per page, helpful and not helpful over the last 30 days and over all time, with the share that were helpful; the newest 100 comments with their page; filters by section and by answer. A page’s path, yes or no, an optional comment and a time: nothing about the reader, so nobody can be answered (see `docs/SECURITY.md`, section 12) | `feedback.read` |
+| `/control/feedback/export` (POST) | The answers as a CSV file (newest 1,000, with the screen’s filters), recorded in the audit log before it is sent | `feedback.read` |
 | `/control/<section>` | A section listed in the menu before it is built: what it will do and what it is waiting for. None at present | staff |
 
 ### How the console reaches the website
@@ -99,6 +102,8 @@ from it. The screens, the access rules and the database are this project's.
 | "Notices from GIO4X" on `/status` | Incidents in Configuration, when published. Written by staff; not monitoring |
 | Support hours on `/support` | Configuration |
 | `/intelligence/blog`, each post at `/intelligence/blog/<slug>`, and one page per category at `/intelligence/blog/category/<category>` (`market-notes`, `education`, `platform`, `company`) | Blog. A post is on all three within a minute of being published, and at once after a save in the console. The category chip on a card and "filed under" on a post lead to the category's page; the tabs on the index still filter it in place (`?category=`). A category page with no post says so and asks not to be indexed; `/sitemap-blog.xml` lists a category once it has a post. At the foot of a post, "Related posts": up to three other public posts, chosen from the newest 36 by shared tags first, then the same category, then the same format, then the newer post (`src/lib/blog-related.ts`, tested by `node --test scripts/test-blog-related.mjs`); with no other post the block is not shown. Nothing to set in the console: tags, category and format on the post decide it |
+| (The other direction) “Was this page helpful?” at the foot of lessons, primers, glossary entries, tools, the FAQ, blog posts, instrument pages and legal pages (`src/components/shell/PageFeedback.tsx`, mounted once in `SiteShell.tsx`; which pages: `src/lib/feedback.ts`) | Read in Page feedback. The question is not shown at all until migration `0032` is applied |
+| (The other direction) “Ask for a call back” on `/contact` | Stored as an enquiry (Leads), marked “Callback requested: …” in the list and on the enquiry’s page. See “How an enquiry flows” |
 | (The other direction) page views, accepted forms and searches on the public pages | Counted by the website and read in Analytics. What is counted is published at `/legal/cookies`, "Counting visits" |
 
 Times are shown in UTC, for everyone.
@@ -121,7 +126,8 @@ API role can read or write. A new module adds its capabilities with an `INSERT` 
 Capabilities: `leads.read`, `leads.write`, `leads.assign`, `tasks.write`, `subscribers.read`,
 `subscribers.export`, `audit.read`, `staff.read`, `staff.manage`, `tickets.read`, `tickets.write`,
 `chats.read`, `chats.write`, `customers.read`, `compliance.read`, `reports.read`, `analytics.read`, `command.read`,
-`config.manage`, `blog.read`, `blog.write`, `blog.publish`. The TypeScript list is
+`config.manage`, `blog.read`, `blog.write`, `blog.publish`, `feedback.read` (admin, compliance, agent, sales,
+support: the roles that hold `content.read`). The TypeScript list is
 `CAPABILITIES` in `src/lib/server/constants.ts`; the console's menu is filtered by them in
 `src/components/control/nav-items.ts`.
 
@@ -173,6 +179,16 @@ API. Those are SQL operations for the owner.
    **Resolved** (closed), or **Spam**.
 4. Notes record what was done. They are internal and are never sent to the enquirer.
 5. Every status change, assignment and note is written to the audit log by the database, with who and when.
+
+**A callback request** is an enquiry like any other. The visitor fills in “Ask for a call back” on `/contact`
+(name, telephone with country code, e-mail, country, a part of the day, their time zone, what it is about);
+`POST /api/callback` stores it in `leads` with the same consent evidence, and writes the first line of the
+message itself: `Callback requested: Morning (08:00 to 12:00), Asia/Kolkata time`. No column was added. The
+Leads list shows that line under the reference and the enquiry’s page opens with it. The visitor was promised
+no time for the call (support hours are not published: `docs/WAITING-FOR-ABE.md`, C1 and C2); the part of the
+day is a preference, in their own time zone. A country on the restricted list is refused by the form and
+again by the endpoint, as on the account-interest form (`src/lib/restricted.ts`). Note the call, or the
+attempt, on the enquiry. The Pipeline board does not show the marker.
 
 The console does not send email. Reply from your own mailbox (the email address on the enquiry is a
 `mailto:` link) and note what you sent.
@@ -238,6 +254,12 @@ Files, in order:
     left, written only by the trigger `blog_posts_keep_slug` (which can never fail a save) and readable by
     a visitor only while the post is public. No new capability. The public pages work without it (they
     read as they did before); the format, the lead, pinning, the reviewer and the redirects need it.
+32. `supabase/migrations/0032_page_feedback.sql`: `page_feedback` (a page's path, yes or no, an optional
+    comment of up to 500 characters, a time; nothing about the visitor), which the public may insert into
+    and nobody may read back, change or delete through the API; `page_feedback_tallies()` and
+    `record_page_feedback_export()` for the new capability `feedback.read` (admin, compliance, agent, sales,
+    support). A self-test of what the anonymous role may do runs inside the file and is rolled back. Until
+    it is applied the website does not show the question.
 
 Apply them as the `postgres` role (the Supabase SQL editor, `supabase db push`, or the Supabase MCP
 `apply_migration`). `0002` stops with a clear error if the applying role cannot bypass RLS, because the

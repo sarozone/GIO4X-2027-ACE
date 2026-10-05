@@ -18,6 +18,7 @@
  * lesson slugs: the page links only to those that really exist. `links` are
  * other pages of this site, each checked against the route tree when written.
  */
+import { GUIDE_PRIMERS } from "./primers-guides";
 import { TRADER_PRIMERS } from "./primers-trader";
 
 export type PrimerSection = {
@@ -662,6 +663,8 @@ export const PRIMERS: readonly Primer[] = [
   },
   // the mind, what moves a currency, Islamic finance and records for tax: written in ./primers-trader.ts
   ...TRADER_PRIMERS,
+  // regulation, choosing a broker and common myths: written in ./primers-guides.ts
+  ...GUIDE_PRIMERS,
 ];
 
 export const getPrimer = (slug: string) => PRIMERS.find((p) => p.slug === slug);

@@ -66,7 +66,7 @@ export function sitemapEntries(name: SitemapName): SitemapEntry[] {
     case "tools":
       return [{ path: "/tools", lastmod: CONTENT_REVISED }, ...tools.map((t) => ({ path: `/tools/${t.slug}`, lastmod: CONTENT_REVISED }))];
     case "glossary":
-      return [{ path: "/glossary", lastmod: CONTENT_REVISED }, { path: "/glossary/map", lastmod: CONTENT_REVISED }, ...glossary.map((t) => ({ path: `/glossary/${t.slug}`, lastmod: CONTENT_REVISED }))];
+      return [{ path: "/glossary", lastmod: CONTENT_REVISED }, { path: "/glossary/map", lastmod: CONTENT_REVISED }, { path: "/glossary/flashcards", lastmod: CONTENT_REVISED }, ...glossary.map((t) => ({ path: `/glossary/${t.slug}`, lastmod: CONTENT_REVISED }))];
     case "intelligence":
       return [
         { path: "/intelligence", lastmod: latest(articles.map((a) => a.updated ?? a.published)) },

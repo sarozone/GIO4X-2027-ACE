@@ -4,6 +4,7 @@ import { WatchButton } from "@/components/desk/Buttons";
 import { HeroCompanion } from "@/components/figures/markets/HeroCompanion";
 import { InstrumentHelix } from "@/components/figures/markets/InstrumentHelix";
 import { InstrumentDepth } from "@/components/markets/InstrumentDepth";
+import { InstrumentProfile } from "@/components/markets/InstrumentProfile";
 import { firstSentence, ofKind, ratePair, resolveAll, resolveTerms, resolveTools, toneStyle } from "@/components/markets/graph";
 import { RelatedColumn } from "@/components/markets/LinkRows";
 import { MarketDna } from "@/components/markets/MarketDna";
@@ -15,6 +16,7 @@ import { Change, Sparkline } from "@/components/ui/Data";
 import { DataNote, NextSteps, PageHero, SpecList } from "@/components/ui/Page";
 import { educationalNote, indicativeNote, riskWarning } from "@/config/legal";
 import { depthFor } from "@/data/instrument-depth";
+import { profileFor } from "@/data/instrument-depth/profiles";
 import { getAssetClass, getInstrument, instrumentHref, instruments, instrumentsByClass, type AssetClass, type Instrument } from "@/data/instruments";
 import { pageMeta } from "@/lib/meta";
 import { crossChange, crossRate, crossSeries, formatFixingDate, formatRate, getReferenceRates, RATES_SOURCE, type ReferenceRates } from "@/lib/rates";
@@ -102,6 +104,7 @@ export default async function InstrumentPage({ params }: Params) {
   if (!i || !cls) notFound();
 
   const depth = depthFor(key, slug);
+  const profile = key === "indices" || key === "crypto" ? profileFor(slug) : undefined;
   const pair = ratePair(i);
   const rates = pair ? await getReferenceRates() : undefined;
   const siblings = instrumentsByClass(cls.key);
@@ -223,6 +226,9 @@ export default async function InstrumentPage({ params }: Params) {
           </div>
         </div>
       </section>
+
+      {/* indices and crypto-assets: the facts in brief, before the research that explains them */}
+      {profile && <InstrumentProfile profile={profile} name={i.name.replace(/ \/ US Dollar$/, "")} tinted={!pair} />}
 
       {/* what is particular to this instrument: general education, no price and no GIO4X condition */}
       {depth && <InstrumentDepth depth={depth} name={i.name} costHref="/tools/cost-lab" />}

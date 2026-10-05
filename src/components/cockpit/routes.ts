@@ -37,6 +37,10 @@ const ROUTES: [prefix: string, scene: SceneId, ownTag?: string][] = [
   ["/legal/privacy", "veil"],
   ["/legal/risk", "barometer"],
   ["/legal/terms", "accord"],
+  ["/accessibility", "access"],
+  ["/on-this-day", "almanac"],
+  ["/risk", "riskhub"],
+  ["/start-here", "trailhead"],
   ["/explore/sitemap", "cartograph"],
   ["/explore", "signpost"],
   ["/faq", "lantern"],
@@ -143,6 +147,10 @@ const ROUTES: [prefix: string, scene: SceneId, ownTag?: string][] = [
   ["/tools/risk-of-ruin", "ruin"],
   ["/trading-plan", "planner"],
   ["/tools", "instrument"],
+  ["/intelligence/blog/tags", "tagcloud"],
+  ["/intelligence/blog/tag", "tagcloud"],
+  ["/intelligence/blog/search", "searchlight"],
+  ["/intelligence/blog/author", "byline"],
   ["/intelligence/blog/series", "chronology"],
   ["/intelligence/blog", "daily"],
   ["/intelligence", "signal"],
@@ -150,6 +158,7 @@ const ROUTES: [prefix: string, scene: SceneId, ownTag?: string][] = [
   ["/labs", "constellation"],
   ["/academy/question-of-the-day", "question"],
   ["/academy", "course"],
+  ["/glossary/flashcards", "flashcards"],
   ["/glossary", "lexicon"],
   ["/faq", "lexicon"],
   ["/search", "lexicon"],
@@ -170,10 +179,10 @@ const EXACT: Record<string, SceneId> = { "/tools": "instrument" };
 /**
  * The translated pages (/de, /ar/guide: docs/I18N.md) have no scene of their own. Each borrows a framed
  * one that fits: the chart of the whole site for a language's home page (the homepage's own flight deck is
- * composed for the homepage's stage and stays there), and for the other three the scene of the English
- * page they stand beside (/explore, /legal/risk, /contact).
+ * composed for the homepage's stage and stays there), and for the others the scene of the English
+ * page they stand beside (/explore, /legal/risk, /contact, /glossary).
  */
-const TRANSLATED: Record<LocalePage, SceneId> = { "": "atlas", guide: "signpost", "risk-warning": "barometer", contact: "beacon" };
+const TRANSLATED: Record<LocalePage, SceneId> = { "": "atlas", guide: "signpost", "risk-warning": "barometer", contact: "beacon", glossary: "lexicon" };
 
 /** Everything else (About, Careers, Media, Design, What's new, Preferences, not found) carries the rosette. */
 const FALLBACK: SceneId = "rosette";

@@ -4,16 +4,20 @@
  *   node scripts/test-chart-school.mjs
  *
  * Needs Node 22.18 or later (it imports TypeScript directly; the module has no
- * imports of its own). Three kinds of check:
+ * imports of its own). Four kinds of check:
  *   1. the worked example printed on each indicator's page
  *      (src/data/chart-school.ts), with the working written beside each
  *      expectation, so a page and the arithmetic cannot disagree unnoticed;
  *   2. further cases worked by hand for the edges a page does not show;
- *   3. properties that must hold on any chart (a scale's limits, a channel
+ *   3. the invented series itself (src/components/chart-school/series.ts):
+ *      that every price is exactly what it was before a volume was added
+ *      beside it, and that the volume is what its page says it is;
+ *   4. properties that must hold on any chart (a scale's limits, a channel
  *      that contains its bars), over several invented charts.
  */
+import { createHash } from "node:crypto";
 import * as I from "../src/components/chart-school/indicators.ts";
-import { makeBars } from "../src/components/chart-school/series.ts";
+import { CHART, VOLUME, makeBars, makeVolumes } from "../src/components/chart-school/series.ts";
 
 let passed = 0;
 const failures = [];
@@ -312,7 +316,204 @@ const RANGE_BARS = hlc([
   }
 }
 
-/* ---- 2. properties on invented charts -------------------------------------- */
+{
+  // Ichimoku: five bars; conversion 2, base 3, span B 4, displaced by 3. The first four are the range bars
+  const bars = hlc([
+    [10, 8, 9],
+    [12, 9, 11],
+    [11, 9, 10],
+    [13, 10, 12],
+    [14, 11, 13],
+  ]);
+  const k = I.ichimoku(bars, 2, 3, 4, 3);
+  eq("Ichimoku: the displacement is the one asked for", k.shift, 3);
+  // conversion, the midpoint of 2 bars: (12 + 8) ÷ 2, (12 + 9) ÷ 2, (13 + 9) ÷ 2, (14 + 10) ÷ 2
+  isNull("Ichimoku: no conversion line before 2 bars", k.conversion[0]);
+  eq("Ichimoku: conversion bar 2", k.conversion[1], 10);
+  eq("Ichimoku: conversion bar 3", k.conversion[2], 10.5);
+  eq("Ichimoku: conversion bar 4", k.conversion[3], 11);
+  eq("Ichimoku: conversion bar 5", k.conversion[4], 12);
+  // base, the midpoint of 3 bars: (12 + 8) ÷ 2, (13 + 9) ÷ 2, (14 + 9) ÷ 2
+  isNull("Ichimoku: no base line before 3 bars", k.base[1]);
+  eq("Ichimoku: base bar 3", k.base[2], 10);
+  eq("Ichimoku: base bar 4", k.base[3], 11);
+  eq("Ichimoku: base bar 5", k.base[4], 11.5);
+  // span A = (conversion + base) ÷ 2 at bars 3, 4, 5: 10.25, 11, 11.75; drawn at bars 6, 7, 8
+  eq("Ichimoku: the spans reach 3 bars past the last", k.a.length, 8);
+  eq("Ichimoku: and so does span B", k.b.length, 8);
+  isNull("Ichimoku: no span A at bar 5, where nothing was worked out 3 bars before", k.a[4]);
+  eq("Ichimoku: span A at bar 6 = (10.5 + 10) ÷ 2", k.a[5], 10.25);
+  eq("Ichimoku: span A at bar 7 = (11 + 11) ÷ 2", k.a[6], 11);
+  eq("Ichimoku: span A at bar 8 = (12 + 11.5) ÷ 2", k.a[7], 11.75);
+  // span B, the midpoint of 4 bars, at bars 4 and 5: (13 + 8) ÷ 2, (14 + 9) ÷ 2; drawn at bars 7 and 8
+  isNull("Ichimoku: no span B at bar 6", k.b[5]);
+  eq("Ichimoku: span B at bar 7 = (13 + 8) ÷ 2", k.b[6], 10.5);
+  eq("Ichimoku: span B at bar 8 = (14 + 9) ÷ 2", k.b[7], 11.5);
+  ok("Ichimoku: span A is on top at bars 7 and 8", k.a[6] > k.b[6] && k.a[7] > k.b[7]);
+  // the lagging span is the close, 3 bars back
+  eq("Ichimoku: the close of bar 4 is drawn at bar 1", k.lag[0], 12);
+  eq("Ichimoku: the close of bar 5 is drawn at bar 2", k.lag[1], 13);
+  isNull("Ichimoku: no lagging span for the last 3 bars", k.lag[2]);
+  eq("Ichimoku: the lagging span is as long as the bars", k.lag.length, 5);
+  // left to itself the displacement is the length of the base line
+  eq("Ichimoku: the displacement defaults to the base length", I.ichimoku(bars, 2, 3, 4).shift, 3);
+  // the cloud ahead is made from the bars already there: a sixth bar, whatever it is, changes none of it
+  const more = I.ichimoku([...bars, { o: 2, h: 30, l: 1, c: 2 }], 2, 3, 4, 3);
+  ok("Ichimoku: a new bar leaves the cloud already drawn as it was", [5, 6, 7].every((i) => more.a[i] === k.a[i]) && [6, 7].every((i) => more.b[i] === k.b[i]));
+  // the mirror: every price reflected about 20 turns the cloud over, span B on top
+  const flip = bars.map((b) => ({ o: 20 - b.o, h: 20 - b.l, l: 20 - b.h, c: 20 - b.c }));
+  const m = I.ichimoku(flip, 2, 3, 4, 3);
+  eq("Ichimoku: mirror, span A at bar 7", m.a[6], 20 - 11);
+  eq("Ichimoku: mirror, span B at bar 7", m.b[6], 20 - 10.5);
+  ok("Ichimoku: mirror, span B is on top", m.b[6] > m.a[6] && m.b[7] > m.a[7]);
+}
+
+{
+  // on-balance volume: closes 10, 11, 11, 10, 12; volumes 100, 150, 120, 200, 180
+  const o = I.obv([10, 11, 11, 10, 12], [100, 150, 120, 200, 180]);
+  eq("OBV: bar 1 starts at 0", o[0], 0);
+  eq("OBV: bar 2, a higher close: 0 + 150", o[1], 150);
+  eq("OBV: bar 3, the same close: unchanged", o[2], 150);
+  eq("OBV: bar 4, a lower close: 150 − 200", o[3], -50);
+  eq("OBV: bar 5, a higher close: −50 + 180", o[4], 130);
+  // only the direction of the close counts, not its size
+  eq("OBV: a rise of 0.01 adds as much as a rise of 10", I.obv([10, 10.01], [0, 300])[1], I.obv([10, 20], [0, 300])[1]);
+  // the mirror of the closes gives the mirror of the total
+  const flip = I.obv([20, 19, 19, 20, 18], [100, 150, 120, 200, 180]);
+  ok("OBV: mirror", flip.every((v, i) => v === -o[i] || (v === 0 && o[i] === 0)), flip.join());
+}
+
+{
+  // VWAP: five bars with typical prices 10, 12, 14, 13, 15 and volumes 100, 100, 300, 200, 600; a session is 3 bars
+  const bars = hlc([
+    [11, 9, 10],
+    [13, 10, 13],
+    [16, 12, 14],
+    [15, 11, 13],
+    [17, 13, 15],
+  ]);
+  const v = I.vwap(bars, [100, 100, 300, 200, 600], 3);
+  ok("VWAP: typical prices 10, 12, 14, 13, 15", v.tp.join() === "10,12,14,13,15", v.tp.join());
+  eq("VWAP: bar 1 = 1,000 ÷ 100", v.vwap[0], 10);
+  eq("VWAP: bar 2 sum of price × volume 1,000 + 1,200", v.pv[1], 2200);
+  eq("VWAP: bar 2 = 2,200 ÷ 200", v.vwap[1], 11);
+  eq("VWAP: bar 3 sum of price × volume 2,200 + 4,200", v.pv[2], 6400);
+  eq("VWAP: bar 3 sum of volume", v.vol[2], 500);
+  eq("VWAP: bar 3 = 6,400 ÷ 500", v.vwap[2], 12.8);
+  // a new session: both sums start again
+  eq("VWAP: bar 4 sum of price × volume starts again at 2,600", v.pv[3], 2600);
+  eq("VWAP: bar 4 sum of volume starts again", v.vol[3], 200);
+  eq("VWAP: bar 4 = 2,600 ÷ 200, the bar's typical price", v.vwap[3], 13);
+  eq("VWAP: bar 5 = 11,600 ÷ 800", v.vwap[4], 14.5);
+  // with the same volume on every bar it is the plain average of the session's typical prices
+  const even = I.vwap(bars, [7, 7, 7, 7, 7], 3);
+  eq("VWAP: equal volumes, bar 3 = (10 + 12 + 14) ÷ 3", even.vwap[2], 12);
+  eq("VWAP: equal volumes, bar 5 = (13 + 15) ÷ 2", even.vwap[4], 14);
+  // one session over all five bars: (1,000 + 1,200 + 4,200 + 2,600 + 9,000) ÷ 1,300 = 18,000 ÷ 1,300
+  eq("VWAP: one session of 5 bars never starts again", I.vwap(bars, [100, 100, 300, 200, 600], 5).vwap[4], 18000 / 1300);
+  eq("VWAP: no volume at all reads the typical price", I.vwap(bars, [0, 0, 0, 0, 0], 3).vwap[1], 12);
+}
+
+/* ---- 2. the invented series ------------------------------------------------ */
+
+// SHA-256 of JSON.stringify(makeBars(seed)), taken before the volume existed: the seed of every page's chart, the
+// seeds of the properties below and two others. If one price of one bar changed, its digest would not match.
+const BEFORE_VOLUME = {
+  1: "94d14ea082f6436e44a7f8073f9cc36226d8772734a1be1ac84fd8970762d7ac",
+  7: "2fdfa0b38d634fdffe3237b496e25fe31ecf2ea794a3d906733e6a356dff6aa4",
+  55: "f817b12ce396a8e3bc5ef64d634051ccc49fb51027edf9bc93a19fc9fbe7ecc7",
+  89: "ef61aaa98c0bbc09347aeb09b66af5b32c736081f99f8774ffd9f78341576880",
+  144: "b8ca581de6bf114b7c3f961793074544222bfb17ca79c8a17bd7639bb158b2a9",
+  233: "0d7f22b86caee43a3623200619ba0b455bb93fa5f6f859fcae098f7a0216a53a",
+  314: "1d261e3ed4799ca2507635156de8058a4441c090cbb049045152acb4c9b77a41",
+  377: "dca4c3965a4ed9a7a3d09006b93cda5c9f13a635fbd86ac9d88f30f52032d726",
+  610: "608402267a4abf5dc014f0e3598eb4b1629c7013b44069ad4bf943b47838e8ea",
+  987: "f8f9daeab2858de629c5b7c461aff14c63b7452c7dc0545ccd1e26193b6c6402",
+  1597: "46deae68261f59d690654a0b38af2815a4e3aadd3142dbf16d6eb4e6a30e4a7d",
+  1618: "334785b2afb22ef877b4bc90fd1f86ea7e54d4b3987b5a1558d07d949944dc0d",
+  2027: "88ce03ea4fc58d352b1a67cfa8d13c008e6a9b77accb9a264b112f28f5088709",
+  2584: "1e205e10b4902e77654ce3f555a37febbe1955b6d6cf5aabc2cd7b940b4bbb36",
+  4181: "216ec9706a2f7754afd4b295778d0aeee63769e89c2765a4c57a44b05225a33a",
+  31337: "ac7beb08ee6ca70315f21c99b1a70cf9fff4a7698ddf1ee37a6ef9682e2758af",
+  99999: "b5a3b7832899d1b0062f5943c8a816472aff105aa0ba8d419c5975bf1644d011",
+};
+const digest = (bars) => createHash("sha256").update(JSON.stringify(bars)).digest("hex");
+
+for (const [seed, want] of Object.entries(BEFORE_VOLUME)) {
+  const s = Number(seed);
+  ok(`chart ${s}: every price is what it was before there was a volume`, digest(makeBars(s)) === want);
+  // and making the volume first, or in between, does not disturb them
+  makeVolumes(s);
+  const bars = makeBars(s);
+  makeVolumes(s, bars);
+  ok(`chart ${s}: making the volume changes no price`, digest(bars) === want && digest(makeBars(s)) === want);
+  ok(`chart ${s}: a bar has four prices and nothing else`, bars.every((b) => Object.keys(b).join() === "o,h,l,c"));
+}
+
+for (const seed of [7, 89, 144, 1963, 1988, 2027, 31337, 92652]) {
+  const bars = makeBars(seed);
+  const vols = makeVolumes(seed, bars);
+  eq(`chart ${seed}: one volume to a bar`, vols.length, bars.length);
+  ok(`chart ${seed}: every volume is a whole number above zero`, vols.every((v) => Number.isInteger(v) && v >= 1));
+  ok(`chart ${seed}: the same chart number gives the same volumes`, vols.join() === makeVolumes(seed).join());
+  ok(`chart ${seed}: another chart number gives other volumes`, vols.join() !== makeVolumes(seed + 1, bars).join());
+  // larger on larger bars: the half of the bars that covered more ground has the larger volume between them
+  const size = bars.map((b, i) => Math.max(b.h, i ? bars[i - 1].c : b.o) - Math.min(b.l, i ? bars[i - 1].c : b.o));
+  const order = bars.map((_, i) => i).sort((a, b) => size[a] - size[b]);
+  const sum = (idx) => idx.reduce((t, i) => t + vols[i], 0);
+  const half = order.length / 2;
+  ok(`chart ${seed}: the larger bars have more volume than the smaller`, sum(order.slice(half)) > sum(order.slice(0, half)));
+  // and never outside what its size allows: (400 + 1,000 × size) × 0.6 to 1.4, to the nearest whole number
+  ok(`chart ${seed}: each volume is within the spread its bar's size allows`, vols.every((v, i) => v >= Math.round((VOLUME.base + VOLUME.perPoint * size[i]) * 0.6) - 1 && v <= Math.round((VOLUME.base + VOLUME.perPoint * size[i]) * 1.4) + 1));
+  eq(`chart ${seed}: a shorter chart is the start of the longer one`, makeVolumes(seed, bars.slice(0, 50)).join() === vols.slice(0, 50).join() ? 1 : 0, 1);
+
+  const closes = bars.map((b) => b.c);
+  const last = bars.length - 1;
+  const o = I.obv(closes, vols);
+  const v = I.vwap(bars, vols, 20);
+  const k = I.ichimoku(bars, 9, 26, 52);
+  const d9 = I.donchian(bars, 9);
+  const d26 = I.donchian(bars, 26);
+  const d52 = I.donchian(bars, 52);
+  let fine = { obv: true, vwapIn: true, vwapStart: true, vwapSums: true, lines: true, spans: true, lag: true };
+  let high = -Infinity;
+  let low = Infinity;
+  for (let i = 0; i <= last; i++) {
+    const step = i === 0 ? 0 : Math.sign(closes[i] - closes[i - 1]) * vols[i];
+    if (o[i] - (i === 0 ? 0 : o[i - 1]) !== step) fine.obv = false;
+    if (i % 20 === 0) {
+      high = -Infinity;
+      low = Infinity;
+      // price × volume ÷ volume: the price again, to within the last binary place
+      if (Math.abs(v.vwap[i] - v.tp[i]) > 1e-9) fine.vwapStart = false;
+    }
+    high = Math.max(high, bars[i].h);
+    low = Math.min(low, bars[i].l);
+    // an average of typical prices cannot leave the range its session has covered so far
+    if (!(v.vwap[i] <= high + 1e-9 && v.vwap[i] >= low - 1e-9)) fine.vwapIn = false;
+    if (Math.abs(v.vwap[i] * v.vol[i] - v.pv[i]) > 1e-6) fine.vwapSums = false;
+    if (k.conversion[i] != null && k.conversion[i] !== d9.mid[i]) fine.lines = false;
+    if (k.base[i] != null && k.base[i] !== d26.mid[i]) fine.lines = false;
+    // what is drawn at bar i + 26 was worked out at bar i, from bars up to i and no later
+    const a = k.conversion[i] == null || k.base[i] == null ? null : (k.conversion[i] + k.base[i]) / 2;
+    if (k.a[i + 26] !== a || k.b[i + 26] !== d52.mid[i]) fine.spans = false;
+    if (k.lag[i] !== (i + 26 <= last ? closes[i + 26] : null)) fine.lag = false;
+  }
+  ok(`chart ${seed}: OBV moves by the bar's volume, up, down or not at all`, fine.obv);
+  ok(`chart ${seed}: VWAP stays inside the range its session has covered`, fine.vwapIn);
+  ok(`chart ${seed}: VWAP is the typical price at the first bar of each session`, fine.vwapStart);
+  ok(`chart ${seed}: VWAP × the sum of volume is the sum of price × volume`, fine.vwapSums);
+  ok(`chart ${seed}: the conversion and base lines are midpoints of 9 and 26 bars`, fine.lines);
+  ok(`chart ${seed}: each span is drawn 26 bars after the bar it was worked out at`, fine.spans);
+  ok(`chart ${seed}: the lagging span is the close, 26 bars back`, fine.lag);
+  eq(`chart ${seed}: the cloud reaches 26 bars past the last bar`, k.a.length, bars.length + 26);
+  ok(`chart ${seed}: the cloud is whole from the first bar drawn to its far end`, k.a.slice(CHART.bars - CHART.shown).every((x) => x != null) && k.b.slice(CHART.bars - CHART.shown).every((x) => x != null));
+  // the cloud ahead of the last bar does not change when a bar is added after it
+  const longer = I.ichimoku([...bars, { o: 1, h: 999, l: 1, c: 1 }], 9, 26, 52);
+  ok(`chart ${seed}: a new bar changes nothing of the cloud already drawn`, k.a.every((x, i) => x === longer.a[i]) && k.b.every((x, i) => x === longer.b[i]));
+}
+
+/* ---- 3. properties on invented charts -------------------------------------- */
 
 for (const seed of [7, 89, 144, 2027, 31337]) {
   const bars = makeBars(seed);

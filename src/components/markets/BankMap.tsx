@@ -21,13 +21,21 @@ const PLACE: Record<string, string> = {
   boj: "right-full top-1/2 mr-8 -translate-y-1/2 text-right",
   rba: "right-full top-1/2 mr-8 -translate-y-1/2 text-right",
   rbnz: "right-0 top-full mt-8 text-right",
+  // Oslo and Stockholm stand side by side, north of Frankfurt; Beijing and Hong Kong lie west of Tokyo's label
+  "norges-bank": "right-full bottom-full mr-5 mb-2 text-right",
+  riksbank: "left-full bottom-full ml-5 mb-2",
+  pboc: "right-full bottom-full mr-5 -mb-3 text-right",
+  hkma: "left-full top-full ml-5 -mt-3",
+  mas: "left-full top-1/2 ml-8 -translate-y-1/2",
+  sarb: "left-full top-1/2 ml-8 -translate-y-1/2",
+  banxico: "right-full top-1/2 mr-8 -translate-y-1/2 text-right",
 };
 
 const MERIDIANS = [-150, -120, -90, -60, -30, 0, 30, 60, 90, 120, 150];
 const PARALLELS = [60, 30, 0, -30];
 
 /**
- * The nine banks placed by latitude and longitude on a plain graticule.
+ * The banks placed by latitude and longitude on a plain graticule.
  * No coastlines and no borders: the grid is the map, and the positions are
  * real. The list beneath carries the same information as text, so the figure
  * is presentational for assistive technology.

@@ -2,6 +2,7 @@ import { NoAccess } from "@/components/control/bits";
 import { controlMeta, firstParam } from "@/components/control/format";
 import type { LeadListItem } from "@/components/control/LeadsTable";
 import { LeadsView } from "@/components/control/views/LeadsView";
+import { CALLBACK_PREFIX, readCallback } from "@/lib/callback";
 import { CONTACT_TOPICS, LEAD_STAGES, LEAD_STATUSES } from "@/lib/server/constants";
 import { leadsFiltered } from "@/lib/server/lists/leads";
 import { readViews } from "@/lib/server/personal";
@@ -60,6 +61,21 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
 
   const writable = can(ctx, "leads.write");
 
+  // Which of the enquiries on this page ask for a call back: read from the first line of the message
+  // (src/lib/callback.ts). One small query for this page's rows only; if it fails, nothing is marked.
+  const callbacks = new Map<string, string>();
+  if (leads.length) {
+    try {
+      const marked = await supabase.from("leads").select("id, message").in("id", leads.map((l) => l.id)).like("message", `${CALLBACK_PREFIX}%`);
+      for (const row of marked.data ?? []) {
+        const when = readCallback(row.message);
+        if (when) callbacks.set(row.id, when);
+      }
+    } catch {
+      /* a marker is a convenience; the list still renders without it */
+    }
+  }
+
   return (
     <LeadsView
       status={status}
@@ -82,6 +98,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
       canAdd={writable}
       canAssign={can(ctx, "leads.assign")}
       canImport={writable && can(ctx, "leads.import")}
+      callbacks={callbacks}
     />
   );
 }

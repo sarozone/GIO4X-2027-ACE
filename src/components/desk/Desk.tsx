@@ -13,6 +13,7 @@ import { DeskTransfer } from "./DeskTransfer";
 import { InstallApp } from "./InstallApp";
 import { Journey } from "./Journey";
 import { QuestionCard } from "@/components/academy/qotd/QuestionCard";
+import { FlashcardsCard } from "@/components/glossary/flashcards/FlashcardsCard";
 import { Constellation } from "@/components/play/Extras";
 import { Passport } from "@/components/play/Passport";
 import { Milestones } from "./Milestones";
@@ -332,7 +333,9 @@ function Watchlist({ data }: { data: DeskData }) {
 
 const SAVED_GROUPS: { kind: SavedKind; title: string }[] = [
   { kind: "article", title: "Articles" },
+  { kind: "post", title: "Blog posts" },
   { kind: "lesson", title: "Academy lessons" },
+  { kind: "primer", title: "Market primers" },
   { kind: "term", title: "Glossary terms" },
   { kind: "tool", title: "Tools" },
 ];
@@ -359,7 +362,7 @@ function Saved() {
         }
       >
         <p>
-          Articles, Academy lessons, glossary terms and tools you keep for later are listed here, grouped. Press <span className="font-medium text-ink">Save</span> on any of those pages to add it.
+          Articles, blog posts, Academy lessons, market primers, glossary terms and tools you keep for later are listed here as a reading list, grouped by kind. Press <span className="font-medium text-ink">Save</span> on any of those pages to add it.
         </p>
       </Empty>
     );
@@ -650,7 +653,7 @@ export function Desk({ data }: { data: DeskData }) {
         <Watchlist data={data} />
       </Block>
 
-      <Block id="saved" title="Saved" lead="Articles, lessons, glossary terms and tools you kept for later." tinted>
+      <Block id="saved" title="Saved" lead="Your reading list: the articles, blog posts, lessons, primers, glossary terms and tools you kept for later, grouped by kind." tinted>
         <Saved />
       </Block>
 
@@ -666,6 +669,8 @@ export function Desk({ data }: { data: DeskData }) {
         <Learning data={data} />
         {/* the Academy's question of the day: its run of days is read from this browser, like everything else here */}
         <QuestionCard className="mt-21" />
+        {/* the glossary flashcards: how many cards are due today, read from this browser in the same way */}
+        <FlashcardsCard className="mt-21" />
       </Block>
 
       <Block

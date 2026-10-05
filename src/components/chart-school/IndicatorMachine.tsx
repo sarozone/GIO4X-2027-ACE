@@ -4,8 +4,8 @@ import { useMemo, useRef, useState } from "react";
 import { clamp, rgba, smooth, TAU, type Colour, type FigureDraw, type Palette } from "@/components/figures/Figure";
 import { ALERT, Note, Slider, Stage } from "@/components/labs/kit";
 import type { LessonSlug } from "@/data/chart-school";
-import { adx, atr, bollinger, cci, donchian, ema, keltner, levels, lineThrough, macd, parabolicSar, rsiParts, sma, stochastic, swings, trueRange, williamsR, type Series } from "./indicators";
-import { CHART, makeBars, type Bar } from "./series";
+import { adx, atr, bollinger, cci, donchian, ema, ichimoku, keltner, levels, lineThrough, macd, obv, parabolicSar, rsiParts, sma, stochastic, swings, trueRange, vwap, williamsR, type Series } from "./indicators";
+import { CHART, makeBars, makeVolumes, type Bar } from "./series";
 
 /**
  * CHART SCHOOL — the one machine on each indicator's page.
@@ -41,8 +41,14 @@ type View = {
   points?: { values: Series; tone: Tone }[];
   /** a dashed upright at a bar */
   uprights?: number[];
-  /** the panel under the price */
-  lower?: { title: string; tag: string; lines: Line[]; bars?: Series; range?: [number, number]; guides?: number[]; zero?: boolean; fromZero?: boolean };
+  /** the panel under the price; `fmt` writes the value under the pointer, where two decimal places would be wrong */
+  lower?: { title: string; tag: string; lines: Line[]; bars?: Series; range?: [number, number]; guides?: number[]; zero?: boolean; fromZero?: boolean; fmt?: (v: number) => string };
+  /** a pane of volume bars between the price and the panel; `signs` tones each bar by what was done with it (added, taken away, left out) */
+  volume?: { values: number[]; signs?: number[] };
+  /** empty slots to the right of the last bar: room for what is drawn ahead of it */
+  ahead?: number;
+  /** Ichimoku's displaced parts. `a` and `b` are `shift` longer than the bars and are shaded between, in two tones; `lag` stops `shift` short */
+  cloud?: { a: Series; b: Series; lag: Series; shift: number };
   legend: { tone: Tone; label: string }[];
   sentence: string;
   /** always four */
@@ -53,8 +59,9 @@ type View = {
 
 type Vals = Record<string, number>;
 type Control = { key: string; label: string; min: number; max: number; step?: number; initial: number; text: (v: number) => string };
-type Ctx = { bars: Bar[]; from: number; last: number; closes: number[]; n: number; seed: number; g: (key: string) => number };
-type Setup = { seed: number; controls: Control[]; tidy?: (v: Vals, changed: string) => Vals; view: (c: Ctx) => View };
+type Ctx = { bars: Bar[]; volumes: number[]; from: number; last: number; closes: number[]; n: number; seed: number; g: (key: string) => number };
+/** `ratio` is the canvas's width to its height, for a machine with three panes to stack; 1.5 where it is not given */
+type Setup = { seed: number; ratio?: number; controls: Control[]; tidy?: (v: Vals, changed: string) => Vals; view: (c: Ctx) => View };
 
 const f1 = (n: number) => n.toFixed(1);
 const f2 = (n: number) => n.toFixed(2);
@@ -70,6 +77,11 @@ const signed1 = (n: number) => {
 };
 /** the same for a reading that is never above zero */
 const below0 = (n: number) => signed1(Math.min(0, n));
+/** a whole number with its thousands marked, for volume */
+const int = (n: number) => {
+  const r = Math.round(n);
+  return `${r < 0 ? "−" : ""}${String(Math.abs(r)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+};
 const at = (s: Series, i: number) => s[i] ?? 0;
 const times = (n: number) => (n === 0 ? "not once" : n === 1 ? "once" : n === 2 ? "twice" : `${n} times`);
 const count = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
@@ -773,6 +785,186 @@ const SETUPS: Record<LessonSlug, Setup> = {
       };
     },
   },
+
+  ichimoku: {
+    seed: 92652,
+    // the lengths are kept in order by their limits, and short enough that the cloud is whole where the chart begins
+    controls: [
+      { key: "conv", label: "Conversion line", min: 5, max: 20, initial: 9, text: bars },
+      { key: "base", label: "Base line, and the displacement", min: 21, max: 40, initial: 26, text: bars },
+      { key: "spanB", label: "Leading span B", min: 41, max: 70, initial: 52, text: bars },
+    ],
+    view: ({ bars: all, from, last, closes, n, seed, g }) => {
+      const nc = g("conv");
+      const nb = g("base");
+      const ns = g("spanB");
+      const k = ichimoku(all, nc, nb, ns);
+      const d = k.shift;
+      const c = closes[last]!;
+      const conv = at(k.conversion, last);
+      const base = at(k.base, last);
+      // beside the last bar stands the cloud worked out `d` bars ago; the last bar's own figures are drawn `d` bars ahead of it
+      const top = Math.max(at(k.a, last), at(k.b, last));
+      const foot = Math.min(at(k.a, last), at(k.b, last));
+      const a = at(k.a, last + d);
+      const b = at(k.b, last + d);
+      const then = closes[last - d]!;
+      let above = 0;
+      let below = 0;
+      for (let i = from; i <= last; i++) {
+        if (closes[i]! > Math.max(at(k.a, i), at(k.b, i))) above += 1;
+        else if (closes[i]! < Math.min(at(k.a, i), at(k.b, i))) below += 1;
+      }
+      const ends = (len: number) => {
+        const r = donchian(all, len);
+        return `(${f2(at(r.upper, last))} + ${f2(at(r.lower, last))}) ÷ 2`;
+      };
+      return {
+        overlays: [
+          { values: k.conversion, tone: "accent" },
+          { values: k.base, tone: "alert" },
+        ],
+        cloud: { a: k.a, b: k.b, lag: k.lag, shift: d },
+        ahead: d,
+        legend: [
+          { tone: "accent", label: `Conversion, ${nc} bars` },
+          { tone: "alert", label: `Base, ${nb} bars` },
+          { tone: "teal", label: "Span A, and the cloud where it is the higher" },
+          { tone: "gold", label: "Span B, and the cloud where it is the higher" },
+          { tone: "ink", label: `Lagging span: the close, ${d} bars back (dashed)` },
+        ],
+        sentence: `Ichimoku (${nc}, ${nb}, ${ns}) on chart ${seed}: the conversion line is ${f2(conv)} and the base line ${f2(base)}. The cloud drawn beside the last bar runs from ${f2(foot)} to ${f2(top)} and was worked out ${d} bars ago; the last close, ${f2(c)}, is ${c > top ? "above" : c < foot ? "below" : "inside"} it. The last bar’s own spans, ${f2(a)} and ${f2(b)}, are drawn ${d} bars ahead, where there are no prices, with span ${a >= b ? "A" : "B"} the higher. The close is ${c >= then ? "above" : "below"} the close of ${d} bars ago, ${f2(then)}. Of the ${n} closes shown, ${above} were above the cloud, ${below} below it and ${n - above - below} inside.`,
+        readout: [
+          ["Conversion", f2(conv)],
+          ["Base", f2(base)],
+          ["Cloud at the last bar", `${f2(foot)} to ${f2(top)}`],
+          [`Cloud ${d} bars ahead`, `${f2(Math.min(a, b))} to ${f2(Math.max(a, b))}`],
+        ],
+        working: [
+          `Conversion = (highest high + lowest low of ${nc} bars) ÷ 2 = ${ends(nc)} = ${f2(conv)}`,
+          `Base = the same over ${nb} bars = ${ends(nb)} = ${f2(base)}`,
+          `Span A = (${f2(conv)} + ${f2(base)}) ÷ 2 = ${f2(a)}, drawn ${d} bars ahead`,
+          `Span B = the same midpoint over ${ns} bars = ${ends(ns)} = ${f2(b)}, drawn ${d} bars ahead`,
+          `Lagging span = the last close, ${f2(c)}, drawn ${d} bars back`,
+          `The cloud beside the last bar, ${f2(foot)} to ${f2(top)}, is the spans of ${d} bars ago`,
+        ],
+      };
+    },
+  },
+
+  obv: {
+    seed: 1963,
+    ratio: 1.2,
+    controls: [
+      { key: "len", label: "Average of OBV", min: 2, max: 50, initial: 20, text: bars },
+      { key: "start", label: "Count from", min: 0, max: 1, initial: 0, text: (v) => (v === 1 ? "the first bar drawn" : "the chart’s first bar") },
+    ],
+    view: ({ volumes, from, last, closes, n, seed, g }) => {
+      const len = g("len");
+      const late = g("start") === 1;
+      const total = obv(closes, volumes);
+      // the same total begun later: every value less by what had been counted before, and nothing before the start
+      const line: Series = total.map((v, i) => (late ? (i < from ? null : v - total[from]!) : v));
+      const avg = sma(line, len);
+      const signs = closes.map((c, i) => (i === 0 ? 0 : Math.sign(c - closes[i - 1]!)));
+      const v = at(line, last);
+      const prev = at(line, last - 1);
+      const vol = volumes[last] ?? 0;
+      const sign = signs[last] ?? 0;
+      const av = at(avg, last);
+      let ups = 0;
+      let downs = 0;
+      let added = 0;
+      let taken = 0;
+      for (let i = from + 1; i <= last; i++) {
+        if (signs[i]! > 0) {
+          ups += 1;
+          added += volumes[i]!;
+        } else if (signs[i]! < 0) {
+          downs += 1;
+          taken += volumes[i]!;
+        }
+      }
+      const net = added - taken;
+      const other = late ? total[last]! : total[last]! - total[from]!;
+      return {
+        overlays: [],
+        volume: { values: volumes, signs },
+        lower: { title: "OBV", tag: int(v), lines: [{ values: line, tone: "accent" }, { values: avg, tone: "gold" }], fmt: int },
+        legend: [
+          { tone: "accent", label: "OBV" },
+          { tone: "gold", label: `Its ${len}-bar average` },
+          { tone: "emerald", label: "Volume of a bar that closed higher: added" },
+          { tone: "alert", label: "Volume of a bar that closed lower: taken away" },
+        ],
+        sentence: `On-balance volume on chart ${seed}, counted from ${late ? "the first bar drawn" : `the chart’s first bar, ${from} bars before the first one drawn`}, stands at ${int(v)}. The last bar closed ${sign > 0 ? "higher" : sign < 0 ? "lower" : "unchanged"}, so its volume, ${int(vol)}, was ${sign > 0 ? "added" : sign < 0 ? "taken away" : "not counted"}. Since the first bar drawn, ${count(ups, "bar")} closed higher on a volume of ${int(added)} and ${count(downs, "bar")} closed lower on ${int(taken)}: OBV ${net >= 0 ? "rose" : "fell"} by ${int(Math.abs(net))}. It is ${v >= av ? "above" : "below"} its ${len}-bar average, ${int(av)}. The volume is invented, like the prices.`,
+        readout: [
+          ["OBV", int(v)],
+          ["Last bar’s volume", `${sign > 0 ? "+" : sign < 0 ? "−" : "±"}${int(vol)}`],
+          ["Added / taken away", `${int(added)} / ${int(taken)}`],
+          [`${len}-bar average`, int(av)],
+        ],
+        working: [
+          `Previous OBV = ${int(prev)}`,
+          `Close ${f2(closes[last]!)} is ${sign > 0 ? "above" : sign < 0 ? "below" : "the same as"} the previous close, ${f2(closes[last - 1]!)}`,
+          sign === 0 ? `The volume, ${int(vol)}, is not counted: OBV = ${int(v)}` : `OBV = ${int(prev)} ${sign > 0 ? "+" : "−"} ${int(vol)} = ${int(v)}`,
+          `Average of the last ${len} values of OBV = ${int(av)}`,
+          `Counted from ${late ? "the chart’s first bar" : "the first bar drawn"} instead, this bar would read ${int(other)}: another number, the same shape`,
+        ],
+      };
+    },
+  },
+
+  vwap: {
+    seed: 1988,
+    controls: [{ key: "session", label: "A session is", min: 5, max: 40, initial: 20, text: bars }],
+    view: ({ bars: all, volumes, from, last, closes, n, seed, g }) => {
+      const len = g("session");
+      const w = vwap(all, volumes, len);
+      // every bar given the same weight: the session's plain average, to show what the weighting changes
+      const plain = vwap(all, all.map(() => 1), len).vwap;
+      // one session to a path, in two sets, so that no line is drawn across a reset
+      const part = (values: number[], odd: boolean): Series => values.map((x, i) => ((Math.floor(i / len) % 2 === 1) === odd ? x : null));
+      const start = last - (last % len);
+      const done = last - start + 1;
+      const b = all[last]!;
+      const c = closes[last]!;
+      const v = w.vwap[last]!;
+      const p = plain[last]!;
+      const tp = w.tp[last]!;
+      const vol = volumes[last] ?? 0;
+      const begins: number[] = [];
+      for (let i = from + 1; i <= last; i++) if (i % len === 0) begins.push(i);
+      return {
+        overlays: [
+          { values: part(plain, false), tone: "ink", dash: true },
+          { values: part(plain, true), tone: "ink", dash: true },
+          { values: part(w.vwap, false), tone: "accent" },
+          { values: part(w.vwap, true), tone: "accent" },
+        ],
+        uprights: begins,
+        volume: { values: volumes },
+        legend: [
+          { tone: "accent", label: "VWAP: it begins again at each dashed upright" },
+          { tone: "ink", label: "The session’s plain average of typical prices (dashed)" },
+        ],
+        sentence: `VWAP on chart ${seed}, with a session of ${len} bars counted from the chart’s first bar: the last bar is bar ${done} of its session. Over ${done === 1 ? "that bar" : `those ${done} bars`} a volume of ${int(w.vol[last]!)} went through at a volume-weighted average of ${f2(v)}. The plain average of the same typical prices is ${f2(p)}, so the weighting moved it by ${signed(v - p)}. The last close, ${f2(c)}, is ${f2(Math.abs(c - v))} ${c >= v ? "above" : "below"} VWAP. In the ${n} bars shown the line began again ${times(begins.length)}. The volume is invented, like the prices.`,
+        readout: [
+          ["VWAP", f2(v)],
+          ["Plain average", f2(p)],
+          ["Close − VWAP", signed(c - v)],
+          ["Bar of the session", `${done} of ${len}`],
+        ],
+        working: [
+          `Typical price = (${f2(b.h)} + ${f2(b.l)} + ${f2(b.c)}) ÷ 3 = ${f2(tp)}`,
+          `Typical price × volume = ${f2(tp)} × ${int(vol)} = ${int(tp * vol)}`,
+          done === 1 ? "It is the first bar of its session, so both sums hold this bar alone" : `Sum of those products over the session’s ${done} bars = ${int(w.pv[last]!)}`,
+          `Sum of volume over the same ${count(done, "bar")} = ${int(w.vol[last]!)}`,
+          `VWAP = ${int(w.pv[last]!)} ÷ ${int(w.vol[last]!)} = ${f2(v)}`,
+        ],
+      };
+    },
+  },
 };
 
 const toneOf = (pal: Palette, tone: Tone): Colour => (tone === "alert" ? ALERT : tone === "ink" ? pal.ink2 : pal[tone]);
@@ -792,10 +984,12 @@ export function IndicatorMachine({ kind }: { kind: LessonSlug }) {
 
   const all = useMemo(() => makeBars(seed), [seed]);
   const from = all.length - CHART.shown;
+  /** made beside the bars and never from the same random numbers: the prices are what they were before there was a volume */
+  const volumes = useMemo(() => makeVolumes(seed, all), [seed, all]);
   const view = useMemo(() => {
     const last = all.length - 1;
-    return setup.view({ bars: all, from, last, closes: all.map((b) => b.c), n: CHART.shown, seed, g: (key) => vals[key] ?? 0 });
-  }, [setup, all, from, seed, vals]);
+    return setup.view({ bars: all, volumes, from, last, closes: all.map((b) => b.c), n: CHART.shown, seed, g: (key) => vals[key] ?? 0 });
+  }, [setup, all, volumes, from, seed, vals]);
 
   const change = (key: string, value: number) => {
     setVals((v) => {
@@ -824,10 +1018,15 @@ export function IndicatorMachine({ kind }: { kind: LessonSlug }) {
         const padX = 10;
         const top = 24;
         const lower = view.lower;
-        const split = lower ? Math.round(h * 0.6) : h - 8;
+        const volume = view.volume;
+        const cloud = view.cloud;
+        // a volume pane takes its height from the price, and from the panel when there is one
+        const split = volume ? Math.round(h * (lower ? 0.46 : 0.7)) : lower ? Math.round(h * 0.6) : h - 8;
         const bottom = split - 8;
-        // a line that is carried past the last bar needs somewhere to go
-        const slots = n + (view.rays ? 8 : 0);
+        /** where the panel begins: under the volume pane when there is one, and otherwise where the price ends */
+        const split2 = volume && lower ? Math.round(h * 0.68) : split;
+        // a line that is carried past the last bar needs somewhere to go, and so does a cloud drawn ahead of it
+        const slots = n + (view.rays ? 8 : 0) + (view.ahead ?? 0);
         const step = (w - padX * 2) / slots;
         const x = (i: number) => padX + (i - from + 0.5) * step;
 
@@ -855,15 +1054,24 @@ export function IndicatorMachine({ kind }: { kind: LessonSlug }) {
           widen(view.fill.upper);
           widen(view.fill.lower);
         }
+        // the cloud is measured as far as it is drawn, past the last bar
+        for (const s of cloud ? [cloud.a, cloud.b] : []) {
+          for (let i = from; i < s.length; i++) {
+            const v = s[i];
+            if (v == null) continue;
+            if (v < lo2) lo2 = v;
+            if (v > hi2) hi2 = v;
+          }
+        }
         // the candles keep most of the height whatever is drawn around them
         lo2 = Math.max(lo2, lo - reach * 0.3);
         hi2 = Math.min(hi2, hi + reach * 0.3);
         const y = (v: number) => bottom - ((v - lo2) / (hi2 - lo2 || 1)) * (bottom - top);
 
-        const stroke = (values: Series, map: (v: number) => number) => {
+        const stroke = (values: Series, map: (v: number) => number, to: number = end) => {
           ctx.beginPath();
           let started = false;
-          for (let i = from; i < end; i++) {
+          for (let i = from; i < to; i++) {
             const v = values[i];
             if (v == null) {
               started = false;
@@ -940,6 +1148,48 @@ export function IndicatorMachine({ kind }: { kind: LessonSlug }) {
           ctx.fill();
         }
 
+        // how far the displaced lines have got: a span worked out at the newest bar drawn stands `shift` bars past it
+        const reach2 = cloud ? Math.min(cloud.a.length, end + cloud.shift) : end;
+        if (cloud) {
+          // one shape for each stretch with the same span on top, so that the cloud changes tone exactly where the spans cross
+          let run: { x: number; ya: number; yb: number }[] = [];
+          let aOver = true;
+          let pa = 0;
+          let pb = 0;
+          const close = () => {
+            if (run.length > 1) {
+              ctx.fillStyle = rgba(toneOf(pal, aOver ? "teal" : "gold"), 0.2);
+              ctx.beginPath();
+              run.forEach((q, k) => (k ? ctx.lineTo(q.x, q.ya) : ctx.moveTo(q.x, q.ya)));
+              for (let k = run.length - 1; k >= 0; k--) ctx.lineTo(run[k]!.x, run[k]!.yb);
+              ctx.closePath();
+              ctx.fill();
+            }
+            run = [];
+          };
+          for (let i = from; i < reach2; i++) {
+            const a = cloud.a[i];
+            const b = cloud.b[i];
+            if (a == null || b == null) {
+              close();
+              continue;
+            }
+            if (run.length && a >= b !== aOver) {
+              // the spans crossed between two bars: the cloud closes to a point there and opens again in the other tone
+              const f = (pa - pb) / (pa - pb - (a - b));
+              const q = { x: x(i - 1) + f * step, ya: y(pa + f * (a - pa)), yb: y(pa + f * (a - pa)) };
+              run.push(q);
+              close();
+              run.push(q);
+            }
+            aOver = a >= b;
+            run.push({ x: x(i), ya: y(a), yb: y(b) });
+            pa = a;
+            pb = b;
+          }
+          close();
+        }
+
         // the candles: a wick from high to low, a body from open to close; a falling bar is the darker one
         const bodyW = Math.max(1, Math.min(9, step * 0.62));
         for (let i = from; i < end; i++) {
@@ -962,6 +1212,26 @@ export function IndicatorMachine({ kind }: { kind: LessonSlug }) {
           ctx.lineWidth = o.dash ? 1 : 1.6;
           if (o.dash) ctx.setLineDash([3, 3]);
           stroke(o.values, y);
+          ctx.setLineDash([]);
+        }
+
+        if (cloud) {
+          ctx.lineWidth = 1;
+          ctx.strokeStyle = rgba(toneOf(pal, "teal"), 1);
+          stroke(cloud.a, y, reach2);
+          ctx.strokeStyle = rgba(toneOf(pal, "gold"), 1);
+          stroke(cloud.b, y, reach2);
+          // the lagging span is a close drawn `shift` bars back, so it stops that far short of the newest bar drawn
+          ctx.strokeStyle = rgba(pal.ink2, 0.9);
+          ctx.setLineDash([3, 3]);
+          stroke(cloud.lag, y, end - cloud.shift);
+          // where the prices stop: to the right of this there are none
+          ctx.strokeStyle = rgba(pal.ink3, 0.7 * whole);
+          ctx.setLineDash([2, 4]);
+          ctx.beginPath();
+          ctx.moveTo(x(last) + step / 2, top);
+          ctx.lineTo(x(last) + step / 2, bottom);
+          ctx.stroke();
           ctx.setLineDash([]);
         }
 
@@ -1033,9 +1303,48 @@ export function IndicatorMachine({ kind }: { kind: LessonSlug }) {
           ctx.fillText(z.label, padX + 3, clamp(y(z.price) - 7, top, bottom));
         }
 
+        // the space ahead of the last bar says what it is, where there is room to say it
+        if (cloud) {
+          const words = "NO PRICES HERE";
+          if (ctx.measureText(words).width + 8 < cloud.shift * step) {
+            ctx.fillStyle = rgba(pal.ink3, whole);
+            ctx.fillText(words, x(last) + step / 2 + 5, top + 5);
+          }
+        }
+
+        // the volume pane: one bar to a bar, measured from zero; as invented as the prices, and it says so
+        if (volume) {
+          const vt = split + 22;
+          const vb = (lower ? split2 : h) - 8;
+          let most = 1;
+          for (let i = from; i <= last; i++) most = Math.max(most, volume.values[i] ?? 0);
+          ctx.strokeStyle = rgba(pal.line, 1);
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(padX, split);
+          ctx.lineTo(w - padX, split);
+          ctx.stroke();
+          ctx.fillStyle = rgba(pal.ink3, 1);
+          ctx.fillText("INVENTED VOLUME", padX, split + 12);
+          ctx.textAlign = "right";
+          ctx.fillStyle = rgba(pal.ink, 1);
+          ctx.fillText(int(volume.values[over >= 0 ? over : last] ?? 0), w - padX, split + 12);
+          ctx.textAlign = "left";
+          const bw = Math.max(1, step * 0.62);
+          for (let i = from; i < end; i++) {
+            const v = volume.values[i] ?? 0;
+            const sign = volume.signs?.[i];
+            // without signs a bar is toned as its candle is; with them, by what was done with its volume
+            if (sign == null) ctx.fillStyle = all[i]!.c >= all[i]!.o ? rgba(pal.ink3, 0.75) : rgba(pal.ink, 0.92);
+            else ctx.fillStyle = sign > 0 ? rgba(pal.emerald, 0.7) : sign < 0 ? rgba(ALERT, 0.7) : rgba(pal.ink3, 0.5);
+            const y0 = vb - (v / most) * (vb - vt);
+            ctx.fillRect(x(i) - bw / 2, y0, bw, Math.max(1, vb - y0));
+          }
+        }
+
         let yl: ((v: number) => number) | null = null;
         if (lower) {
-          const lt = split + 24;
+          const lt = split2 + 24;
           const lb = h - 8;
           let a = Infinity;
           let b = -Infinity;
@@ -1066,14 +1375,14 @@ export function IndicatorMachine({ kind }: { kind: LessonSlug }) {
           ctx.strokeStyle = rgba(pal.line, 1);
           ctx.lineWidth = 1;
           ctx.beginPath();
-          ctx.moveTo(padX, split);
-          ctx.lineTo(w - padX, split);
+          ctx.moveTo(padX, split2);
+          ctx.lineTo(w - padX, split2);
           ctx.stroke();
           ctx.fillStyle = rgba(pal.ink3, 1);
-          ctx.fillText(lower.title.toUpperCase(), padX, split + 12);
+          ctx.fillText(lower.title.toUpperCase(), padX, split2 + 12);
           ctx.textAlign = "right";
           ctx.fillStyle = rgba(pal.ink, 1);
-          ctx.fillText(over >= 0 ? (lower.lines[0]?.values[over] == null ? "" : f2(lower.lines[0].values[over] ?? 0)) : lower.tag, w - padX, split + 12);
+          ctx.fillText(over >= 0 ? (lower.lines[0]?.values[over] == null ? "" : (lower.fmt ?? f2)(lower.lines[0].values[over] ?? 0)) : lower.tag, w - padX, split2 + 12);
           ctx.textAlign = "left";
 
           for (const gv of lower.guides ?? []) {
@@ -1131,6 +1440,7 @@ export function IndicatorMachine({ kind }: { kind: LessonSlug }) {
             ctx.fill();
           };
           for (const o of view.overlays) if (y(o.values[over] ?? lo2) >= top - 6 && y(o.values[over] ?? lo2) <= bottom + 6) dot(o, y);
+          if (cloud) for (const l of [{ values: cloud.a, tone: "teal" as const }, { values: cloud.b, tone: "gold" as const }]) if (y(l.values[over] ?? lo2) >= top - 6 && y(l.values[over] ?? lo2) <= bottom + 6) dot(l, y);
           if (lower && yl) for (const l of lower.lines) dot(l, yl);
         }
       },
@@ -1141,7 +1451,7 @@ export function IndicatorMachine({ kind }: { kind: LessonSlug }) {
     <div>
       <div className="grid items-start gap-21 lg:grid-cols-[minmax(0,1.618fr)_minmax(0,1fr)]">
         <div className="min-w-0">
-          <Stage draw={draw} ratio={1.5} rev={rev} />
+          <Stage draw={draw} ratio={setup.ratio ?? 1.5} rev={rev} />
           <ul className="mt-8 flex flex-wrap gap-x-13 gap-y-3 text-xs text-ink-3" aria-hidden>
             {view.legend.map((l) => (
               <li key={l.label} className="flex items-center gap-5">
@@ -1163,6 +1473,8 @@ export function IndicatorMachine({ kind }: { kind: LessonSlug }) {
           </dl>
           <Note>
             An invented chart: {CHART.shown} bars of a seeded random walk that starts at {CHART.start}, with {CHART.bars - CHART.shown} earlier bars, not drawn, so that every line is fully formed where the chart begins. Not a real instrument, not market data and not a forecast.
+            {view.volume ? " The volume is invented too: a figure in no unit, larger on the bars that covered more ground and otherwise left to chance. It is nobody’s trading." : ""}
+            {view.cloud ? " To the right of the last bar there are no prices; what is drawn there was worked out from the bars to its left." : ""}
           </Note>
         </div>
 

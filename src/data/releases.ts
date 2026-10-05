@@ -5,7 +5,19 @@
  * A new entry goes at the top.
  */
 export const RELEASES: readonly { id: string; title: string; href: string }[] = [
-  { id: "2026-10-05h", title: "Six more indicators in Chart school, and four new primers", href: "/chart-school" },
+  { id: "2026-10-05t", title: "An accessibility statement: what the site does, and its limits", href: "/accessibility" },
+  { id: "2026-10-05s", title: "On this day in markets: dated events from market history", href: "/on-this-day" },
+  { id: "2026-10-05r", title: "Three new primers: regulation, choosing a broker, trading myths", href: "/primers" },
+  { id: "2026-10-05q", title: "Risk management, in one place", href: "/risk" },
+  { id: "2026-10-05p", title: "Start here: a beginner’s roadmap in six stages", href: "/start-here" },
+  { id: "2026-10-05o", title: "Five more candlestick patterns in the Playbook", href: "/playbook#patterns" },
+  { id: "2026-10-05n", title: "A profile on every index and crypto-asset page", href: "/markets/indices" },
+  { id: "2026-10-05m", title: "Seven more central banks and monetary authorities", href: "/markets/central-banks" },
+  { id: "2026-10-05l", title: "Twenty more economic indicators, explained", href: "/markets/events" },
+  { id: "2026-10-05k", title: "Glossary flashcards, and a definition under every glossary link", href: "/glossary/flashcards" },
+  { id: "2026-10-05j", title: "Chart school: the Ichimoku cloud, on-balance volume and VWAP", href: "/chart-school" },
+  { id: "2026-10-05i", title: "The daily blog by tag and by author, and a search of it", href: "/intelligence/blog/tags" },
+  { id: "2026-10-05h",title: "Six more indicators in Chart school, and four new primers", href: "/chart-school" },
   { id: "2026-10-05g", title: "Question of the day, and a run of days", href: "/academy/question-of-the-day" },
   { id: "2026-10-05f", title: "Trading plan builder: your rules, in your words", href: "/trading-plan" },
   { id: "2026-10-05e", title: "Five more calculators: ruin, expectancy, break-even, lots, correlation", href: "/tools#method" },

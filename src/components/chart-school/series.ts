@@ -9,6 +9,9 @@
  * lean nowhere, quieter and faster spells, and a small jump between two bars
  * now and then. Where it goes next cannot be known from where it has been:
  * an indicator drawn on it describes the walk so far and nothing else.
+ *
+ * The volume (makeVolumes) is invented in the same way and for the same
+ * reason: it is nobody's trading, counted nowhere.
  */
 
 export type Bar = { o: number; h: number; l: number; c: number };
@@ -74,4 +77,30 @@ export function makeBars(seed: number, count: number = CHART.bars): Bar[] {
     out.push({ o: o / 100, h: h / 100, l: l / 100, c: p / 100 });
   }
   return out;
+}
+
+/** The invented volume: what a bar of no size at all would be given, and what each whole point of size adds, before chance. */
+export const VOLUME = { base: 400, perPoint: 1000 } as const;
+
+/**
+ * The volume of each bar of one chart number: as invented as the prices, and
+ * in no unit at all. It is drawn from a random stream of its own, begun from a
+ * different state, so that makeBars() uses its stream exactly as it always
+ * has and no price is changed by there being a volume.
+ *
+ * A bar's size is the distance it covered, the jump from the previous close
+ * included; its volume is that size scaled, then spread by chance between 0.6
+ * and 1.4 of it. Larger bars therefore tend to have larger volumes, and two
+ * bars of the same size seldom have the same one. Always a whole number, and
+ * never less than 1.
+ */
+export function makeVolumes(seed: number, bars: readonly Bar[] = makeBars(seed)): number[] {
+  let state = Math.imul((seed | 0) ^ 0x9e3779b9, 2246822519) >>> 0;
+  return bars.map((b, i) => {
+    const [v, s] = rand(state);
+    state = s;
+    const prev = i > 0 ? bars[i - 1]!.c : b.o;
+    const size = Math.max(b.h, prev) - Math.min(b.l, prev);
+    return Math.max(1, Math.round((VOLUME.base + VOLUME.perPoint * size) * (0.6 + 0.8 * v)));
+  });
 }

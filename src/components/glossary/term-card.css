@@ -1,0 +1,68 @@
+/* ---- THE GLOSSARY CARD (components/glossary/TermCard.tsx) --------------------
+   The small card that opens beside a glossary link: the term, its definition
+   and the way to the entry. It is placed in the page (not fixed to the
+   window), above or below the link and never over it, so it moves with the
+   text when the page is scrolled. It takes no part in print. */
+.gx-term-card {
+  position: absolute;
+  z-index: 60;
+  width: min(22rem, calc(100vw - 1rem));
+  border: 1px solid var(--line-strong);
+  border-radius: 5px;
+  background: var(--surface);
+  box-shadow: var(--elev-3);
+  padding: 0.8125rem;
+  color: var(--ink-2);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  text-align: left;
+}
+/* until it has been measured it is laid out but not shown, so it never flashes in the wrong place */
+.gx-term-card[data-placed="false"] {
+  visibility: hidden;
+}
+.gx-term-card-name {
+  color: var(--ink);
+  font-weight: 600;
+}
+.gx-term-card-text {
+  margin-top: 0.3125rem;
+  overflow-wrap: anywhere;
+}
+.gx-term-card-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 0.8125rem;
+  margin-top: 0.5rem;
+}
+/* opened by a tap: the two controls are the height a finger needs */
+.gx-term-card[data-touch="true"] .gx-term-card-foot > * {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .gx-term-card[data-placed="true"] {
+    animation: gx-term-card-in var(--t-fast) var(--ease-out) both;
+  }
+  [data-motion="reduced"] .gx-term-card[data-placed="true"] {
+    animation: none;
+  }
+}
+@keyframes gx-term-card-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media print {
+  .gx-term-card {
+    display: none !important;
+  }
+}

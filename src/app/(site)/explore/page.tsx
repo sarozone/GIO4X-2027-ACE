@@ -138,7 +138,13 @@ export default function ExplorePage() {
             <h2 id="start-h" className="h3">
               Starting routes
             </h2>
-            <span className="text-xs text-ink-3">Five ways in. The full directory follows.</span>
+            <span className="text-xs text-ink-3">
+              Five ways in. The full directory follows. For one route in order, see{" "}
+              <Link href="/start-here" className="link">
+                Start here
+              </Link>
+              .
+            </span>
           </div>
           <ul className="grid gap-x-34 sm:grid-cols-2 lg:grid-cols-5 lg:gap-x-21">
             {routes.map((r) => (

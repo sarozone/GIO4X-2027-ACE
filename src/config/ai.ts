@@ -38,5 +38,13 @@ export function aiModel(): AiModel {
   return AI_MODELS.find((m) => m.id === (ALSO[asked] ?? asked)) ?? AI_MODELS[0];
 }
 
+/**
+ * The model that is asked for English search words when a question in another
+ * language found nothing (src/lib/server/ai.ts, `searchWords`). Always the
+ * small model, whichever one writes the answers: it does not think before it
+ * replies, so thirty tokens are enough. Named on /trust/ai.
+ */
+export const AI_KEYWORD_MODEL: AiModel = AI_MODELS[0];
+
 /** The company whose model answers. Named on /trust/ai whenever the assistant is on. */
 export const AI_PROVIDER = "Anthropic";

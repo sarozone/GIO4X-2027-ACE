@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BlogCategoryLinks, BlogCategoryNav, BlogEmpty, BlogFormatNav, blogListHref, BlogListView, blogPostHref, BlogUnavailable } from "@/components/blog/BlogList";
+import { BlogSearchForm } from "@/components/blog/BlogBrowse";
 import { BlogSeriesBand } from "@/components/blog/BlogSeries";
 import { blogIso } from "@/components/blog/format";
 import { BLOG_FEED } from "@/components/blog/seo";
@@ -9,6 +10,7 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { NextSteps, PageHero } from "@/components/ui/Page";
 import { absoluteUrl } from "@/config/site";
 import { BLOG_CATEGORY_LABEL, BLOG_FORMAT_LABEL, BLOG_PATH, isBlogFormat } from "@/lib/blog";
+import { BLOG_TAGS_PATH } from "@/lib/blog-browse";
 import { pageMeta } from "@/lib/meta";
 import { webPageSchema } from "@/lib/schema";
 import { BLOG_MAX_PAGE, isBlogCategory, listPosts } from "@/lib/server/blog";
@@ -111,6 +113,8 @@ export default async function BlogPage({ searchParams }: Search) {
             {category ? `Posts in ${BLOG_CATEGORY_LABEL[category]}` : "Posts"}
             {page > 1 ? `, page ${page}` : ""}
           </h2>
+          {/* a search of the titles, excerpts and tags: it asks its own page (search/page.tsx), and this list is not changed by it */}
+          <BlogSearchForm id="blog-search" className="mb-21" />
           <BlogCategoryNav current={category} format={format} />
           {/* what kind of piece, beside what it is about: a second filter of the same list */}
           <div className="mt-13">
@@ -137,6 +141,9 @@ export default async function BlogPage({ searchParams }: Search) {
             <a href={FEED.url} className="link inline-flex min-h-[2.75rem] items-center" type="application/rss+xml">
               RSS feed
             </a>
+            <Link href={BLOG_TAGS_PATH} className="link inline-flex min-h-[2.75rem] items-center">
+              All tags
+            </Link>
             <Link href="/trust/editorial-standards" className="link inline-flex min-h-[2.75rem] items-center">
               Editorial standards
             </Link>

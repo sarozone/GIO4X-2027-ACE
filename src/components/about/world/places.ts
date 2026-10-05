@@ -95,6 +95,9 @@ const BANK_PLACE: Record<string, { left?: boolean; dy?: number }> = {
   fed: { dy: 5 },
   boc: { dy: -4 },
   rba: { left: true },
+  // Oslo beside Stockholm; Hong Kong's bank beside its exchange
+  "norges-bank": { left: true },
+  hkma: { left: true },
 };
 const BANKS: Place[] = centralBanks.map((b) => ({
   id: `bank-${b.slug}`,
