@@ -81,6 +81,22 @@ an asset class: `AssetClassKey` is unchanged, and the static `commodities` folde
 A to Z index (`src/data/az-extra.ts`), `llms.txt`, the hero scene map and `src/data/releases.ts`. The entries were
 written from general knowledge and should be read by a person before they are promoted.
 
+**Currency and economy profiles (added 5 October 2026).** `/markets/currencies` and `/markets/currencies/[code]`
+are generated from `src/data/currency-profiles.ts` (the address is the ISO code in lower case);
+`/markets/economies` and `/markets/economies/[slug]` from `src/data/economies.ts`. Both are general education and
+follow the commodities pattern: static folders served ahead of `markets/[class]`, `generateStaticParams`, a real
+404 for an unknown address, and `AssetClassKey` unchanged. The currency file holds no exchange rate, interest rate,
+statistic or forecast; the economy file holds no GDP figure, ranking, rate, percentage or date of data. Nothing
+about GIO4X is written by hand: the pairs that contain a currency (`currencyPairs`) and the index instruments of an
+economy (`economyIndices`) are read from `instruments.ts`, the issuer's Central Bank Watch link from
+`centralBanks`, and a release's explainer from `econEvents`, so a currency in no pair, an index that is not
+listed or a release without an explainer is shown as such and never linked. "Reserve currency", "safe haven" and
+the like are worded as descriptions people use. The index pages share `components/markets/ProfileFilter.tsx`.
+The knowledge graph is untouched: a `ccy:` node still resolves to its central bank's page. Registered in the
+navigation, the markets sitemap, the search index, the A to Z index, `llms.txt`, the hero scene map (the Markets
+scene) and `src/data/releases.ts`. The entries were written from general knowledge and should be read by a person
+before they are promoted.
+
 ## The knowledge graph
 
 `src/data/graph.ts` derives nodes and typed edges from the data modules (instruments, currencies, central

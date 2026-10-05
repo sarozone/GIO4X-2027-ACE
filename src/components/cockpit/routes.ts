@@ -74,6 +74,8 @@ const ROUTES: [prefix: string, scene: SceneId, ownTag?: string][] = [
   ["/scam-school", "decoy"],
   ["/journal", "ledger"],
   ["/guides", "meridian"],
+  // the market primers have no scene of their own: they open with the Academy's
+  ["/primers", "course"],
   ["/downloads", "sheets"],
   ["/a-z", "alphabet"],
   ["/academy/exams", "exam"],
@@ -93,6 +95,9 @@ const ROUTES: [prefix: string, scene: SceneId, ownTag?: string][] = [
   // the commodities A to Z has no scene of its own: it opens with the Markets instrument, and an energy or
   // precious-metal entry asks for its family's scene itself (see markets/commodities/[slug]/page.tsx)
   ["/markets/commodities", "markets"],
+  // the currency and economy profiles have no scene of their own either: both open with the Markets instrument
+  ["/markets/currencies", "markets"],
+  ["/markets/economies", "markets"],
   ["/markets", "markets"],
   ["/trading/accounts", "accounts"],
   ["/trading/conditions", "conditions"],

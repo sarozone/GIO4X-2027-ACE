@@ -512,6 +512,14 @@ const LOCAL_KEY_PURPOSE: Record<(typeof LOCAL_KEYS)[number], { holds: string; wh
     holds: "The trades you have written into the Trading journal, up to 500: for each, the date, the instrument, the side, the size, the entry, exit and optional stop prices, the result you typed, your two notes, a mood and whether you followed your plan.",
     why: "So your journal is still there the next time you open the page in this browser. It is written only when you add, change, import or delete a trade, it is never sent anywhere, and the key is removed when the journal is empty. The journal’s own CSV export is the backup.",
   },
+  "gx:plan": {
+    holds: "The answers you have typed into the Trading plan builder: a name and a date for the plan, and your own words on markets and times, risk per trade, a daily stop, exposure, entry and exit rules, routine and review. Text only, as you wrote it.",
+    why: "So your plan is still there the next time you open the page in this browser. It is written as you type, when you import a plan file and when you clear the plan; it is never sent anywhere, and the key is removed when every answer is empty. The builder’s own JSON export is the backup.",
+  },
+  "gx:qotd": {
+    holds: "The last day you answered the Academy’s question of the day, your run of days in a row, the longest run, and which answer you chose on that day and whether it was right. No addresses, no times and nothing about you.",
+    why: "So the question of the day can show your run on its own page, on the Academy page and on My desk, and show the same result if you open it again the same day. Written only when you answer the day’s question; “Start over” on that page removes it. There is no account and no leaderboard, and nothing is sent anywhere.",
+  },
   "gx:sim": {
     holds: "The state of the Practice desk simulation in Labs: its invented prices, the example account, example positions and orders, and the newest journal entries. No real prices, no real account and nothing about you.",
     why: "So a practice session survives a reload. Written only if you tick “Keep this practice session in this browser” on that page, which is off by default; unticking it deletes the key.",
@@ -525,8 +533,8 @@ const cookies: LegalDoc = {
   short: "Cookie Notice",
   category: "Privacy",
   summary: "Everything this website stores in your browser, key by key, and how to clear it. There are no advertising or analytics cookies; page views are counted as daily totals without a cookie or an identifier, and that can be switched off.",
-  version: "1.8",
-  updated: "4 October 2026",
+  version: "1.9",
+  updated: "5 October 2026",
   origin: "new",
   keywords: ["cookies", "local storage", "offline", "service worker", "cache storage", "tracking", "analytics", "advertising", "preferences", "consent"],
   sections: [

@@ -1,10 +1,26 @@
 "use client";
 
+import { useEffect } from "react";
+
 /**
  * Last-resort boundary for failures in the root layout itself. It cannot rely
  * on the design system being loaded, so it carries its own minimal styling.
  */
 export default function GlobalError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
+  // The commonest cause is a tab that was open across a new release: it asks for script files the
+  // new release no longer has. One fresh load of the page cures that, so it is tried once per
+  // address before this screen is left standing (the mark in sessionStorage stops a loop).
+  useEffect(() => {
+    try {
+      const key = `gx:reloaded:${window.location.pathname}`;
+      if (window.sessionStorage.getItem(key)) return;
+      window.sessionStorage.setItem(key, "1");
+      window.location.reload();
+    } catch {
+      /* storage is blocked: the screen stays, with its two buttons */
+    }
+  }, []);
+
   return (
     <html lang="en">
       <body style={{ margin: 0, fontFamily: "system-ui, -apple-system, Segoe UI, sans-serif", background: "#f6f4ee", color: "#14191d" }}>
@@ -16,7 +32,11 @@ export default function GlobalError({ reset }: { error: Error & { digest?: strin
             <p style={{ marginTop: "2rem", display: "flex", gap: "0.8rem" }}>
               <button
                 type="button"
-                onClick={() => reset()}
+                onClick={() => {
+                  // a full load rather than a re-render: stale script files are the usual cause
+                  reset();
+                  window.location.reload();
+                }}
                 style={{ height: 44, padding: "0 21px", border: 0, borderRadius: 3, background: "#14191d", color: "#f6f4ee", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", fontSize: 13, cursor: "pointer" }}
               >
                 Try again

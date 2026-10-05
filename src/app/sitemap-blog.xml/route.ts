@@ -1,5 +1,6 @@
 import { latest, urlsetResponse } from "@/lib/sitemap";
 import { sitemapEntries } from "@/lib/sitemap-data";
+import { BLOG_SERIES, blogSeriesPath } from "@/data/blog-series";
 import { BLOG_CATEGORIES, blogCategoryPath } from "@/lib/blog";
 import { blogPostPath, indexablePosts } from "@/lib/server/blog";
 
@@ -8,7 +9,8 @@ export const revalidate = 60;
 
 /**
  * The daily blog: the list page, the page of each category that has a post
- * listed here, and one URL per post that is public, not marked noindex and
+ * listed here, the page of each series that has a part listed here (dated by
+ * its newest part), and one URL per post that is public, not marked noindex and
  * canonical to itself. `lastmod` is the day the post last changed; a
  * category's is that of its newest post. When the project is not configured,
  * or the posts cannot be read, this is still a valid urlset (the list page
@@ -25,5 +27,10 @@ export async function GET() {
     const days = posts.filter((p) => p.category === c).map((p) => p.lastmod);
     return days.length ? [{ path: blogCategoryPath(c), lastmod: latest(days) }] : [];
   });
-  return urlsetResponse([{ ...list, lastmod: newest }, ...categories, ...posts.map((p) => ({ path: blogPostPath(p.slug), lastmod: p.lastmod }))]);
+  // a series with no part among these posts is not listed either, for the same reason
+  const series = BLOG_SERIES.flatMap((s) => {
+    const days = posts.filter((p) => s.parts.includes(p.slug)).map((p) => p.lastmod);
+    return days.length ? [{ path: blogSeriesPath(s.slug), lastmod: latest(days) }] : [];
+  });
+  return urlsetResponse([{ ...list, lastmod: newest }, ...categories, ...series, ...posts.map((p) => ({ path: blogPostPath(p.slug), lastmod: p.lastmod }))]);
 }

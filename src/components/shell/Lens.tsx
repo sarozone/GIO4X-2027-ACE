@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Rosette } from "@/components/brand/Rosette";
 import { loadSearchIndex, openCommandBar } from "@/components/shell/CommandBar";
-import { LensAsk, useAiAvailable, type Exchange } from "@/components/shell/LensAsk";
+import { LensAsk, useAiAvailable, type AskSeed, type Exchange } from "@/components/shell/LensAsk";
 import { search, type SearchEntry } from "@/lib/search";
 
 /**
@@ -26,6 +26,15 @@ import { search, type SearchEntry } from "@/lib/search";
 
 const OPEN_EVENT = "gx:lens";
 export const openLens = () => window.dispatchEvent(new Event(OPEN_EVENT));
+
+/**
+ * Opens the Lens on "Ask" with the cursor in the question box and, when a
+ * question is given, asks it. The same event as openLens, carrying a note of
+ * what is wanted. Only for controls that are themselves shown when the
+ * assistant is available (AskAi.tsx, the Help window): the Lens shows "Ask"
+ * to nobody else.
+ */
+export const openLensAsk = (question = "") => window.dispatchEvent(new CustomEvent<AskSeed>(OPEN_EVENT, { detail: { q: question } }));
 
 type GraphNode = { id: string; kind: string; label: string; href: string; blurb?: string };
 type GraphEdge = { from: string; to: string; text?: string };
@@ -108,19 +117,29 @@ export function Lens() {
   const [failed, setFailed] = useState(false);
   // the conversation with GIO4X AI: held here so it survives closing the panel, and gone on reload
   const [talk, setTalk] = useState<Exchange[]>([]);
+  // set when the Lens was opened by openLensAsk; handed to the "Ask" view, which clears it once it has acted on it
+  const [askSeed, setAskSeed] = useState<AskSeed | null>(null);
+  const clearAskSeed = useCallback(() => setAskSeed(null), []);
   const aiAvailable = useAiAvailable(open);
   const panelRef = useRef<HTMLDivElement>(null);
   const restoreRef = useRef<HTMLElement | null>(null);
 
   const close = useCallback(() => {
     setOpen(false);
+    setAskSeed(null);
     restoreRef.current?.focus?.();
   }, []);
 
   useEffect(() => {
-    const onOpen = () => {
+    const onOpen = (e: Event) => {
       restoreRef.current = document.activeElement as HTMLElement | null;
       setOpen(true);
+      // openLensAsk: straight to "Ask". A plain openLens leaves the view as it was.
+      const ask = e instanceof CustomEvent ? (e.detail as AskSeed | null) : null;
+      if (ask && typeof ask.q === "string") {
+        setTab("ask");
+        setAskSeed({ q: ask.q });
+      }
     };
     window.addEventListener(OPEN_EVENT, onOpen);
     return () => window.removeEventListener(OPEN_EVENT, onOpen);
@@ -129,6 +148,7 @@ export function Lens() {
   // a new page is a new context
   useEffect(() => {
     setOpen(false);
+    setAskSeed(null);
     setExplained(null);
     setRelated(null);
   }, [pathname]);
@@ -329,7 +349,7 @@ export function Lens() {
 
         {tab === "ask" && aiAvailable && (
           <div id="lens-ask" role="tabpanel">
-            <LensAsk pathname={pathname} talk={talk} setTalk={setTalk} />
+            <LensAsk pathname={pathname} talk={talk} setTalk={setTalk} seed={askSeed} onSeedUsed={clearAskSeed} />
           </div>
         )}
       </div>

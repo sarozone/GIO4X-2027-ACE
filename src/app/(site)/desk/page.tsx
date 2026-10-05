@@ -68,7 +68,7 @@ export default async function DeskPage() {
       <NextSteps
         items={[
           { kind: "Markets", label: "Market Command", note: "Find an instrument to watch.", href: "/markets" },
-          { kind: "Tools", label: "Trader Toolkit", note: "Fifteen calculators, most sharing your figures.", href: "/tools" },
+          { kind: "Tools", label: "Trader Toolkit", note: "Twenty calculators, most sharing your figures.", href: "/tools" },
           { kind: "Learn", label: "Glossary", note: "Terms, each with a question to check yourself.", href: "/glossary" },
           { kind: "Controls", label: "Display & privacy", note: "See and clear what this browser holds.", href: "/preferences" },
         ]}

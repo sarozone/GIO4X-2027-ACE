@@ -12,14 +12,14 @@ export const toolGroups: ToolGroup[] = [
     title: "Size the trade",
     question: "How large, and what does that commit?",
     note: "Start from the loss you are prepared to accept and work back to a size, then see what that size ties up and what each pip of it is worth.",
-    slugs: ["position-size", "risk-reward", "margin", "pip-value"],
+    slugs: ["position-size", "risk-reward", "margin", "pip-value", "lot-size-converter"],
   },
   {
     key: "cost",
     title: "Cost the trade",
     question: "What does it cost, and what would it return?",
     note: "Spread, commission and overnight financing added up line by line, the outcome between any two prices, and conversion at a published reference rate.",
-    slugs: ["cost-lab", "profit-loss", "currency-converter", "swap"],
+    slugs: ["cost-lab", "profit-loss", "currency-converter", "swap", "break-even"],
   },
   {
     key: "mechanics",
@@ -34,6 +34,13 @@ export const toolGroups: ToolGroup[] = [
     question: "Where do the conventional lines fall?",
     note: "Two sets of lines that chart users draw from prices already printed: pivot points from one finished bar, Fibonacci levels from one swing. Both are arithmetic on the past, and neither is a forecast.",
     slugs: ["pivot-points", "fibonacci-levels"],
+  },
+  {
+    key: "method",
+    title: "Weigh the method",
+    question: "What do the figures of many trades add up to?",
+    note: "Three pieces of arithmetic on a set of results, not on one trade: what a trade comes to on average, the approximate chance of a deep loss at a given risk, and how closely two series you supply have moved together. Each describes the numbers typed, and none is a forecast.",
+    slugs: ["expectancy", "risk-of-ruin", "correlation"],
   },
 ];
 
@@ -182,5 +189,52 @@ export const toolContent: Record<string, ToolContent> = {
       "GIO4X’s swap rates are not yet published on this site, so nothing here is prefilled: the rates are the ones your own platform shows. What is published is the “Overnight swap” line of each account type: “Applies” for Classic and Premium, and “Swap-free” for ECN.",
     ],
     context: { label: "Account types", href: "/trading/accounts", note: "The overnight swap line of each account, as published.", kind: "Trading" },
+  },
+  "risk-of-ruin": {
+    heading: "A long enough run of losses is always possible. The question is how likely.",
+    paragraphs: [
+      "Any method that sometimes loses can lose several times in a row. Risk of ruin puts a number on how much that matters: given how often the method wins, how large its wins are beside its losses, and how much of the balance each trade puts at risk, how likely is it that the account ever falls by a chosen share?",
+      "The figure on this page is an approximation, and it is called one wherever it appears. It supposes that every trade risks the same share of whatever the balance then is, that every loss is exactly that share and every win exactly the payoff ratio times it, that the win rate never changes, and that one trade tells you nothing about the next. On those terms the logarithm of the balance takes a random step each trade, and the chance of it ever falling a given distance has a short formula.",
+      "Real trading keeps none of those terms exactly. Results vary in size, losses come in clusters, a stop can be filled beyond its level, and a win rate measured on past trades is not a constant of nature. The figure is useful for seeing how steeply the chance of a deep loss rises with the share risked per trade. It is not a measurement of any account.",
+      "When the method’s average step is not upward, the approximation gives one hundred per cent for every level: with no drift to carry it away, the balance reaches any lower mark sooner or later.",
+    ],
+    context: { label: "Drawdown", href: "/tools/drawdown", note: "Why the loss this page asks about is harder to undo than to make.", kind: "Visualiser" },
+  },
+  expectancy: {
+    heading: "An average of what has happened, split into its parts.",
+    paragraphs: [
+      "Expectancy is the result of the average trade. Take the share of trades that gained and multiply it by the average gain; take the share that lost and multiply it by the average loss; subtract the second from the first, and then the cost of a trade if the averages were counted before costs. What is left is what one trade came to, on average.",
+      "Dividing it by the average loss turns it into a figure per unit risked, which lets two sets of trades of different sizes be compared. The break-even win rate comes from the same expression set to zero: the share of trades that must gain for these averages to come to nothing. Costs push it up, and the page shows it before and after them.",
+      "The four inputs are measurements of trades that are over. A win rate from thirty trades can be far from the one the next thirty will show, by chance alone, and an average says nothing about the order in which results arrive. A positive figure here is arithmetic on the past, not an edge to count on.",
+    ],
+    context: { label: "Trading journal", href: "/journal", note: "A private log that works these figures out from your own trades.", kind: "Journal" },
+  },
+  "break-even": {
+    heading: "A trade starts behind. This is how far.",
+    paragraphs: [
+      "A position opens at one price and is valued at another, so it begins with a small loss equal to the spread. Commission, where an account charges it, adds a fixed amount, and each night the position stays open adds or subtracts the swap. Break-even is the point at which the price has moved far enough in the position’s favour to cover all three.",
+      "The page turns each cost into a distance by dividing it by the value of one pip on the position. The size cancels out: twice the lots means twice the cost and twice the value of each pip, so the distance is the same. What changes it is the spread actually quoted, the commission, and how long the position is held.",
+      "No cost of GIO4X’s is filled in. The published “spread from” figures are minimums and the swap rates are not yet published, so the fields take the figures your own platform shows; what the account types publish is quoted beside them, as published.",
+    ],
+    context: { label: "Cost Lab", href: "/tools/cost-lab", note: "The same three costs, added up line by line and compared across account types.", kind: "Lab" },
+  },
+  "lot-size-converter": {
+    heading: "A lot is a number of units, and the number depends on the contract.",
+    paragraphs: [
+      "Sizes are quoted in lots so that a platform and a trader mean the same quantity. For a currency pair one standard lot is 100,000 units of the base currency by convention. A mini lot is a tenth of that and a micro lot a hundredth, so 0.01 lots and one micro lot are the same thing said two ways.",
+      "The ratios between standard, mini and micro never change. What a standard lot contains does: a lot of gold is counted in ounces, a lot of a share CFD in shares, and the number differs from one instrument and one broker to another. That is why the contract size is an input here, taken from the published contract description for the instruments this site lists and from your own platform for anything else.",
+      "Multiply the units by a price and the result is the notional value: the full value of what the position controls. Margin is a fraction of that figure and profit and loss are calculated on all of it, which is the reason to know it. The page supplies no price; the notional value appears when you type one.",
+    ],
+    context: { label: "Contract specifications", href: "/trading/specifications", note: "Every instrument’s published terms in one table.", kind: "Trading" },
+  },
+  correlation: {
+    heading: "One number for how closely two series have moved together.",
+    paragraphs: [
+      "Pearson’s coefficient runs from −1 to +1. At +1 every pair of values lies on one rising straight line; at −1 on a falling one; near zero there is no straight-line relationship to speak of. It is worked out from distances: how far each value sits from its own series’ average, multiplied pair by pair, added up, and scaled so that the units cancel.",
+      "The numbers are yours. This page fetches no prices and supplies none: paste two columns from your own records, in the same order and for the same dates. The starting figures are invented, and are there only so that every step of the working has something in it.",
+      "What is compared matters more than the formula. Two prices that both drifted upwards over a year correlate strongly even if they are unrelated, because both simply rose. Comparing the change from each value to the next removes that shared drift, and is the usual way to ask whether two markets move together from day to day. The page offers both and says which it used.",
+      "A coefficient describes the period it was measured over. It changes, sometimes quickly, and relationships that held for years have broken in a week. It says nothing about why two series moved together, and it is not a forecast that they will.",
+    ],
+    context: { label: "Currency strength", href: "/markets/currency-strength", note: "How the eight majors have moved against one another in reference rates.", kind: "Markets" },
   },
 };

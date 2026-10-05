@@ -12,6 +12,7 @@ import { GUIDES } from "@/data/guides";
 import { HISTORY } from "@/data/history";
 import { INVESTING } from "@/data/investing";
 import { MONEY } from "@/data/money";
+import { PRIMERS } from "@/data/primers";
 import { SCAMS } from "@/data/scams";
 import { STRATEGIES } from "@/data/strategies";
 
@@ -32,4 +33,5 @@ export const SECTION_PAGES: readonly SectionPage[] = [
   ...pages("/history", "History", ["history", "crash", "bubble", "crisis"], HISTORY),
   ...pages("/scam-school", "Scam", ["scam", "fraud", "warning signs"], SCAMS),
   ...pages("/guides", "Region guide", ["market hours", "trading hours", "time zone", "sessions"], GUIDES),
+  ...pages("/primers", "Primer", ["primer", "explained", "how it works", "how markets work"], PRIMERS),
 ];

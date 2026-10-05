@@ -7,6 +7,7 @@ import { AccountsTable, AssetIndex, IntelligenceTeaser, Philosophy, PlatformsCha
 import { SessionStrip } from "@/components/market/SessionStrip";
 import { WeeklyVerse } from "@/components/play/Extras";
 import { RiddleSection, TermSection } from "@/components/play/RiddleSection";
+import { AskAiBox } from "@/components/shell/AskAi";
 import { SectionHead } from "@/components/ui/Page";
 import { PunchLine } from "@/components/ui/PunchLine";
 import { site } from "@/config/site";
@@ -42,6 +43,8 @@ export default function HomePage() {
     <>
       <Hero />
       <SessionStrip />
+      {/* a second quiet strip, only while GIO4X AI is available: a question box that opens the Lens. Not a chapter of the story. */}
+      <AskAiBox className="hairline-b" />
       <Philosophy />
       <AssetIndex />
       <MarketToRaptor />

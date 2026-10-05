@@ -5,8 +5,9 @@ import { blogPostMetadata, blogPostSchema } from "@/components/blog/seo";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { NextSteps } from "@/components/ui/Page";
 import { absoluteUrl } from "@/config/site";
+import { seriesNeighbours, seriesOfPost } from "@/data/blog-series";
 import { BLOG_PATH, isBlogSlug } from "@/lib/blog";
-import { blogCover, blogPostPath, getPost, movedPost, neighbours, relatedPosts } from "@/lib/server/blog";
+import { blogCover, blogPostPath, getPost, movedPost, neighbours, relatedPosts, seriesPosts } from "@/lib/server/blog";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -49,12 +50,16 @@ export default async function BlogPostPage({ params }: Params) {
 
   const cover = blogCover(post);
   // the posts on either side and the related ones are asked for together; a read that fails leaves its block out, never the post
-  const [around, alike] = await Promise.all([neighbours(post), relatedPosts(post)]);
+  // a part of a series (src/data/blog-series.ts) also asks which of the other parts are public; a post that is in no series asks nothing more
+  const place = seriesOfPost(post.slug);
+  const [around, alike, parts] = await Promise.all([neighbours(post), relatedPosts(post), place ? seriesPosts(place.series.parts) : null]);
+  // when the parts cannot be read the line at the head still stands (it needs no read), without a part before or after
+  const series = place ? { place, around: seriesNeighbours(place.series, post.slug, parts?.state === "ok" ? parts.posts : []) } : null;
 
   return (
     <>
       <JsonLd data={blogPostSchema(post, cover)} />
-      <BlogPostView post={post} cover={cover} previous={around.state === "ok" ? around.previous : null} next={around.state === "ok" ? around.next : null} related={alike.state === "ok" ? alike.posts : []} url={absoluteUrl(blogPostPath(post.slug))} />
+      <BlogPostView post={post} cover={cover} previous={around.state === "ok" ? around.previous : null} next={around.state === "ok" ? around.next : null} related={alike.state === "ok" ? alike.posts : []} series={series} url={absoluteUrl(blogPostPath(post.slug))} />
       <NextSteps
         items={[
           { kind: "Daily blog", label: "All posts", href: BLOG_PATH, note: "Every post, newest first." },

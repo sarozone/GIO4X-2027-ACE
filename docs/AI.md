@@ -21,13 +21,36 @@ available to them): see "Before it is switched on" at the end.
 a model is answering. Page, panel and endpoint all read the one built-in value. There is no switch in
 GIO4X Control yet.
 
-When it is off the site is exactly as it was: no "Ask" tab, no request to `/api/ai` from any page, the
-Lens footer says "No AI model", `/trust/ai` says "Not live".
+When it is off the site is exactly as it was: no "Ask" tab, none of the ways in listed in section 1a, no
+request to `/api/ai` from any page, the Lens footer says "No AI model", `/trust/ai` says "Not live".
+
+## 1a. Where a visitor finds it
+
+The assistant answers in one place, the Lens's "Ask" view. Everything else is a signpost that opens the
+Lens on that view with the cursor in the question box (`openLensAsk` in `Lens.tsx`):
+
+| Where | What | File |
+|---|---|---|
+| Site header | "Ask AI". The mark alone from 640px (not between 1080 and 1215px, where the row is full), the words from 1280px | `AskAiButton` in `AskAi.tsx`, placed by `SiteHeader.tsx` |
+| Menu on a phone or tablet | "Ask GIO4X AI", under Sign in and Open account | `SiteHeader.tsx` |
+| Help button (bottom corner) | "Ask GIO4X AI", first in the Help window; and above the form of a live chat that has not started | `AskAiOption` in `ChatWidget.tsx` |
+| Homepage, Help & FAQ | A question box with four suggestions; a question asked there is asked in the Lens | `AskAiBox` in `AskAi.tsx` |
+| The "Ask" view, before anything is asked | Three suggestions, by the part of the site the page is in | `ask-suggestions.ts` |
+| The Lens button in the header | As before: the "Ask" tab is the fourth view | `Lens.tsx` |
+
+None of them is drawn until the server has said the assistant is available, so on a page as it is first
+rendered they are absent on the server and in the browser alike. The header label is English on the
+translated pages too (`src/i18n/shell.ts` was not extended).
+
+The suggestions are questions the published pages answer (a glossary term, a tool, a platform, market
+hours, where a document is). Do not add one that asks for advice, a forecast or a fact GIO4X has not
+published: the assistant would have to decline its own suggestion.
 
 ## 2. What happens to a question
 
-1. The visitor opens the Lens. Only if the build has the assistant on, the panel asks `GET /api/ai` once
-   per page load; if the answer is `available: true` the "Ask" tab appears.
+1. Only if the build has the assistant on, the page asks `GET /api/ai` once per page load (the header
+   asks as the page loads; the Lens, the Help window and the question boxes share that one answer). If
+   it is `available: true` the ways in (section 1a) appear, and so does the "Ask" tab when the Lens is opened.
 2. The question goes to `POST /api/ai` on this site. The browser never talks to the provider, so the
    Content-Security-Policy is unchanged (`connect-src 'self'` and the Supabase project).
 3. The endpoint (`src/app/api/ai/route.ts`) checks, in this order, and stops at the first that fails:
@@ -166,4 +189,6 @@ That makes misuse harder. It does not make it impossible.
 | `src/lib/server/ai.ts` | The provider call and the answer stream. The only reader of the key |
 | `src/app/api/ai/route.ts` | The endpoint |
 | `src/components/shell/LensAsk.tsx` | The "Ask" tab |
+| `src/components/shell/AskAi.tsx` | The ways in: the header's "Ask AI" button and the question box |
+| `src/components/shell/ask-suggestions.ts` | The suggested questions, by section of the site |
 | `src/app/(site)/trust/ai/page.tsx` | The public statement, in both states |

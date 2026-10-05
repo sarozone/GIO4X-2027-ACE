@@ -18,4 +18,9 @@ export const toolRhymes: Record<string, readonly [string, string]> = {
   "pivot-points": ["High and low and close, combined:", "seven lines, and none divined."],
   "fibonacci-levels": ["A swing, a ratio and a line:", "a place to look, and not a sign."],
   swap: ["Hold it past the close of day:", "a little comes, or goes away."],
+  "risk-of-ruin": ["Risk a little, trade by trade:", "see how far a run can fade."],
+  expectancy: ["Wins and losses, weighed and summed:", "what the average trade has come."],
+  "break-even": ["Spread and fee and nights to pay:", "so far the price must go your way."],
+  "lot-size-converter": ["Standard, mini, micro, small:", "the same amount, in units all."],
+  correlation: ["Two that rise and fall as one:", "a measure made, a cause not shown."],
 };

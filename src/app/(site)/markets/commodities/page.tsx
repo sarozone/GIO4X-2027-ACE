@@ -180,6 +180,13 @@ export default function Page() {
             <p>
               Only the {TRADED_COMMODITIES.length} commodities marked “Traded at GIO4X” are GIO4X instruments. Every other entry says plainly that it is not offered. {educationalNote}
             </p>
+            <p>
+              How a raw material is traded at all (the spot market, futures and CFDs, contango and backwardation, rollover, seasons and delivery) is set out on one page:{" "}
+              <Link href="/primers/how-commodities-trade" className="underline decoration-line-strong underline-offset-4 transition-colors duration-fast hover:text-accent">
+                How commodities trade
+              </Link>
+              .
+            </p>
           </div>
         </div>
       </section>

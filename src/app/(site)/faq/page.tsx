@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { FaqBrowser } from "@/components/knowledge/FaqBrowser";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { AskAiBox } from "@/components/shell/AskAi";
 import { NextSteps, PageHero } from "@/components/ui/Page";
 import { site } from "@/config/site";
 import { faqPlainText } from "@/lib/faq";
@@ -43,6 +44,9 @@ export default async function FaqPage() {
             : `${settled.length} answers on how trading works and how an account is opened and funded.`
         }
       />
+
+      {/* a question box for GIO4X AI, only while the assistant is available: the answer opens in the Lens, labelled as a language model's */}
+      <AskAiBox />
 
       <FaqBrowser categories={faqCategories} items={faqs} />
 

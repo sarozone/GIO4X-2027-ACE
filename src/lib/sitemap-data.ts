@@ -3,6 +3,8 @@ import { SECTION_PAGES } from "@/data/sections";
 import { nav, secondaryNav } from "@/config/nav";
 import { articles } from "@/data/articles";
 import { COMMODITIES, commodityHref } from "@/data/commodities";
+import { CURRENCY_PROFILES, currencyProfileHref } from "@/data/currency-profiles";
+import { ECONOMIES, economyHref } from "@/data/economies";
 import { lessons } from "@/data/academy";
 import { glossary } from "@/data/glossary";
 import { assetClasses, instrumentHref, instruments } from "@/data/instruments";
@@ -55,6 +57,9 @@ export function sitemapEntries(name: SitemapName): SitemapEntry[] {
         ...econEvents.map((e) => ({ path: `/markets/events/${e.slug}`, lastmod: CONTENT_REVISED })),
         // the commodities A to Z: its index comes from the navigation, its pages from the data
         ...COMMODITIES.map((c) => ({ path: commodityHref(c), lastmod: CONTENT_REVISED })),
+        // the currency and economy profiles: their indexes come from the navigation, their pages from the data
+        ...CURRENCY_PROFILES.map((c) => ({ path: currencyProfileHref(c), lastmod: CONTENT_REVISED })),
+        ...ECONOMIES.map((e) => ({ path: economyHref(e), lastmod: CONTENT_REVISED })),
       ];
     case "instruments":
       return instruments.map((i) => ({ path: instrumentHref(i), lastmod: CONTENT_REVISED }));
@@ -69,7 +74,7 @@ export function sitemapEntries(name: SitemapName): SitemapEntry[] {
         ...articles.map((a) => ({ path: `/intelligence/${a.slug}`, lastmod: a.updated ?? a.published })),
       ];
     case "academy":
-      return [{ path: "/academy", lastmod: CONTENT_REVISED }, { path: "/academy/books", lastmod: CONTENT_REVISED }, { path: "/academy/practice", lastmod: CONTENT_REVISED }, { path: "/academy/first-trade", lastmod: CONTENT_REVISED }, { path: "/academy/leverage-story", lastmod: CONTENT_REVISED }, { path: "/academy/cheat-sheets", lastmod: CONTENT_REVISED }, { path: "/academy/exams", lastmod: CONTENT_REVISED }, { path: "/academy/trader-type", lastmod: CONTENT_REVISED }, ...PLAYBOOK.map((p) => ({ path: `/playbook/${p.slug}`, lastmod: CONTENT_REVISED })), ...lessons.map((l) => ({ path: `/academy/${l.slug}`, lastmod: l.updated ?? l.published }))];
+      return [{ path: "/academy", lastmod: CONTENT_REVISED }, { path: "/academy/books", lastmod: CONTENT_REVISED }, { path: "/academy/practice", lastmod: CONTENT_REVISED }, { path: "/academy/first-trade", lastmod: CONTENT_REVISED }, { path: "/academy/leverage-story", lastmod: CONTENT_REVISED }, { path: "/academy/cheat-sheets", lastmod: CONTENT_REVISED }, { path: "/academy/exams", lastmod: CONTENT_REVISED }, { path: "/academy/question-of-the-day", lastmod: CONTENT_REVISED }, { path: "/academy/trader-type", lastmod: CONTENT_REVISED }, ...PLAYBOOK.map((p) => ({ path: `/playbook/${p.slug}`, lastmod: CONTENT_REVISED })), ...lessons.map((l) => ({ path: `/academy/${l.slug}`, lastmod: l.updated ?? l.published }))];
     case "blog":
       // the list page only: the posts are rows in the database and are added by /sitemap-blog.xml itself, with the page of each category that has a post
       return [{ path: "/intelligence/blog", lastmod: CONTENT_REVISED }];

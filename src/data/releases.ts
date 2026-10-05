@@ -5,6 +5,13 @@
  * A new entry goes at the top.
  */
 export const RELEASES: readonly { id: string; title: string; href: string }[] = [
+  { id: "2026-10-05h", title: "Six more indicators in Chart school, and four new primers", href: "/chart-school" },
+  { id: "2026-10-05g", title: "Question of the day, and a run of days", href: "/academy/question-of-the-day" },
+  { id: "2026-10-05f", title: "Trading plan builder: your rules, in your words", href: "/trading-plan" },
+  { id: "2026-10-05e", title: "Five more calculators: ruin, expectancy, break-even, lots, correlation", href: "/tools#method" },
+  { id: "2026-10-05d", title: "Economy profiles: the economies behind the currencies", href: "/markets/economies" },
+  { id: "2026-10-05c", title: "Currency profiles: who issues each, and what moves it", href: "/markets/currencies" },
+  { id: "2026-10-05b", title: "Market primers: bonds, funds, orders and how markets work", href: "/primers" },
   { id: "2026-10-05a", title: "Commodities A to Z: from aluminium to zinc", href: "/markets/commodities" },
   { id: "2026-10-04m", title: "Pivot points, Fibonacci levels and swap calculators", href: "/tools" },
   { id: "2026-10-04l", title: "Trading hours and market holidays", href: "/trading/hours" },

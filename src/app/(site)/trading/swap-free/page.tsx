@@ -146,7 +146,11 @@ export default function SwapFreePage() {
             <p className="lead">Swap is worked out from interest rates. For some people, paying interest or receiving it is not permitted by their religious belief, whichever way it runs and however small it is.</p>
             <p>The best-known case is Islamic finance, in which interest is prohibited, and that is why an account without swap is so often called an Islamic account. A person in that position cannot hold an ordinary account overnight without the account doing something they may not do. A swap-free account removes that one thing.</p>
             <p>
-              This page describes how such an account works. It gives no religious ruling and does not say that any account, GIO4X’s included, meets any particular requirement. Whether an account meets a person’s own requirements is for them and their own adviser to decide.
+              This page describes how such an account works. It gives no religious ruling and does not say that any account, GIO4X’s included, meets any particular requirement. Whether an account meets a person’s own requirements is for them and their own adviser to decide. The ideas behind the question, and the points on which opinion differs, are set out in the primer on{" "}
+              <Link href="/primers/islamic-finance-and-trading" className="link">
+                Islamic finance and trading
+              </Link>
+              .
             </p>
           </div>
         </div>

@@ -5,10 +5,12 @@ import { SideBlock } from "@/components/knowledge/Reader";
 import { Share } from "@/components/knowledge/Share";
 import { PageHero } from "@/components/ui/Page";
 import { educationalNote, riskWarning } from "@/config/legal";
+import type { BlogSeriesPlace } from "@/data/blog-series";
 import { BLOG_CATEGORY_LABEL, BLOG_FORMAT_LABEL, BLOG_PATH, blogCategoryPath, readingMinutes } from "@/lib/blog";
 import type { BlogCard, BlogCover, BlogNeighbour, BlogPost } from "@/lib/server/blog";
 import { BlogBody, blogHeadings } from "./BlogBody";
 import { BlogCards, BlogCoverImage, blogListHref, blogPostHref } from "./BlogList";
+import { BlogSeriesLine, BlogSeriesNav, type BlogSeriesAround } from "./BlogSeries";
 import { blogIso, blogLongDate, blogShortDate } from "./format";
 import "@/components/knowledge/knowledge.css";
 
@@ -57,6 +59,7 @@ export function BlogPostView({
   previous,
   next,
   related = [],
+  series = null,
   url,
 }: {
   post: BlogPost;
@@ -67,6 +70,8 @@ export function BlogPostView({
   next: BlogNeighbour | null;
   /** up to three other posts, already chosen and ordered (see relatedPosts); with none, the block is not there */
   related?: BlogCard[];
+  /** when the post is a part of a series: its place there, and the public parts before and after it (see seriesOfPost) */
+  series?: { place: BlogSeriesPlace; around: BlogSeriesAround } | null;
   /** the post's absolute address, for sharing */
   url: string;
 }) {
@@ -96,6 +101,7 @@ export function BlogPostView({
       <div className="wrap section-quiet">
         <div className="grid grid-cols-[minmax(0,1fr)] gap-55 lg:grid-cols-[minmax(0,1fr)_minmax(0,21rem)] lg:gap-89">
           <article id="reading" className="min-w-0">
+            {series && <BlogSeriesLine place={series.place} className="mb-5" />}
             <p className="flex max-w-measure flex-wrap items-center gap-x-21 gap-y-5 border-b border-line pb-21 text-sm text-ink-3">
               <span className="font-medium text-ink-2">{post.byline}</span>
               {reviewer && (
@@ -178,6 +184,8 @@ export function BlogPostView({
                 <BlogCards posts={related} columns="sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3" />
               </section>
             )}
+
+            {series && <BlogSeriesNav place={series.place} around={series.around} />}
 
             <nav aria-label="More posts" className="no-print mt-55 border-t border-line-strong">
               {(previous || next) && (

@@ -44,6 +44,7 @@ export const nav: NavSection[] = [
           { label: "Overview", href: "/markets", note: "Sessions, reference rates, structure" },
           { label: "World Market Clock", href: "/markets/clock", note: "Who is open right now" },
           { label: "Currency Strength", href: "/markets/currency-strength", note: "ECB reference data" },
+          { label: "Currency profiles", href: "/markets/currencies", note: "Who issues each, and what moves it" },
           { label: "Market hours by region", href: "/guides", note: "The trading day on your own clock" },
         ],
       },
@@ -52,6 +53,7 @@ export const nav: NavSection[] = [
         items: [
           { label: "Central Bank Watch", href: "/markets/central-banks", note: "Who sets rates, and how" },
           { label: "Economic Events", href: "/markets/events", note: "What the releases mean" },
+          { label: "Economy profiles", href: "/markets/economies", note: "The economies behind the currencies" },
           { label: "Market history", href: "/history", note: "Eleven crashes and bubbles, 1637 to 2020" },
           { label: "Commodities A to Z", href: "/markets/commodities", note: "From aluminium to zinc, explained" },
         ],
@@ -90,7 +92,7 @@ export const nav: NavSection[] = [
       {
         title: "Trader Toolkit",
         items: [
-          { label: "All tools", href: "/tools", note: "Fifteen calculators and visualisers" },
+          { label: "All tools", href: "/tools", note: "Twenty calculators and visualisers" },
           { label: "Position Size", href: "/tools/position-size", note: "Size from risk and stop" },
           { label: "Pip Value", href: "/tools/pip-value", note: "What one pip is worth" },
           { label: "Margin", href: "/tools/margin", note: "What a position sets aside" },
@@ -104,6 +106,7 @@ export const nav: NavSection[] = [
         title: "Plan and review",
         items: [
           { label: "Trading journal", href: "/journal", note: "A private log kept in your browser" },
+          { label: "Trading plan builder", href: "/trading-plan", note: "Your rules in your words, to print" },
           { label: "Strategy library", href: "/strategies", note: "Twelve approaches, described" },
           { label: "Side by side", href: "/side-by-side", note: "Order types, instruments, costs" },
           { label: "Downloads", href: "/downloads", note: "Printable plan and checklists" },
@@ -201,6 +204,7 @@ export const nav: NavSection[] = [
           { label: "Leverage, in six steps", href: "/academy/leverage-story", note: "A story told as you scroll" },
           { label: "Practice room", href: "/academy/practice", note: "Build an order, fix a ticket" },
           { label: "Level exams", href: "/academy/exams", note: "A short exam for each level" },
+          { label: "Question of the day", href: "/academy/question-of-the-day", note: "One a day, and a run of days" },
           { label: "What kind of trader are you?", href: "/academy/trader-type", note: "Ten questions on how you work" },
         ],
       },
@@ -210,7 +214,8 @@ export const nav: NavSection[] = [
           { label: "Investing", href: "/investing", note: "Stocks, bonds, ETFs, funds, options" },
           { label: "Investor case studies", href: "/investing/case-studies", note: "How professionals decide, with sources" },
           { label: "Money calculators", href: "/money", note: "Saving, retirement, loans, inflation" },
-          { label: "Chart school", href: "/chart-school", note: "Eight indicators, with the sums" },
+          { label: "Market primers", href: "/primers", note: "Bonds, funds, orders, microstructure" },
+          { label: "Chart school", href: "/chart-school", note: "Indicators, with the sums" },
           { label: "Chart patterns", href: "/chart-school/patterns", note: "Shapes that draw themselves" },
           { label: "The Playbook", href: "/playbook", note: "Candles and situations" },
           { label: "Scam school", href: "/scam-school", note: "How frauds work, and a checklist" },
@@ -305,6 +310,7 @@ export const secondaryNav: NavGroup[] = [
       { label: "Designing GIO4X", href: "/design" },
       { label: "What’s new", href: "/whats-new" },
       { label: "Explore GIO4X", href: "/explore" },
+      { label: "Sitemap", href: "/explore/sitemap" },
     ],
   },
 ];

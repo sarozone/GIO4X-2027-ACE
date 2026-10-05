@@ -18,7 +18,7 @@ import { faqSchema, webPageSchema } from "@/lib/schema";
  */
 
 const DESCRIPTION =
-  "Chart school: technical indicators explained one page each, with the arithmetic shown. Moving averages, RSI, MACD, Bollinger Bands, ATR, the stochastic oscillator, support and resistance, and trend lines: what each measures, how it is calculated step by step, how people read it and what it cannot tell you. Every chart is invented.";
+  "Chart school: technical indicators explained one page each, with the arithmetic shown. Moving averages, RSI, MACD, Bollinger Bands, ATR, the stochastic oscillator, ADX, parabolic SAR, CCI, Williams %R, Donchian and Keltner channels, support and resistance, and trend lines: what each measures, how it is calculated step by step, how people read it and what it cannot tell you. Every chart is invented.";
 
 export const metadata = pageMeta({ title: "Chart school: technical indicators explained, with the arithmetic", description: DESCRIPTION, path: "/chart-school" });
 
@@ -84,7 +84,7 @@ export default function Page() {
           </p>
           <p className="eyebrow mt-8">The indicators</p>
           <h2 id="indicators-h" className="h2 mt-13 max-w-[24ch]">
-            Eight sums, shown in full.
+            Every sum, shown in full.
           </h2>
           <p className="lead mt-13 max-w-measure">Each page gives the formula step by step, works a small example by hand and then lets you change the settings on an invented chart to see the line respond.</p>
           <ul className="mt-34 grid gap-13 sm:grid-cols-2 lg:grid-cols-4">

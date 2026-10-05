@@ -25,6 +25,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent, type Ref } from "react";
+import { openLensAsk } from "@/components/shell/Lens";
+import { useAiAvailable } from "@/components/shell/LensAsk";
 import { getBrowserSupabase } from "@/lib/supabase/browser";
 import type { ChatPublicPoll, ChatStatus } from "@/lib/supabase/types";
 
@@ -230,7 +232,21 @@ const AWAY_LINKS = [
   { href: "/faq", title: "Read the common questions", note: "Answers that need no waiting." },
 ] as const;
 
-export function ChatAwayPanel({ onClose }: { onClose?: () => void }) {
+/**
+ * The other way to get an answer, offered beside the human ones while GIO4X AI
+ * is available (and absent otherwise): it opens the Lens on "Ask". It is named
+ * for what it is, a language model, so nobody takes it for the chat desk.
+ */
+function AskAiOption({ onAskAi }: { onAskAi: () => void }) {
+  return (
+    <button type="button" onClick={onAskAi} className="block w-full rounded-md border border-line bg-paper px-13 py-8 text-left transition-colors hover:border-line-strong">
+      <span className="block text-sm font-semibold text-ink">Ask GIO4X AI</span>
+      <span className="mt-3 block text-xs leading-snug text-ink-3">A language model that answers from GIO4X&rsquo;s own pages, straight away. Not advice, and not a member of staff.</span>
+    </button>
+  );
+}
+
+export function ChatAwayPanel({ onClose, onAskAi }: { onClose?: () => void; /** given only while GIO4X AI is available */ onAskAi?: () => void }) {
   const uid = useId();
   return (
     <section
@@ -253,6 +269,11 @@ export function ChatAwayPanel({ onClose }: { onClose?: () => void }) {
         </button>
       </header>
       <ul className="flat grid gap-8 overflow-y-auto px-21 py-13">
+        {onAskAi && (
+          <li>
+            <AskAiOption onAskAi={onAskAi} />
+          </li>
+        )}
         {AWAY_LINKS.map((l) => (
           <li key={l.href}>
             <Link href={l.href} onClick={onClose} className="block rounded-md border border-line bg-paper px-13 py-8 transition-colors hover:border-line-strong">
@@ -293,6 +314,8 @@ export type ChatPanelProps = {
   onEnd?: () => void;
   onRestart?: () => void;
   onClose?: () => void;
+  /** given only while GIO4X AI is available: offered before a chat is started, never during one */
+  onAskAi?: () => void;
 };
 
 const NOTICE_TEXT: Record<Exclude<ChatNotice, "unavailable">, string> = {
@@ -307,7 +330,7 @@ const NOTICE_TEXT: Record<Exclude<ChatNotice, "unavailable">, string> = {
  * be looked at with fixture data. A labelled region, not a modal: the page
  * behind stays usable and focus is never trapped. Escape closes it.
  */
-export function ChatPanel({ phase, status, joined, messages, endedHere, notice, busy, canRestart, onStart, onSend, onEnd, onRestart, onClose }: ChatPanelProps) {
+export function ChatPanel({ phase, status, joined, messages, endedHere, notice, busy, canRestart, onStart, onSend, onEnd, onRestart, onClose, onAskAi }: ChatPanelProps) {
   const uid = useId();
   const [name, setName] = useState("");
   const [draft, setDraft] = useState("");
@@ -396,6 +419,7 @@ export function ChatPanel({ phase, status, joined, messages, endedHere, notice, 
       )}
 
       <div className="grid gap-13 px-21 py-13">
+        {phase === "compose" && onAskAi && <AskAiOption onAskAi={onAskAi} />}
         {notice === "unavailable" ? (
           <p role="alert" className="border-l-2 border-l-neg pl-13 text-sm text-ink">
             Live chat has just become unavailable, so your message was not sent. Please use the{" "}
@@ -525,6 +549,8 @@ export function ChatWidget() {
   const [busy, setBusy] = useState(false);
   /** id of the newest message the visitor has had in front of them */
   const [seen, setSeen] = useState(0);
+  // GIO4X AI, when there is one: the Help and chat windows then offer it beside the human routes
+  const ai = useAiAvailable(true);
 
   const sessionRef = useRef<Session | null>(null);
   const afterRef = useRef(0);
@@ -775,6 +801,12 @@ export function ChatWidget() {
     if (notice === "unavailable") setNotice(null);
   };
 
+  /** Closes this window as its Close button does, then opens the Lens on "Ask": once the launcher has the focus back, so that is where it returns afterwards. */
+  const askAi = () => {
+    close();
+    window.setTimeout(() => openLensAsk(), 0);
+  };
+
   /* ---- unread, and where focus goes ---- */
   const newest = thread.messages.length ? thread.messages[thread.messages.length - 1].id : 0;
   useEffect(() => {
@@ -798,7 +830,7 @@ export function ChatWidget() {
     return <ChatLauncher buttonRef={launcherRef} unread={unread} ongoing={!!session} away={away} onOpen={() => setOpen(true)} />;
   }
 
-  if (away) return <ChatAwayPanel onClose={close} />;
+  if (away) return <ChatAwayPanel onClose={close} onAskAi={ai ? askAi : undefined} />;
 
   return (
     <ChatPanel
@@ -815,6 +847,7 @@ export function ChatWidget() {
       onEnd={() => void end()}
       onRestart={restart}
       onClose={close}
+      onAskAi={ai ? askAi : undefined}
     />
   );
 }

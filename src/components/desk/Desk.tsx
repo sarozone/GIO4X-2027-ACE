@@ -12,6 +12,7 @@ import { isRateCurrency } from "@/lib/rates";
 import { DeskTransfer } from "./DeskTransfer";
 import { InstallApp } from "./InstallApp";
 import { Journey } from "./Journey";
+import { QuestionCard } from "@/components/academy/qotd/QuestionCard";
 import { Constellation } from "@/components/play/Extras";
 import { Passport } from "@/components/play/Passport";
 import { Milestones } from "./Milestones";
@@ -663,6 +664,8 @@ export function Desk({ data }: { data: DeskData }) {
 
       <Block id="learning" title="Learning" lead="Glossary questions answered and Academy lessons completed.">
         <Learning data={data} />
+        {/* the Academy's question of the day: its run of days is read from this browser, like everything else here */}
+        <QuestionCard className="mt-21" />
       </Block>
 
       <Block

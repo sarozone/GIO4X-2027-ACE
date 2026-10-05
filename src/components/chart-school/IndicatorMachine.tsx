@@ -4,7 +4,7 @@ import { useMemo, useRef, useState } from "react";
 import { clamp, rgba, smooth, TAU, type Colour, type FigureDraw, type Palette } from "@/components/figures/Figure";
 import { ALERT, Note, Slider, Stage } from "@/components/labs/kit";
 import type { LessonSlug } from "@/data/chart-school";
-import { atr, bollinger, ema, levels, lineThrough, macd, rsiParts, sma, stochastic, swings, trueRange, type Series } from "./indicators";
+import { adx, atr, bollinger, cci, donchian, ema, keltner, levels, lineThrough, macd, parabolicSar, rsiParts, sma, stochastic, swings, trueRange, williamsR, type Series } from "./indicators";
 import { CHART, makeBars, type Bar } from "./series";
 
 /**
@@ -37,6 +37,8 @@ type View = {
   rays?: { x1: number; y1: number; slope: number; tone: Tone }[];
   /** marks on swing points; `up` for a high */
   dots?: { i: number; y: number; up: boolean }[];
+  /** a mark on each bar, placed exactly at its value */
+  points?: { values: Series; tone: Tone }[];
   /** a dashed upright at a bar */
   uprights?: number[];
   /** the panel under the price */
@@ -61,6 +63,13 @@ const signed = (n: number) => {
   const r = Math.round(n * 100) / 100;
   return `${r > 0 ? "+" : r < 0 ? "−" : ""}${Math.abs(r).toFixed(2)}`;
 };
+/** one decimal place with its sign, for a reading that runs either side of zero */
+const signed1 = (n: number) => {
+  const r = Math.round(n * 10) / 10;
+  return `${r > 0 ? "+" : r < 0 ? "−" : ""}${Math.abs(r).toFixed(1)}`;
+};
+/** the same for a reading that is never above zero */
+const below0 = (n: number) => signed1(Math.min(0, n));
 const at = (s: Series, i: number) => s[i] ?? 0;
 const times = (n: number) => (n === 0 ? "not once" : n === 1 ? "once" : n === 2 ? "twice" : `${n} times`);
 const count = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
@@ -459,6 +468,311 @@ const SETUPS: Record<LessonSlug, Setup> = {
       };
     },
   },
+
+  adx: {
+    seed: 610,
+    controls: [
+      { key: "len", label: "Length", min: 5, max: 30, initial: 14, text: bars },
+      { key: "lvl", label: "Line drawn", min: 15, max: 30, step: 5, initial: 25, text: (v) => `at ${v}` },
+    ],
+    view: ({ bars: all, from, last, n, seed, g }) => {
+      const len = g("len");
+      const lvl = g("lvl");
+      const d = adx(all, len);
+      const v = at(d.adx, last);
+      const plus = at(d.plusDI, last);
+      const minus = at(d.minusDI, last);
+      const dx = at(d.dx, last);
+      const range = at(d.tr, last);
+      let above = 0;
+      let top = 0;
+      for (let i = from; i <= last; i++) {
+        if (at(d.adx, i) > lvl) above += 1;
+        top = Math.max(top, at(d.adx, i), at(d.plusDI, i), at(d.minusDI, i));
+      }
+      return {
+        overlays: [],
+        lower: {
+          title: `ADX ${len}`,
+          tag: f1(v),
+          lines: [
+            { values: d.adx, tone: "accent" },
+            { values: d.plusDI, tone: "emerald" },
+            { values: d.minusDI, tone: "alert" },
+          ],
+          // the three lines seldom leave the lower half of the scale, so the panel shows only as much of it as they use
+          range: [0, Math.min(100, Math.max(50, Math.ceil(top / 10) * 10))],
+          guides: [lvl],
+        },
+        legend: [
+          { tone: "accent", label: `ADX, ${len} bars` },
+          { tone: "emerald", label: "+DI" },
+          { tone: "alert", label: "−DI" },
+        ],
+        sentence: `ADX (${len}) on chart ${seed} is ${f1(v)}: ${v > lvl ? `above the ${lvl} line, which by convention is read as a market that has been moving in one direction` : `at or below the ${lvl} line, which by convention is read as a market without much direction`}. +DI is ${f1(plus)} and −DI is ${f1(minus)}: over the bars it remembers, the ${plus >= minus ? "upward" : "downward"} movement has been the larger. ADX would be the same if the two were exchanged. In the ${n} bars shown it was above ${lvl} on ${count(above, "bar")}.`,
+        readout: [
+          ["ADX", f1(v)],
+          ["+DI", f1(plus)],
+          ["−DI", f1(minus)],
+          ["DX", f1(dx)],
+        ],
+        working: [
+          `+DI = 100 × smoothed +DM ÷ smoothed true range = 100 × ${f3(at(d.plusDM, last))} ÷ ${f3(range)} = ${f1(plus)}`,
+          `−DI = 100 × smoothed −DM ÷ smoothed true range = 100 × ${f3(at(d.minusDM, last))} ÷ ${f3(range)} = ${f1(minus)}`,
+          plus + minus === 0 ? "Neither moved, so DX is shown as 0" : `DX = 100 × |${f1(plus)} − ${f1(minus)}| ÷ (${f1(plus)} + ${f1(minus)}) = ${f1(dx)}`,
+          `ADX = (previous ADX × ${len - 1} + DX) ÷ ${len} = (${f2(at(d.adx, last - 1))} × ${len - 1} + ${f1(dx)}) ÷ ${len} = ${f1(v)}`,
+        ],
+      };
+    },
+  },
+
+  cci: {
+    seed: 987,
+    controls: [
+      { key: "len", label: "Length", min: 5, max: 50, initial: 20, text: bars },
+      { key: "lvl", label: "Upper and lower lines", min: 100, max: 200, step: 50, initial: 100, text: (v) => `+${v} and −${v}` },
+    ],
+    view: ({ bars: all, from, last, n, seed, g }) => {
+      const len = g("len");
+      const lvl = g("lvl");
+      const d = cci(all, len);
+      const v = at(d.cci, last);
+      const tp = d.tp[last] ?? 0;
+      const mean = at(d.mean, last);
+      const dev = at(d.dev, last);
+      const b = all[last]!;
+      let inside = 0;
+      let reach = 0;
+      for (let i = from; i <= last; i++) {
+        const x = at(d.cci, i);
+        if (x <= lvl && x >= -lvl) inside += 1;
+        reach = Math.max(reach, Math.abs(x));
+      }
+      // CCI has no limits: the panel reaches as far as the line does, and always far enough to show the two lines
+      const edge = Math.max(lvl * 1.2, reach * 1.08);
+      const where = v > lvl ? `above the +${lvl} line` : v < -lvl ? `below the −${lvl} line` : `between the −${lvl} and +${lvl} lines`;
+      return {
+        overlays: [{ values: d.mean, tone: "gold" }],
+        lower: { title: `CCI ${len}`, tag: signed1(v), lines: [{ values: d.cci, tone: "accent" }], range: [-edge, edge], guides: [lvl, -lvl], zero: true },
+        legend: [
+          { tone: "accent", label: `CCI, ${len} bars` },
+          { tone: "gold", label: `Average typical price, ${len} bars` },
+        ],
+        sentence: `The ${len}-bar CCI on chart ${seed} is ${signed1(v)}: ${where}. The last bar’s typical price, ${f2(tp)}, is ${f2(Math.abs(tp - mean))} ${tp >= mean ? "above" : "below"} its ${len}-bar average, ${f2(mean)}, and the typical prices of those bars have stood ${f2(dev)} from that average, on average. Of the ${n} bars shown, ${inside} were between −${lvl} and +${lvl} (${Math.round((inside / n) * 100)}%).`,
+        readout: [
+          ["CCI", signed1(v)],
+          ["Typical price", f2(tp)],
+          ["Its average", f2(mean)],
+          ["Mean deviation", f3(dev)],
+        ],
+        working: [
+          `Typical price = (high + low + close) ÷ 3 = (${f2(b.h)} + ${f2(b.l)} + ${f2(b.c)}) ÷ 3 = ${f2(tp)}`,
+          `Average of the last ${len} typical prices = ${f2(mean)}`,
+          `Mean deviation: the average distance of those ${len} from ${f2(mean)} = ${f3(dev)}`,
+          dev === 0 ? "There is no deviation at all, so CCI is shown as 0" : `CCI = (${f2(tp)} − ${f2(mean)}) ÷ (0.015 × ${f3(dev)}) = ${signed1(v)}`,
+        ],
+      };
+    },
+  },
+
+  "williams-r": {
+    seed: 4181,
+    controls: [
+      { key: "len", label: "Length of the range", min: 5, max: 30, initial: 14, text: bars },
+      { key: "lvl", label: "Upper and lower lines", min: 10, max: 30, step: 5, initial: 20, text: (v) => `−${v} and −${100 - v}` },
+    ],
+    view: ({ bars: all, from, last, closes, n, seed, g }) => {
+      const len = g("len");
+      const lvl = g("lvl");
+      const w = williamsR(all, len);
+      const c = closes[last]!;
+      const hh = at(w.high, last);
+      const ll = at(w.low, last);
+      const v = w.r[last] ?? -50;
+      let high = 0;
+      let low = 0;
+      for (let i = from; i <= last; i++) {
+        const x = w.r[i] ?? -50;
+        if (x > -lvl) high += 1;
+        else if (x < lvl - 100) low += 1;
+      }
+      const where = v > -lvl ? `above the −${lvl} line, the area called overbought` : v < lvl - 100 ? `below the −${100 - lvl} line, the area called oversold` : `between the −${100 - lvl} and −${lvl} lines`;
+      return {
+        overlays: [
+          { values: w.high, tone: "ink", dash: true },
+          { values: w.low, tone: "ink", dash: true },
+        ],
+        lower: { title: `WILLIAMS %R ${len}`, tag: below0(v), lines: [{ values: w.r, tone: "accent" }], range: [-100, 0], guides: [lvl - 100, -lvl] },
+        legend: [
+          { tone: "accent", label: `%R, ${len} bars` },
+          { tone: "ink", label: `Highest high and lowest low of ${len} bars (dashed)` },
+        ],
+        sentence: `Williams %R (${len}) on chart ${seed}: the last close, ${f2(c)}, is ${Math.round(-v)}% of the way down from the highest high (${f2(hh)}) to the lowest low (${f2(ll)}) of the last ${len} bars, so %R is ${below0(v)}: ${where}. In the ${n} bars shown it was above −${lvl} on ${count(high, "bar")} and below −${100 - lvl} on ${count(low, "bar")}.`,
+        readout: [
+          ["%R", below0(v)],
+          ["Highest high", f2(hh)],
+          ["Lowest low", f2(ll)],
+          [`Bars beyond −${lvl} / −${100 - lvl}`, `${high} / ${low}`],
+        ],
+        working: [
+          `Highest high of the last ${len} bars = ${f2(hh)}; lowest low = ${f2(ll)}`,
+          hh === ll ? "The range is zero, so %R is shown as −50" : `%R = −100 × (${f2(hh)} − ${f2(c)}) ÷ (${f2(hh)} − ${f2(ll)}) = ${below0(v)}`,
+          `The stochastic’s raw %K for the same bar = %R + 100 = ${f1(v + 100)}`,
+        ],
+      };
+    },
+  },
+
+  "parabolic-sar": {
+    seed: 2584,
+    controls: [
+      { key: "step", label: "Step", min: 0.01, max: 0.05, step: 0.01, initial: 0.02, text: (v) => v.toFixed(2) },
+      { key: "max", label: "Maximum", min: 0.1, max: 0.4, step: 0.05, initial: 0.2, text: (v) => v.toFixed(2) },
+    ],
+    view: ({ bars: all, from, last, closes, n, seed, g }) => {
+      const step = g("step");
+      const max = g("max");
+      const p = parabolicSar(all, step, max);
+      const up = p.rising[last] === true;
+      const wasUp = p.rising[last - 1] === true;
+      const v = at(p.sar, last);
+      const c = closes[last]!;
+      const b = all[last]!;
+      const prev = at(p.sar, last - 1);
+      const ep = at(p.ep, last - 1);
+      const af = at(p.af, last - 1);
+      const raw = prev + af * (ep - prev);
+      const flipped = up !== wasUp;
+      let flips = 0;
+      for (let i = from + 1; i <= last; i++) if (p.rising[i] !== p.rising[i - 1]) flips += 1;
+      let run = 1;
+      for (let i = last; i > 1 && p.rising[i - 1] === p.rising[i]; i--) run += 1;
+      const outcome = flipped
+        ? `The bar’s ${wasUp ? "low" : "high"}, ${f2(wasUp ? b.l : b.h)}, crossed it: the SAR goes to the extreme of the run just ended, ${f2(v)}, and the factor back to ${step.toFixed(2)}`
+        : Math.abs(raw - v) > 1e-9
+          ? `Held at ${f2(v)}: it may not pass the ${up ? "lows" : "highs"} of the two bars before`
+          : `The bar’s ${up ? "low" : "high"}, ${f2(up ? b.l : b.h)}, did not reach it, so it stands at ${f2(v)}`;
+      return {
+        overlays: [],
+        points: [
+          { values: p.sar.map((x, i) => (p.rising[i] === true ? x : null)), tone: "teal" },
+          { values: p.sar.map((x, i) => (p.rising[i] === false ? x : null)), tone: "gold" },
+        ],
+        legend: [
+          { tone: "teal", label: "SAR under the bars: a rising run" },
+          { tone: "gold", label: "SAR over the bars: a falling run" },
+        ],
+        sentence: `Parabolic SAR (${step.toFixed(2)}, ${max.toFixed(2)}) on chart ${seed}: the SAR is ${f2(v)}, which is ${f2(Math.abs(c - v))} ${up ? "below" : "above"} the last close, ${f2(c)}, and it has been on that side for ${count(run, "bar")}. The extreme point of this run is ${f2(at(p.ep, last))} and the acceleration factor stands at ${at(p.af, last).toFixed(2)}. In the ${n} bars shown the SAR changed sides ${times(flips)}.`,
+        readout: [
+          ["SAR", f2(v)],
+          ["Side", up ? "Under: rising" : "Over: falling"],
+          ["Extreme point", f2(at(p.ep, last))],
+          ["Acceleration factor", at(p.af, last).toFixed(2)],
+        ],
+        working: [
+          `Before this bar: SAR ${f2(prev)}, extreme point ${f2(ep)}, acceleration factor ${af.toFixed(2)}`,
+          `SAR = ${f2(prev)} + ${af.toFixed(2)} × (${f2(ep)} − ${f2(prev)}) = ${f2(raw)}`,
+          outcome,
+          `After this bar: extreme point ${f2(at(p.ep, last))}, acceleration factor ${at(p.af, last).toFixed(2)}`,
+        ],
+      };
+    },
+  },
+
+  "donchian-channels": {
+    seed: 55,
+    controls: [{ key: "len", label: "Length", min: 5, max: 60, initial: 20, text: bars }],
+    view: ({ bars: all, from, last, closes, n, seed, g }) => {
+      const len = g("len");
+      const d = donchian(all, len);
+      const c = closes[last]!;
+      const b = all[last]!;
+      const up = at(d.upper, last);
+      const lo = at(d.lower, last);
+      const mid = at(d.mid, last);
+      let highs = 0;
+      let lows = 0;
+      for (let i = from; i <= last; i++) {
+        if (all[i]!.h === d.upper[i]) highs += 1;
+        if (all[i]!.l === d.lower[i]) lows += 1;
+      }
+      const share = up === lo ? 50 : Math.round(((c - lo) / (up - lo)) * 100);
+      return {
+        overlays: [
+          { values: d.mid, tone: "gold" },
+          { values: d.upper, tone: "accent" },
+          { values: d.lower, tone: "accent" },
+        ],
+        fill: { upper: d.upper, lower: d.lower, tone: "accent" },
+        legend: [
+          { tone: "accent", label: `Highest high and lowest low of ${len} bars` },
+          { tone: "gold", label: "Middle: halfway between them" },
+        ],
+        sentence: `Donchian channel (${len}) on chart ${seed}: the highest high of the last ${len} bars is ${f2(up)} and the lowest low is ${f2(lo)}, so the channel is ${f2(up - lo)} wide and its middle is ${f2(mid)}. The last close, ${f2(c)}, is ${share}% of the way from the lower line to the upper. Of the ${n} bars shown, ${highs} set the upper line with their own high and ${lows} set the lower line with their own low.`,
+        readout: [
+          ["Upper line", f2(up)],
+          ["Middle", f2(mid)],
+          ["Lower line", f2(lo)],
+          ["Width", f2(up - lo)],
+        ],
+        working: [
+          `Upper = the highest high of the last ${len} bars = ${f2(up)}`,
+          `Lower = the lowest low of the last ${len} bars = ${f2(lo)}`,
+          `Middle = (${f2(up)} + ${f2(lo)}) ÷ 2 = ${f2(mid)}`,
+          `Width = ${f2(up)} − ${f2(lo)} = ${f2(up - lo)}`,
+          b.h === up ? `The last bar’s high, ${f2(b.h)}, is the upper line` : b.l === lo ? `The last bar’s low, ${f2(b.l)}, is the lower line` : `The last bar, ${f2(b.l)} to ${f2(b.h)}, set neither line`,
+        ],
+      };
+    },
+  },
+
+  "keltner-channels": {
+    seed: 377,
+    controls: [
+      { key: "len", label: "Average (EMA)", min: 5, max: 60, initial: 20, text: bars },
+      { key: "atr", label: "ATR length", min: 5, max: 30, initial: 10, text: bars },
+      { key: "m", label: "Width", min: 1, max: 3, step: 0.25, initial: 2, text: (v) => `${v} × ATR` },
+    ],
+    view: ({ bars: all, from, last, closes, n, seed, g }) => {
+      const len = g("len");
+      const na = g("atr");
+      const m = g("m");
+      const k = keltner(all, len, na, m);
+      const c = closes[last]!;
+      const mid = at(k.mid, last);
+      const range = at(k.atr, last);
+      const up = at(k.upper, last);
+      const lo = at(k.lower, last);
+      let inside = 0;
+      for (let i = from; i <= last; i++) if (closes[i]! <= at(k.upper, i) && closes[i]! >= at(k.lower, i)) inside += 1;
+      const where = c > up ? "above the upper line" : c < lo ? "below the lower line" : `${up === lo ? 50 : Math.round(((c - lo) / (up - lo)) * 100)}% of the way from the lower line to the upper`;
+      return {
+        overlays: [
+          { values: k.mid, tone: "gold" },
+          { values: k.upper, tone: "accent" },
+          { values: k.lower, tone: "accent" },
+        ],
+        fill: { upper: k.upper, lower: k.lower, tone: "accent" },
+        legend: [
+          { tone: "gold", label: `Middle: ${len}-bar EMA` },
+          { tone: "accent", label: `Lines: ${m} × the ${na}-bar ATR` },
+        ],
+        sentence: `Keltner channel (${len}, ${na}, ${m}) on chart ${seed}: the middle line is ${f2(mid)} and the ${na}-bar ATR is ${f2(range)}, so the upper line is ${f2(up)} and the lower ${f2(lo)}, ${f2(up - lo)} apart. The last close, ${f2(c)}, is ${where}. Of the ${n} closes shown, ${inside} were inside the channel (${Math.round((inside / n) * 100)}%).`,
+        readout: [
+          ["Upper line", f2(up)],
+          ["Middle line", f2(mid)],
+          ["Lower line", f2(lo)],
+          ["Closes inside", `${inside} of ${n}`],
+        ],
+        working: [
+          `Middle = ${len}-bar EMA of the close = ${f2(mid)}`,
+          `ATR over ${na} bars = ${f3(range)}`,
+          `Upper = ${f2(mid)} + ${m} × ${f3(range)} = ${f2(up)}`,
+          `Lower = ${f2(mid)} − ${m} × ${f3(range)} = ${f2(lo)}`,
+        ],
+      };
+    },
+  },
 };
 
 const toneOf = (pal: Palette, tone: Tone): Colour => (tone === "alert" ? ALERT : tone === "ink" ? pal.ink2 : pal[tone]);
@@ -536,6 +850,7 @@ export function IndicatorMachine({ kind }: { kind: LessonSlug }) {
           }
         };
         for (const o of view.overlays) widen(o.values);
+        for (const pt of view.points ?? []) widen(pt.values);
         if (view.fill) {
           widen(view.fill.upper);
           widen(view.fill.lower);
@@ -648,6 +963,19 @@ export function IndicatorMachine({ kind }: { kind: LessonSlug }) {
           if (o.dash) ctx.setLineDash([3, 3]);
           stroke(o.values, y);
           ctx.setLineDash([]);
+        }
+
+        // one mark to a bar, exactly at its value: nothing joins them, because nothing lies between them
+        for (const pt of view.points ?? []) {
+          const size = Math.max(1.2, Math.min(2.2, step * 0.3));
+          ctx.fillStyle = rgba(toneOf(pal, pt.tone), 1);
+          for (let i = from; i < end; i++) {
+            const v = pt.values[i];
+            if (v == null) continue;
+            ctx.beginPath();
+            ctx.arc(x(i), y(v), size, 0, TAU);
+            ctx.fill();
+          }
         }
 
         for (const r of view.rays ?? []) {

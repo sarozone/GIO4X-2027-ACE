@@ -1,6 +1,7 @@
 import { PunchLine } from "@/components/ui/PunchLine";
 import Link from "next/link";
 import { AcademyProgress, LessonMark, LessonsCount } from "@/components/academy/Progress";
+import { QuestionCard } from "@/components/academy/qotd/QuestionCard";
 import { MilestoneStrip } from "@/components/desk/Milestones";
 import { TwoRoutes } from "@/components/figures/academy/TwoRoutes";
 import { BoundedScale } from "@/components/figures/company/BoundedScale";
@@ -167,6 +168,8 @@ export default function AcademyPage() {
             </p>
             {/* rendered only after mount, and only when this browser holds a completed lesson */}
             <AcademyProgress slugs={lessons.map((l) => l.slug)} className="mt-13 max-w-measure" />
+            {/* one of the lessons' own questions each day; the card's run of days is read from this browser after mount */}
+            <QuestionCard className="mt-21 max-w-measure" />
           </div>
           <div className="mt-55 border-t border-line-strong">
             {academyLevels.map((lv, i) => {

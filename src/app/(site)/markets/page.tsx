@@ -10,6 +10,8 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { NextSteps, PageHero } from "@/components/ui/Page";
 import { Head } from "@/components/markets/Head";
 import { COMMODITIES, TRADED_COMMODITIES } from "@/data/commodities";
+import { CURRENCY_PROFILES, PAIRED_CURRENCIES } from "@/data/currency-profiles";
+import { ECONOMIES } from "@/data/economies";
 import { assetClasses, instrumentHref, instruments, instrumentsByClass } from "@/data/instruments";
 import { centralBanks, econEvents } from "@/data/knowledge";
 import { pageMeta } from "@/lib/meta";
@@ -185,6 +187,24 @@ export default async function MarketsPage() {
             <Link href="/markets/commodities" className="go py-13 lg:py-0">
               Open the A to Z
             </Link>
+          </div>
+          {/* the currency and economy profiles: two more references, beside the classes */}
+          <div className="panel-quiet mt-13 grid gap-x-34 gap-y-13 p-21 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+            <div>
+              <p className="label">Reference</p>
+              <p className="h4 mt-5">Currencies and the economies behind them</p>
+              <p className="mt-5 max-w-measure text-sm text-ink-2">
+                {CURRENCY_PROFILES.length} currency profiles: who issues each, how it is commonly described and what typically moves it. {PAIRED_CURRENCIES.length} are in the pairs GIO4X lists, in Forex above; the others are general education and are marked. {ECONOMIES.length} economy profiles say what each economy is known for and who publishes its releases.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-x-21">
+              <Link href="/markets/currencies" className="go py-13 lg:py-0">
+                Currency profiles
+              </Link>
+              <Link href="/markets/economies" className="go py-13 lg:py-0">
+                Economy profiles
+              </Link>
+            </div>
           </div>
         </div>
       </section>

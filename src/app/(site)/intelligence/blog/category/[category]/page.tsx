@@ -11,6 +11,7 @@ import { BLOG_CATEGORIES, BLOG_CATEGORY_ABOUT, BLOG_CATEGORY_LABEL, BLOG_PATH, b
 import { pageMeta } from "@/lib/meta";
 import { webPageSchema } from "@/lib/schema";
 import { BLOG_MAX_PAGE, isBlogCategory, listPosts } from "@/lib/server/blog";
+import { blogCategoryFeedPath } from "@/lib/server/blog-feed";
 import type { BlogCategory } from "@/lib/supabase/types";
 
 type Props = { params: Promise<{ category: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -56,7 +57,8 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   const path = blogCategoryPath(category, page);
   return {
     ...pageMeta({ title: `Daily blog: ${BLOG_CATEGORY_LABEL[category]}${page > 1 ? `, page ${page}` : ""}`, description: describe(category), path, index: result.state === "none" ? false : undefined }),
-    alternates: { canonical: path, types: { "application/rss+xml": [BLOG_FEED] } },
+    // the blog's own feed first, as it was; then this category's
+    alternates: { canonical: path, types: { "application/rss+xml": [BLOG_FEED, { url: blogCategoryFeedPath(category), title: `${BLOG_FEED.title}: ${BLOG_CATEGORY_LABEL[category]}` }] } },
   };
 }
 
@@ -121,6 +123,9 @@ export default async function BlogCategoryPage({ params, searchParams }: Props) 
             </Link>
             <a href={BLOG_FEED.url} className="link inline-flex min-h-[2.75rem] items-center" type="application/rss+xml">
               RSS feed
+            </a>
+            <a href={blogCategoryFeedPath(category)} className="link inline-flex min-h-[2.75rem] items-center" type="application/rss+xml">
+              RSS feed of {label}
             </a>
             <Link href="/trust/editorial-standards" className="link inline-flex min-h-[2.75rem] items-center">
               Editorial standards

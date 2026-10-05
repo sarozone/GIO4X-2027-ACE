@@ -1,9 +1,9 @@
 import { GeneratedCover } from "@/components/ui/GeneratedCover";
 import Link from "next/link";
 import { EmptyState } from "@/components/ui/Page";
-import { BLOG_CATEGORIES, BLOG_CATEGORY_LABEL, BLOG_FORMAT_LABEL, BLOG_PATH, blogCategoryPath } from "@/lib/blog";
+import { BLOG_CATEGORIES, BLOG_CATEGORY_LABEL, BLOG_FORMAT_LABEL, BLOG_FORMATS, BLOG_PATH, blogCategoryPath } from "@/lib/blog";
 import type { BlogCard, BlogCover } from "@/lib/server/blog";
-import type { BlogCategory } from "@/lib/supabase/types";
+import type { BlogCategory, BlogFormat } from "@/lib/supabase/types";
 import { blogIso, blogShortDate } from "./format";
 
 /**
@@ -14,9 +14,9 @@ import { blogIso, blogShortDate } from "./format";
 
 export const blogPostHref = (slug: string) => `${BLOG_PATH}/${slug}`;
 
-/** The address of a page of the list. Page one and "all categories" add nothing to it. */
-export function blogListHref(page = 1, category: BlogCategory | null = null): string {
-  const query = [category ? `category=${category}` : "", page > 1 ? `page=${page}` : ""].filter(Boolean).join("&");
+/** The address of a page of the list. Page one, "all categories" and "every format" add nothing to it. */
+export function blogListHref(page = 1, category: BlogCategory | null = null, format: BlogFormat | null = null): string {
+  const query = [category ? `category=${category}` : "", format ? `format=${format}` : "", page > 1 ? `page=${page}` : ""].filter(Boolean).join("&");
   return query ? `${BLOG_PATH}?${query}` : BLOG_PATH;
 }
 
@@ -55,7 +55,7 @@ export function BlogCardMeta({ post, date = true, className = "" }: { post: Blog
 }
 
 /** The category rail. Real addresses, so a filtered list can be linked to and opened in a new tab. */
-export function BlogCategoryNav({ current }: { current: BlogCategory | null }) {
+export function BlogCategoryNav({ current, format = null }: { current: BlogCategory | null; /** the format the list is narrowed to, kept when the category changes */ format?: BlogFormat | null }) {
   const item = "inline-flex min-h-[2.75rem] shrink-0 snap-start items-center whitespace-nowrap border-b-2 px-13 text-sm font-medium transition-colors duration-fast first:pl-0";
   const on = "border-ink text-ink";
   const off = "border-transparent text-ink-3 hover:text-ink";
@@ -63,14 +63,43 @@ export function BlogCategoryNav({ current }: { current: BlogCategory | null }) {
     <nav aria-label="Blog categories" className="scroll-x no-print -mx-[var(--gutter)] px-[var(--gutter)]">
       <ul className="flex snap-x gap-5">
         <li>
-          <Link href={blogListHref()} aria-current={current ? undefined : "page"} className={`${item} ${current ? off : on}`}>
+          <Link href={blogListHref(1, null, format)} aria-current={current ? undefined : "page"} className={`${item} ${current ? off : on}`}>
             All posts
           </Link>
         </li>
         {BLOG_CATEGORIES.map((c) => (
           <li key={c}>
-            <Link href={blogListHref(1, c)} aria-current={current === c ? "page" : undefined} className={`${item} ${current === c ? on : off}`}>
+            <Link href={blogListHref(1, c, format)} aria-current={current === c ? "page" : undefined} className={`${item} ${current === c ? on : off}`}>
               {BLOG_CATEGORY_LABEL[c]}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
+/**
+ * The formats as a second, smaller rail under the categories: what kind of
+ * piece (a note, an explainer, a guide) rather than what it is about. Real
+ * addresses like the rail above, and the category chosen there is kept.
+ */
+export function BlogFormatNav({ current, category = null }: { current: BlogFormat | null; category?: BlogCategory | null }) {
+  const item = "chip inline-flex min-h-[2.125rem] shrink-0 snap-start items-center whitespace-nowrap transition-colors duration-fast";
+  const on = "!border-ink !text-ink";
+  const off = "hover:border-line-strong hover:text-ink";
+  return (
+    <nav aria-label="Blog formats" className="scroll-x no-print -mx-[var(--gutter)] px-[var(--gutter)]">
+      <ul className="flex snap-x items-center gap-8">
+        <li>
+          <Link href={blogListHref(1, category)} aria-current={current ? undefined : "page"} className={`${item} ${current ? off : on}`}>
+            Every format
+          </Link>
+        </li>
+        {BLOG_FORMATS.map((f) => (
+          <li key={f}>
+            <Link href={blogListHref(1, category, f)} aria-current={current === f ? "page" : undefined} className={`${item} ${current === f ? on : off}`}>
+              {BLOG_FORMAT_LABEL[f]}
             </Link>
           </li>
         ))}
@@ -247,13 +276,16 @@ export function BlogListView({
   pages,
   total,
   category,
-  hrefFor = (n) => blogListHref(n, category),
+  format = null,
+  hrefFor = (n) => blogListHref(n, category, format),
 }: {
   posts: BlogCard[];
   page: number;
   pages: number;
   total: number;
   category: BlogCategory | null;
+  /** the format the list is narrowed to (the index only); left out, nothing here differs */
+  format?: BlogFormat | null;
   hrefFor?: (page: number) => string;
 }) {
   const feature = page === 1 ? posts[0] : undefined;
@@ -262,7 +294,8 @@ export function BlogListView({
     <>
       <p className="num text-xs text-ink-3">
         {total} {total === 1 ? "post" : "posts"}
-        {category ? ` in ${BLOG_CATEGORY_LABEL[category]}` : ""}, newest first
+        {category ? ` in ${BLOG_CATEGORY_LABEL[category]}` : ""}
+        {format ? `, format: ${BLOG_FORMAT_LABEL[format]}` : ""}, newest first
       </p>
       <div className="mt-21">
         {feature && <Featured post={feature} />}
@@ -279,13 +312,14 @@ export function BlogListView({
 }
 
 /** Nothing has been published (at all, or under one category). Said plainly, with somewhere to go. */
-export function BlogEmpty({ category = null }: { category?: BlogCategory | null }) {
+export function BlogEmpty({ category = null, format = null }: { category?: BlogCategory | null; format?: BlogFormat | null }) {
+  const under = category ? ` under ${BLOG_CATEGORY_LABEL[category]}` : "";
   return (
     <EmptyState
-      title={category ? `No post has been published under ${BLOG_CATEGORY_LABEL[category]} yet.` : "No post has been published yet."}
+      title={format ? `No post of the format “${BLOG_FORMAT_LABEL[format]}” has been published${under} yet.` : category ? `No post has been published under ${BLOG_CATEGORY_LABEL[category]} yet.` : "No post has been published yet."}
       actions={
         <>
-          {category && (
+          {(category || format) && (
             <Link href={BLOG_PATH} className="btn btn-ghost">
               All posts
             </Link>

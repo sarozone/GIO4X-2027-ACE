@@ -1,17 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BlogCategoryLinks, BlogCategoryNav, BlogEmpty, blogListHref, BlogListView, blogPostHref, BlogUnavailable } from "@/components/blog/BlogList";
+import { BlogCategoryLinks, BlogCategoryNav, BlogEmpty, BlogFormatNav, blogListHref, BlogListView, blogPostHref, BlogUnavailable } from "@/components/blog/BlogList";
+import { BlogSeriesBand } from "@/components/blog/BlogSeries";
 import { blogIso } from "@/components/blog/format";
 import { BLOG_FEED } from "@/components/blog/seo";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { NextSteps, PageHero } from "@/components/ui/Page";
 import { absoluteUrl } from "@/config/site";
-import { BLOG_CATEGORY_LABEL, BLOG_PATH } from "@/lib/blog";
+import { BLOG_CATEGORY_LABEL, BLOG_FORMAT_LABEL, BLOG_PATH, isBlogFormat } from "@/lib/blog";
 import { pageMeta } from "@/lib/meta";
 import { webPageSchema } from "@/lib/schema";
 import { BLOG_MAX_PAGE, isBlogCategory, listPosts } from "@/lib/server/blog";
-import type { BlogCategory } from "@/lib/supabase/types";
+import type { BlogCategory, BlogFormat } from "@/lib/supabase/types";
 
 type Search = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
@@ -27,9 +28,10 @@ export const revalidate = 60;
 
 /**
  * The query string, validated. `?page=` is a whole number from 1; `?category=`
- * is one of the four categories. Anything else is not an address of this page.
+ * is one of the four categories; `?format=` is one of the six formats.
+ * Anything else is not an address of this page.
  */
-function readQuery(q: Record<string, string | string[] | undefined>): { page: number; category: BlogCategory | null } | null {
+function readQuery(q: Record<string, string | string[] | undefined>): { page: number; category: BlogCategory | null; format: BlogFormat | null } | null {
   let page = 1;
   if (q.page !== undefined) {
     if (typeof q.page !== "string" || !/^[1-9]\d{0,3}$/.test(q.page)) return null;
@@ -41,26 +43,31 @@ function readQuery(q: Record<string, string | string[] | undefined>): { page: nu
     if (!isBlogCategory(q.category)) return null;
     category = q.category;
   }
-  return { page, category };
+  let format: BlogFormat | null = null;
+  if (q.format !== undefined) {
+    if (!isBlogFormat(q.format)) return null;
+    format = q.format;
+  }
+  return { page, category, format };
 }
 
 export async function generateMetadata({ searchParams }: Search): Promise<Metadata> {
   const query = readQuery(await searchParams);
   if (!query) return { title: "Daily blog", robots: { index: false, follow: true } };
-  const { page, category } = query;
-  const title = `Daily blog${category ? `: ${BLOG_CATEGORY_LABEL[category]}` : ""}${page > 1 ? `, page ${page}` : ""}`;
+  const { page, category, format } = query;
+  const title = `Daily blog${category ? `: ${BLOG_CATEGORY_LABEL[category]}` : ""}${format ? ` (${BLOG_FORMAT_LABEL[format]})` : ""}${page > 1 ? `, page ${page}` : ""}`;
   return {
-    // a page of the list is its own page; a category is a filter of the same posts and is left out of search
-    ...pageMeta({ title, description, path: blogListHref(page, category), index: category ? false : undefined }),
-    alternates: { canonical: blogListHref(page, category), types: { "application/rss+xml": [FEED] } },
+    // a page of the list is its own page; a category or a format is a filter of the same posts and is left out of search
+    ...pageMeta({ title, description, path: blogListHref(page, category, format), index: category || format ? false : undefined }),
+    alternates: { canonical: blogListHref(page, category, format), types: { "application/rss+xml": [FEED] } },
   };
 }
 
 export default async function BlogPage({ searchParams }: Search) {
   const query = readQuery(await searchParams);
   if (!query) notFound();
-  const { page, category } = query;
-  const result = await listPosts({ page, category });
+  const { page, category, format } = query;
+  const result = await listPosts({ page, category, format });
   if (result.state === "out-of-range") notFound();
 
   return (
@@ -104,15 +111,23 @@ export default async function BlogPage({ searchParams }: Search) {
             {category ? `Posts in ${BLOG_CATEGORY_LABEL[category]}` : "Posts"}
             {page > 1 ? `, page ${page}` : ""}
           </h2>
-          <BlogCategoryNav current={category} />
+          <BlogCategoryNav current={category} format={format} />
+          {/* what kind of piece, beside what it is about: a second filter of the same list */}
+          <div className="mt-13">
+            <BlogFormatNav current={format} category={category} />
+          </div>
           <div className="mt-34">
             {result.state === "ok" ? (
-              <BlogListView posts={result.posts} page={result.page} pages={result.pages} total={result.total} category={category} />
+              <BlogListView posts={result.posts} page={result.page} pages={result.pages} total={result.total} category={category} format={format} />
             ) : result.state === "none" ? (
-              <BlogEmpty category={category} />
+              <BlogEmpty category={category} format={format} />
             ) : (
               <BlogUnavailable />
             )}
+          </div>
+          {/* the series: posts written to be read in order, each series on a page of its own */}
+          <div className="mt-34 border-t border-line pt-21">
+            <BlogSeriesBand />
           </div>
           {/* the rail above filters this page; these lead to each category's own page */}
           <div className="mt-34 border-t border-line pt-21">

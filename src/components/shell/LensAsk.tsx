@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useId, useRef, useState, type Dispatch, type FormEvent, type ReactNode, type SetStateAction } from "react";
+import { askSuggestions } from "@/components/shell/ask-suggestions";
 import { AI_LIMITS, AI_MESSAGES, type AiEvent, type AiLimit, type AiSource } from "@/lib/ai";
 
 /**
@@ -22,6 +23,15 @@ import { AI_LIMITS, AI_MESSAGES, type AiEvent, type AiLimit, type AiSource } fro
 
 export type Exchange = { q: string; a: string; sources: AiSource[]; page: string };
 
+/**
+ * A request, from outside the Lens, to arrive in this view ready to type: the
+ * "Ask AI" button in the header, the Help window, the question boxes on the
+ * homepage and the Help page (AskAi.tsx). `q` is a question to ask straight
+ * away, or "" to wait for one. A new object each time, so two requests for the
+ * same question are two requests.
+ */
+export type AskSeed = { q: string };
+
 /* ---- is the assistant there at all? ----------------------------------------- */
 
 let availability: Promise<boolean> | null = null;
@@ -37,7 +47,13 @@ function loadAvailability(): Promise<boolean> {
   return availability;
 }
 
-/** True once the server has said the assistant is switched on and set up. Checked when the Lens is first opened. */
+/**
+ * True once the server has said the assistant is switched on and set up. The Lens passes its own
+ * `open`, so it asks when it is first opened; the ways in to the assistant (AskAi.tsx, the Help
+ * window) pass `true` and ask as the page loads. However many ask, it is one request per page load,
+ * and they all get the one answer. It starts false on the server and in the browser alike, so
+ * whatever depends on it is absent from the first render of both.
+ */
 export function useAiAvailable(open: boolean): boolean {
   const [available, setAvailable] = useState(false);
   useEffect(() => {
@@ -112,9 +128,26 @@ function Answer({ x }: { x: Exchange }) {
 
 /* ---- the section ---------------------------------------------------------------- */
 
+/** A suggested question, as a button: here and in the question boxes (AskAi.tsx). Tall enough to press with a thumb. */
+export const SUGGESTION =
+  "inline-flex min-h-[2.125rem] items-center rounded-sm border border-line px-8 py-5 text-left text-[0.8125rem] leading-snug text-ink-2 transition-colors duration-fast hover:border-line-strong hover:text-ink";
+
 type Status = { kind: "idle" } | { kind: "asking"; q: string; text: string; sources: AiSource[] } | { kind: "refused"; message: string; limit?: AiLimit };
 
-export function LensAsk({ pathname, talk, setTalk }: { pathname: string; talk: Exchange[]; setTalk: Dispatch<SetStateAction<Exchange[]>> }) {
+export function LensAsk({
+  pathname,
+  talk,
+  setTalk,
+  seed = null,
+  onSeedUsed,
+}: {
+  pathname: string;
+  talk: Exchange[];
+  setTalk: Dispatch<SetStateAction<Exchange[]>>;
+  /** asked for from outside the Lens: put the cursor in the box and, if it carries a question, ask it */
+  seed?: AskSeed | null;
+  onSeedUsed?: () => void;
+}) {
   const uid = useId();
   const [question, setQuestion] = useState("");
   const [website, setWebsite] = useState("");
@@ -123,6 +156,7 @@ export function LensAsk({ pathname, talk, setTalk }: { pathname: string; talk: E
   const [spoken, setSpoken] = useState("");
   const startedAt = useRef(0);
   const request = useRef<AbortController | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     startedAt.current = Date.now();
@@ -130,18 +164,47 @@ export function LensAsk({ pathname, talk, setTalk }: { pathname: string; talk: E
     return () => request.current?.abort();
   }, []);
 
+  // Arrived here from "Ask AI" or a question box: the cursor goes to the box, and a question that
+  // came along is asked. On a timer so that it happens once: an effect that is run, undone and run
+  // again (as React does in development) has its first timer cleared before it fires.
+  useEffect(() => {
+    if (!seed) return;
+    const timer = window.setTimeout(() => {
+      inputRef.current?.focus({ preventScroll: true });
+      onSeedUsed?.();
+      if (seed.q) void send(seed.q);
+    }, 0);
+    return () => window.clearTimeout(timer);
+    // only a new request is a reason to run this again
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seed]);
+
   const asking = status.kind === "asking";
   const left = AI_LIMITS.questionMax - question.length;
   const reachedLimit = status.kind === "refused" && (status.limit === "day" || status.limit === "site");
 
-  async function ask(e: FormEvent) {
+  function ask(e: FormEvent) {
     e.preventDefault();
-    const q = question.replace(/\s+/g, " ").trim();
+    void send(question);
+  }
+
+  /** Asks `raw`: what was typed in the box, a suggestion that was pressed, or a question brought in from outside the Lens. */
+  async function send(raw: string) {
+    const q = raw.replace(/\s+/g, " ").trim().slice(0, AI_LIMITS.questionMax);
     if (q.length < 2 || asking) return;
     const control = new AbortController();
     request.current = control;
     setStatus({ kind: "asking", q, text: "", sources: [] });
     setSpoken("");
+
+    // A suggestion can be pressed, and a question brought in from a box is asked, sooner after this
+    // view appears than the endpoint takes a person to be able to ask (minThinkMs). The rest of
+    // that moment is waited out here. A question typed in the box took longer than that to type.
+    const early = AI_LIMITS.minThinkMs - (Date.now() - startedAt.current);
+    if (early > 0) {
+      await new Promise((resolve) => window.setTimeout(resolve, early));
+      if (control.signal.aborted) return;
+    }
 
     let text = "";
     let sources: AiSource[] = [];
@@ -218,6 +281,7 @@ export function LensAsk({ pathname, talk, setTalk }: { pathname: string; talk: E
         <div className="flex gap-8">
           <input
             id={`${uid}-q`}
+            ref={inputRef}
             className="input min-w-0 flex-1"
             type="text"
             inputMode="text"
@@ -274,7 +338,24 @@ export function LensAsk({ pathname, talk, setTalk }: { pathname: string; talk: E
       </div>
 
       {talk.length === 0 && status.kind === "idle" && (
-        <p className="text-sm text-ink-2">Answers come only from pages GIO4X has published. Where those pages are silent, it says so and points you to a person.</p>
+        <>
+          <p className="text-sm text-ink-2">Answers come only from pages GIO4X has published. Where those pages are silent, it says so and points you to a person.</p>
+          {/* somewhere to start: three questions the published pages answer, chosen by the part of the site this page is in */}
+          <div>
+            <p id={`${uid}-try`} className="label">
+              Questions to start with
+            </p>
+            <ul className="mt-8 grid gap-5" aria-labelledby={`${uid}-try`}>
+              {askSuggestions(pathname).map((s) => (
+                <li key={s}>
+                  <button type="button" className={SUGGESTION} onClick={() => void send(s)}>
+                    {s}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </>
       )}
     </div>
   );

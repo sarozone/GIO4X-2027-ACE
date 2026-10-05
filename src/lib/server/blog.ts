@@ -57,7 +57,7 @@ export type BlogCard = Pick<BlogPost, "slug" | "title" | "excerpt" | "category" 
 export type BlogNeighbour = Pick<BlogPost, "slug" | "title" | "published_at">;
 export type BlogFeedItem = Pick<BlogPost, "slug" | "title" | "excerpt" | "category" | "byline" | "published_at">;
 /** What a sitemap needs of a post. The category dates the page of that category. */
-export type BlogIndexEntry = { slug: string; lastmod: string; category: BlogCategory };
+export type BlogIndexEntry = { slug: string; lastmod: string; category: BlogCategory; /** for the sitemap for people (/explore/sitemap); the XML sitemap does not use it */ title: string };
 
 export type BlogFailure = { state: "failed"; reason: "not-configured" | "unavailable" };
 export type BlogList =
@@ -128,7 +128,7 @@ const cards = (rows: CardRow[] | null): BlogCard[] => (rows ?? []).map(toCard).f
  * pinned posts, then the rest, newest first within each. Before 0031 there is
  * no lead and nothing is pinned, so it is simply newest first.
  */
-async function readList(page: number, category: BlogCategory | null): Promise<BlogList> {
+async function readList(page: number, category: BlogCategory | null, format: BlogFormat | null = null): Promise<BlogList> {
   const supabase = createPublicSupabase();
   if (!supabase) return NOT_CONFIGURED;
   try {
@@ -137,6 +137,7 @@ async function readList(page: number, category: BlogCategory | null): Promise<Bl
     const ask = async (journal: boolean) => {
       let query = supabase.from("blog_posts").select(journal ? CARD_COLUMNS_0031 : CARD_COLUMNS, { count: "exact" }).eq("status", "published").lte("published_at", now);
       if (category) query = query.eq("category", category);
+      if (journal && format) query = query.eq("format", format);
       if (journal) query = query.order("is_lead", { ascending: false }).order("is_pinned", { ascending: false });
       const answer = await query
         .order("published_at", { ascending: false })
@@ -145,7 +146,11 @@ async function readList(page: number, category: BlogCategory | null): Promise<Bl
       return { data: answer.data as unknown as CardRow[] | null, count: answer.count, error: answer.error };
     };
     let { data, count, error } = await ask(true);
-    if (before0031(error)) ({ data, count, error } = await ask(false));
+    if (before0031(error)) {
+      // before 0031 every post is a note: that format is every post, and any other is none of them
+      if (format && format !== DEFAULT_BLOG_FORMAT) return page > 1 ? { state: "out-of-range" } : { state: "none" };
+      ({ data, count, error } = await ask(false));
+    }
     if (error) {
       // PostgREST answers "range not satisfiable" when the first row asked for is past the last one
       if (error.code === "PGRST103") return page > 1 ? { state: "out-of-range" } : { state: "none" };
@@ -169,8 +174,8 @@ class BlogReadFailed extends Error {}
  * through the cache so that it is never kept.
  */
 const cachedList = unstable_cache(
-  async (page: number, category: string): Promise<BlogList> => {
-    const result = await readList(page, isBlogCategory(category) ? category : null);
+  async (page: number, category: string, format: string = ""): Promise<BlogList> => {
+    const result = await readList(page, isBlogCategory(category) ? category : null, isBlogFormat(format) ? format : null);
     if (result.state === "failed") throw new BlogReadFailed(result.reason);
     return result;
   },
@@ -179,13 +184,15 @@ const cachedList = unstable_cache(
   { revalidate: BLOG_REVALIDATE, tags: [BLOG_CACHE_TAG] },
 );
 
-/** Published posts, newest first, BLOG_PAGE_SIZE to a page. `page` starts at 1. */
-export async function listPosts({ page = 1, category = null }: { page?: number; category?: BlogCategory | null } = {}): Promise<BlogList> {
+/** Published posts, newest first, BLOG_PAGE_SIZE to a page. `page` starts at 1. With a format, only the posts of that kind. */
+export async function listPosts({ page = 1, category = null, format = null }: { page?: number; category?: BlogCategory | null; format?: BlogFormat | null } = {}): Promise<BlogList> {
   if (!Number.isInteger(page) || page < 1 || page > BLOG_MAX_PAGE) return { state: "out-of-range" };
   if (category !== null && !isBlogCategory(category)) return { state: "none" };
+  if (format !== null && !isBlogFormat(format)) return { state: "none" };
   if (!createPublicSupabase()) return NOT_CONFIGURED;
   try {
-    return await cachedList(page, category ?? "");
+    // without a format the question is asked exactly as it was before there was one, so what is kept is kept under the same key
+    return format ? await cachedList(page, category ?? "", format) : await cachedList(page, category ?? "");
   } catch (e) {
     return e instanceof BlogReadFailed && e.message === "not-configured" ? NOT_CONFIGURED : UNAVAILABLE;
   }
@@ -322,6 +329,64 @@ export async function relatedPosts(post: Pick<BlogPost, "slug" | "tags" | "categ
   }
 }
 
+/** The most parts a series is ever read for (a bound on one question to the database). */
+const BLOG_SERIES_MAX = 60;
+
+/**
+ * The public posts among the given addresses, in the order given: the parts of
+ * a series (src/data/blog-series.ts). One read, as the anonymous role like
+ * every other here, so a part that is not written yet, not published, or
+ * withdrawn is simply not in the answer; nothing says so and nothing breaks.
+ */
+async function readSeries(slugs: readonly string[]): Promise<BlogLatest> {
+  const supabase = createPublicSupabase();
+  if (!supabase) return NOT_CONFIGURED;
+  const wanted = [...new Set(slugs.filter(isBlogSlug))].slice(0, BLOG_SERIES_MAX);
+  if (!wanted.length) return { state: "none" };
+  try {
+    const now = new Date().toISOString();
+    const ask = async (journal: boolean) => {
+      const answer = await supabase
+        .from("blog_posts")
+        .select(journal ? CARD_COLUMNS_0031 : CARD_COLUMNS)
+        .in("slug", wanted)
+        .eq("status", "published")
+        .lte("published_at", now)
+        .limit(BLOG_SERIES_MAX);
+      return { data: answer.data as unknown as CardRow[] | null, error: answer.error };
+    };
+    let { data, error } = await ask(true);
+    if (before0031(error)) ({ data, error } = await ask(false));
+    if (error) return UNAVAILABLE;
+    const found = new Map(cards(data).map((c) => [c.slug, c]));
+    const posts = wanted.flatMap((slug) => found.get(slug) ?? []);
+    return posts.length ? { state: "ok", posts } : { state: "none" };
+  } catch {
+    return UNAVAILABLE;
+  }
+}
+
+/** Kept for a minute like the list, and refreshed with it: a failed read is thrown through the cache so that it is never kept. */
+const cachedSeries = unstable_cache(
+  async (slugs: string): Promise<BlogLatest> => {
+    const result = await readSeries(slugs.split(","));
+    if (result.state === "failed") throw new BlogReadFailed(result.reason);
+    return result;
+  },
+  ["blog-series"],
+  { revalidate: BLOG_REVALIDATE, tags: [BLOG_CACHE_TAG] },
+);
+
+/** The parts of a series that are public now, in the series' own order. The hub and every part ask the same kept question. */
+export async function seriesPosts(slugs: readonly string[]): Promise<BlogLatest> {
+  if (!createPublicSupabase()) return NOT_CONFIGURED;
+  try {
+    return await cachedSeries(slugs.join(","));
+  } catch (e) {
+    return e instanceof BlogReadFailed && e.message === "not-configured" ? NOT_CONFIGURED : UNAVAILABLE;
+  }
+}
+
 /** The newest posts, for a short section on another page. */
 export async function latestPosts(n: number): Promise<BlogLatest> {
   const supabase = createPublicSupabase();
@@ -350,18 +415,14 @@ export async function latestPosts(n: number): Promise<BlogLatest> {
   }
 }
 
-/** The newest posts as a feed lists them: no body is read. */
-export async function feedPosts(n: number): Promise<BlogFeed> {
+/** The newest posts as a feed lists them: no body is read. With a category, the newest of that category. */
+export async function feedPosts(n: number, category: BlogCategory | null = null): Promise<BlogFeed> {
   const supabase = createPublicSupabase();
   if (!supabase) return NOT_CONFIGURED;
   try {
-    const { data, error } = await supabase
-      .from("blog_posts")
-      .select("slug, title, excerpt, category, byline, published_at")
-      .eq("status", "published")
-      .lte("published_at", new Date().toISOString())
-      .order("published_at", { ascending: false })
-      .limit(Math.min(Math.max(1, Math.floor(n)), 100));
+    let query = supabase.from("blog_posts").select("slug, title, excerpt, category, byline, published_at").eq("status", "published").lte("published_at", new Date().toISOString());
+    if (category) query = query.eq("category", category);
+    const { data, error } = await query.order("published_at", { ascending: false }).limit(Math.min(Math.max(1, Math.floor(n)), 100));
     if (error) return UNAVAILABLE;
     const items = ((data ?? []) as (Omit<BlogFeedItem, "published_at"> & { published_at: string | null })[]).flatMap((r) => (r.published_at ? [{ ...r, published_at: r.published_at }] : []));
     return items.length ? { state: "ok", items } : { state: "none" };
@@ -393,7 +454,7 @@ export async function indexablePosts(): Promise<BlogIndex> {
     for (let from = 0; from < 10 * step; from += step) {
       const { data, error } = await supabase
         .from("blog_posts")
-        .select("slug, category, published_at, updated_at, canonical_url")
+        .select("slug, title, category, published_at, updated_at, canonical_url")
         .eq("status", "published")
         .eq("noindex", false)
         .lte("published_at", now)
@@ -404,11 +465,11 @@ export async function indexablePosts(): Promise<BlogIndex> {
         if (error.code === "PGRST103") break;
         return UNAVAILABLE;
       }
-      const rows = (data ?? []) as { slug: string; category: BlogCategory; published_at: string | null; updated_at: string; canonical_url: string }[];
+      const rows = (data ?? []) as { slug: string; title: string; category: BlogCategory; published_at: string | null; updated_at: string; canonical_url: string }[];
       for (const r of rows) {
         if (!r.published_at || pointsElsewhere(r.slug, r.canonical_url)) continue;
         const day = blogDay(Date.parse(r.updated_at) > Date.parse(r.published_at) ? r.updated_at : r.published_at);
-        if (day) entries.push({ slug: r.slug, lastmod: day, category: r.category });
+        if (day) entries.push({ slug: r.slug, lastmod: day, category: r.category, title: r.title });
       }
       if (rows.length < step) break;
     }

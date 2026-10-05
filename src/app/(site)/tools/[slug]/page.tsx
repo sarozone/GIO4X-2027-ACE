@@ -4,18 +4,23 @@ import { notFound } from "next/navigation";
 import { SaveButton } from "@/components/desk/Buttons";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { NextSteps, PageHero } from "@/components/ui/Page";
+import { BreakEven } from "@/components/tools/BreakEven";
 import { CompoundGrowth } from "@/components/tools/CompoundGrowth";
+import { Correlation } from "@/components/tools/Correlation";
 import { CostLab } from "@/components/tools/CostLab";
 import { CurrencyConverter } from "@/components/tools/CurrencyConverter";
 import { Drawdown } from "@/components/tools/Drawdown";
+import { Expectancy } from "@/components/tools/Expectancy";
 import { FibonacciLevels } from "@/components/tools/FibonacciLevels";
 import { LeverageVisualizer } from "@/components/tools/LeverageVisualizer";
+import { LotConverter } from "@/components/tools/LotConverter";
 import { Margin } from "@/components/tools/Margin";
 import { OrderAnatomy } from "@/components/tools/OrderAnatomy";
 import { PipValue } from "@/components/tools/PipValue";
 import { PivotPoints } from "@/components/tools/PivotPoints";
 import { PositionSize } from "@/components/tools/PositionSize";
 import { ProfitLoss } from "@/components/tools/ProfitLoss";
+import { RiskOfRuin } from "@/components/tools/RiskOfRuin";
 import { RiskReward } from "@/components/tools/RiskReward";
 import { SpreadVisualizer } from "@/components/tools/SpreadVisualizer";
 import { SwapCalculator } from "@/components/tools/SwapCalculator";
@@ -47,6 +52,11 @@ const TOOLS: Record<string, { Component: ComponentType<ToolProps>; rates: boolea
   "pivot-points": { Component: PivotPoints, rates: false },
   "fibonacci-levels": { Component: FibonacciLevels, rates: false },
   swap: { Component: SwapCalculator, rates: false },
+  "risk-of-ruin": { Component: RiskOfRuin, rates: false },
+  expectancy: { Component: Expectancy, rates: false },
+  "break-even": { Component: BreakEven, rates: true },
+  "lot-size-converter": { Component: LotConverter, rates: false },
+  correlation: { Component: Correlation, rates: false },
 };
 
 /** The tools in the order the hub lists them (its groups, then anything not yet grouped): the order "previous" and "next" follow. */

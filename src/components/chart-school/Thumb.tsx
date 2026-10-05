@@ -1,5 +1,5 @@
 import type { LessonSlug } from "@/data/chart-school";
-import { atr, bollinger, levels, lineThrough, macd, rsi, sma, stochastic, swings, type Series } from "./indicators";
+import { adx, atr, bollinger, cci, donchian, keltner, levels, lineThrough, macd, parabolicSar, rsi, sma, stochastic, swings, williamsR, type Series } from "./indicators";
 import { makeBars } from "./series";
 
 /**
@@ -50,7 +50,7 @@ export function IndicatorThumb({ kind }: { kind: LessonSlug }) {
   const bars = makeBars(SEED);
   const closes = bars.map((b) => b.c);
   const from = bars.length - SHOWN;
-  const under = kind === "rsi" || kind === "macd" || kind === "atr" || kind === "stochastic";
+  const under = kind === "rsi" || kind === "macd" || kind === "atr" || kind === "stochastic" || kind === "adx" || kind === "cci" || kind === "williams-r";
   const priceBottom = under ? 52 : H - 6;
 
   const on: Series[] = [];
@@ -77,6 +77,31 @@ export function IndicatorThumb({ kind }: { kind: LessonSlug }) {
     const s = stochastic(bars, 14, 3, 3);
     below = [s.k, s.d];
     fixed = [0, 100];
+  }
+  if (kind === "adx") {
+    const a = adx(bars, 14);
+    below = [a.adx, a.plusDI];
+  }
+  if (kind === "cci") below = [cci(bars, 20).cci];
+  if (kind === "williams-r") {
+    below = [williamsR(bars, 14).r];
+    fixed = [-100, 0];
+  }
+  if (kind === "donchian-channels") {
+    const d = donchian(bars, 20);
+    on.push(d.upper, d.lower);
+  }
+  if (kind === "keltner-channels") {
+    const k = keltner(bars, 20, 10, 2);
+    on.push(k.upper, k.lower);
+  }
+  if (kind === "parabolic-sar") {
+    // one path for each side of the price, so that no line is drawn across a reversal
+    const p = parabolicSar(bars, 0.02, 0.2);
+    on.push(
+      p.sar.map((v, i) => (p.rising[i] === true ? v : null)),
+      p.sar.map((v, i) => (p.rising[i] === false ? v : null)),
+    );
   }
   const win = bars.slice(from);
   if (kind === "support-and-resistance") {

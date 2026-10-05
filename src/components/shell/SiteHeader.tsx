@@ -7,9 +7,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { nav } from "@/config/nav";
 import { Logo } from "@/components/brand/Logo";
 import { AppearanceButton } from "@/components/shell/Appearance";
+import { AskAiButton } from "@/components/shell/AskAi";
 import { LanguageSwitcher } from "@/components/shell/LanguageSwitcher";
 import { openCommandBar } from "@/components/shell/CommandBar";
-import { LensButton } from "@/components/shell/Lens";
+import { LensButton, openLensAsk } from "@/components/shell/Lens";
+import { useAiAvailable } from "@/components/shell/LensAsk";
 import { NavGlyph, panelLight, rowFx } from "@/components/shell/nav-glyphs";
 import { shellLabels } from "@/i18n/shell";
 
@@ -41,6 +43,8 @@ export function SiteHeader() {
   const closeTimer = useRef<number | undefined>(undefined);
   const openTimer = useRef<number | undefined>(undefined);
   const headerRef = useRef<HTMLElement>(null);
+  // GIO4X AI: false on the server and on the first render in the browser, so "Ask AI" is in neither; it joins the row once the server has said the assistant is there
+  const ai = useAiAvailable(true);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -142,6 +146,10 @@ export function SiteHeader() {
         </nav>
 
         <div className="ml-auto flex items-center gap-5">
+          {/* GIO4X AI, when there is one. First in the group, so nothing that was here moves when it arrives. By the row's own
+              widths: on a phone it is in the drawer only; from 640px the mark; not between 1080 and 1215px, where the six
+              sections have just joined the row and it is full; the mark again from 1216px, and the words from 1280px. */}
+          {ai && <AskAiButton className="hidden min-[640px]:max-[1079px]:inline-flex min-[1216px]:inline-flex" />}
           <button
             type="button"
             onClick={() => openCommandBar()}
@@ -150,7 +158,7 @@ export function SiteHeader() {
           >
             <SearchIcon />
             <span className="hidden text-[0.8125rem] font-medium xl:inline">{t("Search")}</span>
-            <kbd className="hidden rounded-xs border border-line px-5 text-[0.6875rem] font-medium text-ink-3 xl:inline">Ctrl K</kbd>
+            <kbd className="hidden rounded-xs border border-line px-5 text-[0.6875rem] font-medium text-ink-3 min-[1900px]:inline">Ctrl K</kbd>
           </button>
           <button type="button" onClick={() => openCommandBar()} className="btn btn-quiet h-[2.125rem] px-8 sm:hidden" aria-label="Search GIO4X">
             <SearchIcon />
@@ -160,7 +168,7 @@ export function SiteHeader() {
           {/* languages: a popover here where the row has room, a list in the drawer below that, and always in the footer */}
           <LanguageSwitcher className="hidden min-[1280px]:block" />
           {/* the official social profiles, once they are entered in config/destinations.ts; nothing until then */}
-          <SocialLinks limit={5} className="hidden min-[1400px]:flex" />
+          <SocialLinks limit={5} className="hidden min-[1900px]:flex" />
           <Link href="/sign-in" className="btn btn-quiet btn-sm hidden md:inline-flex">
             {t("Sign in")}
           </Link>
@@ -298,6 +306,20 @@ export function SiteHeader() {
               {t("Open account")}
             </Link>
           </div>
+          {ai && (
+            <button
+              type="button"
+              className="btn btn-ghost mt-13 w-full"
+              onClick={() => {
+                setDrawer(false);
+                // the menu button takes the focus first, so that is where it returns when the Lens is closed
+                headerRef.current?.querySelector<HTMLButtonElement>('[aria-controls="site-drawer"]')?.focus();
+                openLensAsk();
+              }}
+            >
+              Ask GIO4X AI
+            </button>
+          )}
           <LanguageSwitcher variant="list" className="mt-34 border-t border-line pt-21" />
         </nav>
       </div>

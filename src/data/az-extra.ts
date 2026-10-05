@@ -1,4 +1,6 @@
 import { COMMODITIES, commodityHref } from "@/data/commodities";
+import { CURRENCY_PROFILES, currencyProfileHref } from "@/data/currency-profiles";
+import { ECONOMIES, economyHref } from "@/data/economies";
 import { SECTION_PAGES } from "@/data/sections";
 
 /**
@@ -15,4 +17,7 @@ export const AZ_EXTRA: readonly { label: string; href: string; kind: string }[] 
   ...SECTION_PAGES.map((p) => ({ label: p.label, href: p.href, kind: p.kind })),
   // the commodities A to Z (/markets/commodities): one entry for each commodity
   ...COMMODITIES.map((c) => ({ label: c.name, href: commodityHref(c), kind: "Commodity" })),
+  // the currency and economy profiles (/markets/currencies, /markets/economies): one entry for each
+  ...CURRENCY_PROFILES.map((c) => ({ label: `${c.name} (${c.code})`, href: currencyProfileHref(c), kind: "Currency" })),
+  ...ECONOMIES.map((e) => ({ label: `${e.name} (economy)`, href: economyHref(e), kind: "Economy" })),
 ];

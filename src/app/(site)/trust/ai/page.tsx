@@ -40,7 +40,7 @@ const today: { t: string; state: string; d: string }[] = [
     ? {
         t: "GIO4X AI assistant",
         state: "Live",
-        d: `A language model that answers questions from pages GIO4X has published. It is in the Lens panel, under “Ask”, and nowhere else on the site. The model is ${model.label}, provided by ${AI_PROVIDER}. To write an answer, your question, at most the last ${AI_LIMITS.historyMax} exchanges of the same conversation and short passages of this website’s own pages are sent to ${AI_PROVIDER}, which handles them under its own terms; nothing that identifies you is added. GIO4X does not store your questions or the answers. Limits: ${AI_LIMITS.questionMax} characters a question, ${AI_LIMITS.perDay.limit} questions a day from one address.`,
+        d: `A language model that answers questions from pages GIO4X has published. It answers in one place, the Lens panel, under “Ask”. “Ask AI” in the site header and menu, “Ask GIO4X AI” in the Help window, and the question boxes on the homepage and the Help & FAQ page all open that panel; none of them answers anything itself. The model is ${model.label}, provided by ${AI_PROVIDER}. To write an answer, your question, at most the last ${AI_LIMITS.historyMax} exchanges of the same conversation and short passages of this website’s own pages are sent to ${AI_PROVIDER}, which handles them under its own terms; nothing that identifies you is added. GIO4X does not store your questions or the answers. Limits: ${AI_LIMITS.questionMax} characters a question, ${AI_LIMITS.perDay.limit} questions a day from one address.`,
       }
     : { t: "Generative AI assistant", state: "Not live", d: "There is no chatbot or generative assistant on the public website in this release." },
 ];
@@ -79,7 +79,7 @@ export default function AiPage() {
         title={live ? "A language model answers in one place on this website." : "No language model is answering you on this website."}
         lead={
           live
-            ? "It is the GIO4X AI assistant in the Lens panel, it is labelled where you read it, and nothing else on the site is a language model. This page records what is and is not AI here, and the limits the assistant keeps."
+            ? "It is the GIO4X AI assistant in the Lens panel, reached from “Ask AI” in the site header or menu; it is labelled where you read it, and nothing else on the site is a language model. This page records what is and is not AI here, and the limits the assistant keeps."
             : "That is the state of this release, and it is worth saying plainly. This page records what is and is not AI here today, and the limits any assistant will keep if one is introduced."
         }
       />
