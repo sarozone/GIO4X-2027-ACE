@@ -1,4 +1,5 @@
 import type { SceneId } from "@/components/cockpit/scenes";
+import { parseLocalePath, type LocalePage } from "@/i18n/config";
 
 /**
  * Which instrument a page opens with.
@@ -89,6 +90,9 @@ const ROUTES: [prefix: string, scene: SceneId, ownTag?: string][] = [
   ["/markets/currency-strength", "strength"],
   ["/markets/central-banks", "banks"],
   ["/markets/events", "events"],
+  // the commodities A to Z has no scene of its own: it opens with the Markets instrument, and an energy or
+  // precious-metal entry asks for its family's scene itself (see markets/commodities/[slug]/page.tsx)
+  ["/markets/commodities", "markets"],
   ["/markets", "markets"],
   ["/trading/accounts", "accounts"],
   ["/trading/conditions", "conditions"],
@@ -145,12 +149,22 @@ const ROUTES: [prefix: string, scene: SceneId, ownTag?: string][] = [
 // the Trader Toolkit opens with the slide rule; the workbench is My desk's
 const EXACT: Record<string, SceneId> = { "/tools": "instrument" };
 
+/**
+ * The translated pages (/de, /ar/guide: docs/I18N.md) have no scene of their own. Each borrows a framed
+ * one that fits: the chart of the whole site for a language's home page (the homepage's own flight deck is
+ * composed for the homepage's stage and stays there), and for the other three the scene of the English
+ * page they stand beside (/explore, /legal/risk, /contact).
+ */
+const TRANSLATED: Record<LocalePage, SceneId> = { "": "atlas", guide: "signpost", "risk-warning": "barometer", contact: "beacon" };
+
 /** Everything else (About, Careers, Media, Design, What's new, Preferences, not found) carries the rosette. */
 const FALLBACK: SceneId = "rosette";
 
 export function sceneFor(pathname: string): SceneChoice {
   const path = pathname.replace(/\/+$/, "") || "/";
   if (path === "/") return { scene: "flightdeck", tag: "" };
+  const translated = parseLocalePath(path);
+  if (translated) return { scene: TRANSLATED[translated.page], tag: translated.lang };
   const exact = Object.prototype.hasOwnProperty.call(EXACT, path) ? EXACT[path] : undefined;
   if (exact) return { scene: exact, tag: "" };
   for (const [prefix, scene, ownTag] of ROUTES) {

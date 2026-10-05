@@ -255,3 +255,15 @@ two-column section has a short column beside a long one, or text in a narrow mea
 more of the row empty. It measures each section when it first comes near the screen (sections far from the
 screen are not laid out), never makes a section taller and never covers words, pictures, rules or panels.
 Desktop widths only. A block can opt out with `data-no-gapfill`.
+
+Since 5 October 2026 what stands there is a full scene, not a small figure (the owner's direction: the
+small one-word figures were too slight, and the pie on the homepage was to go). A scene is as wide and as
+tall as the space it found, and tells its subject in up to five chapters: a heading and one sentence, then
+a framed, moving drawing per chapter with a label and a line of explanation, joined by a spine. A tall
+space runs the chapters down the page, a wide one sets them side by side, and the more room there is the
+more chapters are shown; a space taller than 1,400 pixels is shared between two scenes on related topics.
+Each chapter answers the pointer in its own way. The framework is `src/components/fx/gap/full/kit.ts`
+(`story`, `scene`), the thirty scenes are in `full/a.ts`, `b.ts`, `c.ts` and `leverage.ts` (the reference
+one), registered by topic in `full/index.ts`; the topic is still chosen by `gap/choose.ts`. The rules are
+unchanged: an illustration and never data (no digit is drawn), palette colours only, one composed still
+under reduced motion. The old figures (`gap/figures-*.ts`) are kept in the repository and drawn nowhere.

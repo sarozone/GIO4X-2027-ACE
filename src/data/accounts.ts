@@ -93,7 +93,10 @@ export const accountRows: { key: keyof Account; label: string; term?: string }[]
   { key: "execution", label: "Execution", term: "market-order" },
 ];
 
-/** Services are not available to residents of these jurisdictions (list as published on both previous sites). */
+/**
+ * Services are not available to residents of these jurisdictions: the list as published on both
+ * previous sites, and the United Kingdom and the United States by the owner's decision of 5 October 2026.
+ */
 export const restrictedJurisdictions = [
-  "Afghanistan", "Belarus", "Burma", "Burundi", "Central African Republic", "China", "Congo", "Cuba", "Egypt", "Guinea", "Guinea-Bissau", "Iraq", "Iran", "Indonesia", "Lebanon", "Lesotho", "Libya", "Malaysia", "Maldives", "Mali", "Moldova", "Nicaragua", "Nigeria", "North Korea", "Pakistan", "Russia", "Somalia", "Sudan", "South Sudan", "Syria", "Tunisia", "Turkey", "Vanuatu", "Venezuela", "Yemen", "Zimbabwe",
+  "Afghanistan", "Belarus", "Burma", "Burundi", "Central African Republic", "China", "Congo", "Cuba", "Egypt", "Guinea", "Guinea-Bissau", "Iraq", "Iran", "Indonesia", "Lebanon", "Lesotho", "Libya", "Malaysia", "Maldives", "Mali", "Moldova", "Nicaragua", "Nigeria", "North Korea", "Pakistan", "Russia", "Somalia", "Sudan", "South Sudan", "Syria", "Tunisia", "Turkey", "United Kingdom", "United States", "Vanuatu", "Venezuela", "Yemen", "Zimbabwe",
 ];

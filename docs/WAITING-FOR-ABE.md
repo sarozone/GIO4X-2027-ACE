@@ -9,7 +9,7 @@ has been guessed. Each item says where the answer goes, so supplying it is a con
 |---|---|---|---|
 | A1 | **Which legal entity contracts with clients?** | The newer site says "GIO4X, a subsidiary of 777 Capital Markets Limited (UK), Company No. 17049134" (Ruislip, London). The older site says "Reg. No. 15807, Hamchako, Mutsamudu, Anjouan, Union of Comoros", also labelled "St. Lucia", and names "GIO4X Forex Limited". This build carries the newer statement verbatim and nothing else. | `src/config/site.ts`, `src/config/legal.ts` |
 | A2 | **Regulatory status: regulator, licence number, register link.** | Both old sites say "regulated / licensed" many times and never name an authority. A UK company number is a Companies House registration, not an FCA authorisation. The new site makes **no** regulatory claim and says so on the Transparency page. | `site.regulation` in `src/config/site.ts`; Trust Centre pages |
-| A3 | **Are UK and US residents accepted?** | The old site excludes both; the newer list of 36 restricted jurisdictions (carried over) does not, while naming a UK parent. | `restrictedJurisdictions` in `src/data/accounts.ts` |
+| A3 | ~~Are UK and US residents accepted?~~ **Answered 5 October 2026: no.** | The United Kingdom and the United States were added to the list (now 38), which the footer, the account pages, the legal page and the account-interest form all read; the form also recognises "UK", "USA" and the like. | `restrictedJurisdictions` in `src/data/accounts.ts` |
 | A4 | **Retail-loss percentage** for the risk warning. | Two different figures were published (75% and 63.21%), neither sourced. None is shown. | `src/config/legal.ts`, `/legal/risk` |
 | A5 | **Negative balance protection: yes or no?** | Both old sites promise it and also say "you may lose more than your initial investment". Not stated on the new site. | `/trust/client-funds`, `/legal/terms` |
 | A6 | **Is MetaTrader 5 offered, on which servers, for which accounts?** | Your brief says MT5 × 777 Raptor. The newer site said Raptor only; the older one mentioned MT4/MT5. The MT5 page describes the platform itself (public MetaQuotes facts) and marks every GIO4X-specific detail "not yet published". | `src/data/platforms.ts` |
@@ -80,8 +80,8 @@ If any of these can be evidenced, send the evidence and it will be added with it
 | F2 | Licensed market-data provider (quotes, economic calendar, policy rates) | Replaces the "unavailable" states; adapters are in `src/lib/rates.ts` and the Market pages |
 | F3 | Approved analytics tool and consent wording | The data layer in `src/lib/analytics.ts` is ready and inert |
 | F4 | AI provider key and approved knowledge sources | GIO4X AI is deliberately not live; see `/trust/ai` |
-| F5 | Email sending domain (SPF, DKIM, DMARC) | Needed before any newsletter or auto-reply is offered |
-| F6 | First administrator for GIO4X Control | Create the user in Supabase Auth, then run the one-line SQL in `docs/CONTROL.md` |
+| F5 | Email sending domain (SPF, DKIM, DMARC) | Needed before any newsletter or auto-reply is offered, and before a copy of each enquiry can reach `info@gio4x.com` by e-mail (built on 5 October 2026, waiting only for `RESEND_API_KEY` and `RESEND_FROM_EMAIL`). The steps are in `docs/NEXT-STEPS.md`, section 1 |
+| F6 | Administrators for GIO4X Control | **Named 5 October 2026:** `aby777333@gmail.com` (already an administrator), `abe@gio4x.com`, `info@gio4x.com`. The last two do not exist as users yet: create each in Supabase Auth with a password of your own, then the one-line SQL in `docs/CONTROL.md` is run for each. |
 | F7 | TT Norms web-font licence confirmation | The supplied TT Norms files are served as Latin-subset WOFF2 from this repository, which is public on GitHub. Please confirm the licence covers web embedding, or make the repository private. |
 | F8 | Google Search Console / Bing Webmaster verification tokens | `GOOGLE_SITE_VERIFICATION`, `BING_SITE_VERIFICATION` |
 
@@ -115,3 +115,18 @@ owner's to confirm or change. Changing one is a one-line edit in the file named.
 Not filled from other brokers, and still waiting: anything that is a statement about GIO4X's legal or
 regulatory position (A1, A2, A5), who it accepts (A3), its documents (A8), or a figure that would be
 presented as evidence (A4, section E). Those cannot be borrowed from another firm.
+
+## I. Languages (added 5 October 2026)
+
+Seven languages now have four pages each (home, site guide, risk warning, contact): Hindi, Tamil,
+Arabic, Spanish, Portuguese, French and German. The translations were written without a human
+translator and every page says so. What exists and what does not is in `docs/I18N.md`, section 6.
+
+| # | Item | Why it is open | Where the answer goes |
+|---|---|---|---|
+| I1 | **A named, qualified reviewer for each language**, and an approver inside GIO4X | No translation has been reviewed. Each page carries the notice "awaiting review by a qualified translator; the English version prevails" until its language is approved. The risk warning should be read first. | `src/i18n/<lang>.ts`; the notice is `notice` in the same file |
+| I2 | **Translated legal pages: yes or no** | Terms, Risk Disclosure, Privacy, AML and Cookies stay English and are linked as English. Only the short risk warning and the company line are translated, with the English original beneath. | `src/data/legal-docs.ts`; `docs/I18N.md` section 4, item 4 |
+| I3 | **Support in each language** | The contact pages invite a message in the visitor's language and say the reply may be in English. Nobody has been named to answer in any of the seven. | `contact.lead` in each `src/i18n/<lang>.ts` |
+| I4 | **May GIO4X market to speakers of each language, and where?** | A language is read as an intention to serve its speakers. Several Arabic- and Spanish-speaking countries are on the restricted list, and so, since 5 October 2026, are the United Kingdom and the United States. The translated pages show the list; the decision itself is not on record. | `docs/I18N.md` section 4, item 2 |
+| I5 | **Brazilian or European Portuguese; which Spanish** | Portuguese is written in the Brazilian standard, Spanish in a neutral European-leaning one. | `src/i18n/pt.ts`, `src/i18n/es.ts`; `og` in `src/i18n/config.ts` |
+| I6 | **Is "The Gentleman’s Brokerage House" translated?** | It is kept in English with one explanatory sentence per language. | `home.what.tagline` in each dictionary |

@@ -2,6 +2,7 @@ import { FooterMotto } from "@/components/play/Guided";
 import Link from "next/link";
 import { nav, secondaryNav } from "@/config/nav";
 import { site } from "@/config/site";
+import { LanguageSwitcher } from "@/components/shell/LanguageSwitcher";
 import { SocialLinks, socialEntries, socialSlots } from "@/components/shell/SocialLinks";
 import { companyLine, riskWarning } from "@/config/legal";
 import { restrictedJurisdictions } from "@/data/accounts";
@@ -147,6 +148,11 @@ export function SiteFooter() {
           </Link>
         </div>
       )}
+
+      {/* languages: each leads to the pages that exist in it (docs/I18N.md) */}
+      <div className="wrap relative border-t border-night-line py-21">
+        <LanguageSwitcher variant="list" />
+      </div>
 
       {/* risk: readable by design, never fine print. It runs the full width of the page column, like the links above it. */}
       <div className="wrap relative border-t border-night-line py-34">

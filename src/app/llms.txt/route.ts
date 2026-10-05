@@ -1,4 +1,5 @@
 import { absoluteUrl, site } from "@/config/site";
+import { COMMODITIES, TRADED_COMMODITIES } from "@/data/commodities";
 import { assetClasses } from "@/data/instruments";
 import { tools } from "@/data/tools";
 
@@ -22,6 +23,7 @@ export function GET() {
     "## Markets",
     `- [Market Command](${u("/markets")}): sessions, reference rates and market structure`,
     ...assetClasses.map((a) => `- [${a.name}](${u(`/markets/${a.key}`)}): ${a.line}`),
+    `- [Commodities A to Z](${u("/markets/commodities")}): a general reference to ${COMMODITIES.length} traded commodities (what each is, how it is quoted, where its reference contract is listed); only ${TRADED_COMMODITIES.length} of them are GIO4X instruments, and each page says which`,
     `- [World Market Clock](${u("/markets/clock")}): regular trading hours of nine financial centres`,
     `- [Central Bank Watch](${u("/markets/central-banks")}): mandate and policy instrument of nine central banks, with primary sources`,
     `- [Economic Events](${u("/markets/events")}): what major data releases measure and who publishes them`,

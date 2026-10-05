@@ -3,44 +3,49 @@
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { Figure, clamp } from "@/components/figures/Figure";
-import { GAP_FIGURES, hashText, pickTopic, type TopicId } from "@/components/fx/gap";
+import { Figure } from "@/components/figures/Figure";
+import { hashText, pickTopic, type TopicId } from "@/components/fx/gap";
+import { FULL_SCENES } from "@/components/fx/gap/full";
 
 /**
- * GAP FILL — a small picture in the empty half of a two-column section.
+ * GAP FILL — an animated explanation in the empty half of a two-column section.
  *
  * Many sections set a short piece of text beside a long list (the `phi` and
  * `phi-r` grids). On a wide screen the short column is then mostly empty. This
  * looks at the page once it has been laid out and, wherever a column ends well
- * above its neighbour and holds no picture of its own, stands a figure in the
+ * above its neighbour and holds no picture of its own, stands a scene in the
  * space. It does the same for text set in a narrow measure with the rest of
  * the row empty: it measures how far the words, pictures, rules and panels of
- * a run of blocks actually reach, and stands a figure to their right when a
+ * a run of blocks actually reach, and stands a scene to their right when a
  * third of the width or more is unused. It never makes a section taller and
- * never covers anything: a figure is only as tall and as wide as the space
- * that was already there. Below the desktop layout the columns stack and
- * there is no gap, so nothing is added.
+ * never covers anything; and since 5 October 2026 it fills the space it finds:
+ * a scene is as tall and as wide as the room that was already there (the
+ * small one-word figures it used to draw are no longer shown). Below the
+ * desktop layout the columns stack and there is no gap, so nothing is added.
  *
- * The figure is chosen by what the section is about: its heading and the start
- * of its text are matched against the words each figure answers to
+ * The scene is chosen by what the section is about: its heading and the start
+ * of its text are matched against the words each topic answers to
  * (`fx/gap/choose.ts`), and the best match not yet used on this page is drawn.
- * No picture appears twice on a page: when nothing fits, one of three neutral
- * figures is taken, and when those are used the space is left empty. Each
- * figure is one idea with one small-caps word under it, modest in size, and
- * stands on the bare page with no card behind it. The seed comes from the
- * page's path and the section's heading, so a page keeps its pictures and two
- * pages that share a figure draw it differently.
+ * No scene appears twice on a page: when nothing fits, one of three neutral
+ * ones is taken, and when those are used the space is left empty. Each scene
+ * tells its subject in chapters (`fx/gap/full/kit.ts`): the taller the space,
+ * the more of them. A space taller than one scene can hold gets a second
+ * scene on the next best topic. The seed comes from the page's path and the
+ * section's heading, so a page keeps its scenes and two pages that share one
+ * draw it differently.
  *
- * The figures say nothing the text does not: no price, no number, nothing
+ * The scenes say nothing the text does not: no price, no number, nothing
  * that could be read as data. They are hidden from assistive technology, they
  * answer the pointer (the Figure host supplies it), and under reduced motion
  * or low visual effects each is one still frame.
  */
 
 const MIN_GAP = 230;
-/** the tallest a figure in a short column may be, and the widest (22rem) */
-const MAX_H = 240;
-const COL_MAX_W = 352;
+/** the tallest one scene is drawn: a taller space is shared between two or more */
+const MAX_H = 1400;
+/** the least height a scene is drawn at, and the space kept between two that share a gap */
+const MIN_H = 190;
+const BETWEEN = 34;
 const HOST = "gx-gapfill";
 /** a column that already carries a picture, a form or a table is left alone */
 const HAS_OWN = "canvas, img, video, picture, form, table, .gx-stage, .gx-figure, svg[width], svg[viewBox]";
@@ -86,11 +91,9 @@ type Slot = { host: HTMLElement; figure: TopicId; seed: number; ratio: number };
 /** the room there must be beside a run of narrow blocks, and the space kept between the words and the figure */
 const SIDE_MIN_W = 260;
 const SIDE_GAP = 55;
-const SIDE_MAX_W = 300;
-const SIDE_MAX_H = 220;
-/** one figure for about this much height of text, and never more than this many in a run */
-const SIDE_EVERY = 620;
-const SIDE_MOST = 2;
+const SIDE_MAX_W = 760;
+/** never more than this many scenes in one run of text */
+const SIDE_MOST = 3;
 const REPLACED = new Set(["IMG", "CANVAS", "VIDEO", "SVG", "IFRAME", "INPUT", "SELECT", "TEXTAREA", "BUTTON", "TABLE", "HR", "PICTURE"]);
 
 /**
@@ -177,10 +180,10 @@ function sideSlots(outer: HTMLElement, pick: Pick): Slot[] {
     const w = Math.min(SIDE_MAX_W, rightEdge - found.ink - SIDE_GAP);
     if (w < SIDE_MIN_W) return out;
     const runH = found.bottom - found.top;
-    const count = Math.max(1, Math.min(SIDE_MOST, Math.round(runH / SIDE_EVERY)));
+    const count = Math.max(1, Math.min(SIDE_MOST, Math.ceil(runH / MAX_H)));
     const each = runH / count;
-    const h = Math.min(each - 34, SIDE_MAX_H, w / 1.05);
-    if (h < 170) return out;
+    const h = Math.min(each - (count > 1 ? BETWEEN : 0), MAX_H);
+    if (h < MIN_H) return out;
     if (getComputedStyle(wrap).position === "static") {
       wrap.style.position = "relative";
       wrap.dataset.gapfillRel = "1";
@@ -196,7 +199,7 @@ function sideSlots(outer: HTMLElement, pick: Pick): Slot[] {
       host.style.top = `${found.top - box.top + each * i + (each - h) / 2}px`;
       host.style.width = `${w}px`;
       wrap.appendChild(host);
-      out.push({ host, ...chosen, ratio: clamp(w / h, 1.05, 2.4) });
+      out.push({ host, ...chosen, ratio: w / h });
     }
   }
   return out;
@@ -216,20 +219,33 @@ function gridSlot(grid: HTMLElement, pick: Pick): Slot[] {
   const gap = contentHeight(tall) - contentHeight(short);
   if (gap < MIN_GAP || short.querySelector(HAS_OWN)) return [];
   const width = short.getBoundingClientRect().width;
-  // a column that travels with the page (sticky) must still fit in the window with its figure
-  const sticky = getComputedStyle(short).position === "sticky";
-  const room = sticky ? window.innerHeight - 120 - contentHeight(short) : gap - 34;
-  const height = Math.min(gap - 34, MAX_H, width / 1.25, room);
-  if (height < 170) return [];
-  const chosen = pick(grid, 0);
-  if (!chosen) return [];
-  const host = document.createElement("div");
-  host.className = `${HOST} no-print`;
-  host.setAttribute("aria-hidden", "true");
-  host.style.marginTop = "2.125rem";
-  host.style.maxWidth = "22rem";
-  short.appendChild(host);
-  return [{ host, ...chosen, ratio: clamp(Math.min(width, COL_MAX_W) / height, 1.1, 2.4) }];
+  // a space taller than one scene is shared between two or more
+  const count = Math.max(1, Math.ceil((gap - BETWEEN) / (MAX_H + BETWEEN)));
+  const height = Math.min(gap / count - BETWEEN - 2, MAX_H);
+  if (height < MIN_H) return [];
+  // A short column that travelled with the page (sticky) left the rest of its side empty as it went.
+  // The scenes now fill that side from top to bottom, so the column stays where it is while they are there.
+  if (getComputedStyle(short).position === "sticky") {
+    short.style.position = "static";
+    short.dataset.gapfillRel = "1";
+  }
+  const out: Slot[] = [];
+  for (let i = 0; i < count; i++) {
+    const chosen = pick(grid, i);
+    if (!chosen) break;
+    const host = document.createElement("div");
+    host.className = `${HOST} no-print`;
+    host.setAttribute("aria-hidden", "true");
+    host.style.marginTop = `${BETWEEN}px`;
+    short.appendChild(host);
+    out.push({ host, ...chosen, ratio: width / height });
+  }
+  // nothing left to draw on this page: the column goes back to travelling
+  if (!out.length && short.dataset.gapfillRel) {
+    short.style.position = "";
+    delete short.dataset.gapfillRel;
+  }
+  return out;
 }
 
 /** the height a column's own content takes, whatever the grid stretched it to */
@@ -328,8 +344,8 @@ export function GapFill() {
   return <>{slots.map((s, i) => (s.host.isConnected ? createPortal(<GapFigure figure={s.figure} seed={s.seed} ratio={s.ratio} />, s.host, `${pathname}-${i}`) : null))}</>;
 }
 
-/** one gap figure: its drawing is made once for its seed */
+/** one gap scene: its drawing is made once for its seed */
 function GapFigure({ figure, seed, ratio }: { figure: TopicId; seed: number; ratio: number }) {
-  const draw = useMemo(() => GAP_FIGURES[figure](seed), [figure, seed]);
+  const draw = useMemo(() => FULL_SCENES[figure](seed), [figure, seed]);
   return <Figure draw={draw} ratio={ratio} />;
 }

@@ -2,12 +2,17 @@ import { PLAYBOOK } from "@/data/playbook";
 import { SECTION_PAGES } from "@/data/sections";
 import { nav, secondaryNav } from "@/config/nav";
 import { articles } from "@/data/articles";
+import { COMMODITIES, commodityHref } from "@/data/commodities";
 import { lessons } from "@/data/academy";
 import { glossary } from "@/data/glossary";
 import { assetClasses, instrumentHref, instruments } from "@/data/instruments";
 import { centralBanks, econEvents } from "@/data/knowledge";
 import { tools } from "@/data/tools";
+import { localeSitemapPaths } from "@/i18n/config";
 import { CONTENT_REVISED, latest, type SitemapEntry, type SitemapName } from "@/lib/sitemap";
+
+/** The date the translated pages were last revised (src/i18n). */
+const LOCALES_REVISED = "2026-10-05";
 
 /** Paths that exist but must never be listed: gateways, utilities, private surfaces. */
 const NOT_INDEXED = new Set(["/search", "/preferences", "/sign-in", "/open-account", "/desk", "/offline"]);
@@ -34,7 +39,12 @@ export function sitemapEntries(name: SitemapName): SitemapEntry[] {
   switch (name) {
     case "pages":
       // with the pages generated from data in the newer sections (investing, chart school, history and the rest)
-      return [...fromNav, ...SECTION_PAGES.map((p) => ({ path: p.href, lastmod: CONTENT_REVISED }))];
+      return [
+        ...fromNav,
+        ...SECTION_PAGES.map((p) => ({ path: p.href, lastmod: CONTENT_REVISED })),
+        // the pages that exist in other languages (docs/I18N.md): four per language, and no others
+        ...localeSitemapPaths().map((path) => ({ path, lastmod: LOCALES_REVISED })),
+      ];
     case "markets":
       return [
         ...fromNav,
@@ -43,6 +53,8 @@ export function sitemapEntries(name: SitemapName): SitemapEntry[] {
         ...centralBanks.map((b) => ({ path: `/markets/central-banks/${b.slug}`, lastmod: CONTENT_REVISED })),
         { path: "/markets/events", lastmod: CONTENT_REVISED },
         ...econEvents.map((e) => ({ path: `/markets/events/${e.slug}`, lastmod: CONTENT_REVISED })),
+        // the commodities A to Z: its index comes from the navigation, its pages from the data
+        ...COMMODITIES.map((c) => ({ path: commodityHref(c), lastmod: CONTENT_REVISED })),
       ];
     case "instruments":
       return instruments.map((i) => ({ path: instrumentHref(i), lastmod: CONTENT_REVISED }));

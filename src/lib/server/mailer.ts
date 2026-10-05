@@ -67,3 +67,37 @@ export async function sendToEach(recipients: string[], subject: string, text: st
   }
   return { sent, failed: 0, error: null };
 }
+
+/** Where a copy of each enquiry is sent: GIO4X's public address unless the hosting environment names another. */
+function inbox(): string {
+  const set = process.env.CONTACT_INBOX?.trim();
+  return set && /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(set) ? set : "info@gio4x.com";
+}
+
+/**
+ * A copy of one enquiry or support request to GIO4X's own inbox, with the
+ * sender as reply-to, so that answering the e-mail answers the person. The
+ * record of the enquiry is the row in the database (GIO4X Control); this is
+ * a notification of it. It never fails the request that caused it: without
+ * the provider's settings, or if the provider refuses, it returns false and
+ * the enquiry is still stored. Nothing is logged but an error code.
+ */
+export async function notifyInbox(subject: string, text: string, replyTo: string | null): Promise<boolean> {
+  const s = settings();
+  if (!s) return false;
+  const reply = replyTo && /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(replyTo) ? replyTo : s.replyTo;
+  try {
+    const r = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${s.key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from: s.from, to: [inbox()], subject: subject.replace(/[\r\n]+/g, " ").slice(0, 160), text, html: toHtml(text), ...(reply ? { reply_to: reply } : {}) }),
+      signal: AbortSignal.timeout(6_000),
+      cache: "no-store",
+    });
+    if (!r.ok) console.error(`[mailer] inbox notification refused status=${r.status}`);
+    return r.ok;
+  } catch {
+    console.error("[mailer] inbox notification unreachable");
+    return false;
+  }
+}

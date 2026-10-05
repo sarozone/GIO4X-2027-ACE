@@ -15,11 +15,16 @@
  *   429       { ok: false, error }            rate limited (Retry-After set when known)
  *   503       { ok: false, error }            storage unavailable (generic message)
  *
+ * When outgoing e-mail is set up (see lib/server/mailer.ts) a copy of the
+ * stored enquiry is sent to GIO4X's inbox, info@gio4x.com, with the sender as
+ * reply-to. A failure there never fails the request.
+ *
  * Nothing about a submission is logged except an error code when storage
  * fails: never the message, the name, the address or the IP.
  */
 import { GENERIC_RATE_LIMITED, GENERIC_UNAVAILABLE, PRIVACY_VERSION } from "@/lib/server/constants";
 import { fail, json, newId, newReference } from "@/lib/server/http";
+import { notifyInbox } from "@/lib/server/mailer";
 import { classifyStorageError, honeypotFilled, openGate, submissionAllowed, tooFast } from "@/lib/server/public-form";
 import { countForm } from "@/lib/server/pulse";
 import { validateContact } from "@/lib/server/validate";
@@ -84,6 +89,28 @@ export async function POST(request: Request) {
     if (!error) {
       // +1 on the day's total for this form (a count, nothing about the sender); it cannot fail the request
       await countForm(request, input.accountInterest ? "interest" : "contact");
+      // a copy to GIO4X's inbox, when outgoing e-mail is set up; the stored row is the record either way
+      await notifyInbox(
+        `${input.accountInterest ? "Account interest" : "Enquiry"} ${reference}: ${input.topic}`,
+        [
+          `Reference: ${reference}`,
+          `Name: ${input.name}`,
+          `Email: ${input.email}`,
+          input.phone ? `Phone: ${input.phone}` : null,
+          input.country ? `Country: ${input.country}` : null,
+          `Topic: ${input.topic}`,
+          input.accountInterest ? `Account interest: ${input.accountInterest}` : null,
+          `Page: ${input.page ?? "-"}`,
+          `Marketing consent: ${input.marketingConsent ? "yes" : "no"}`,
+          "",
+          input.message || "(no message)",
+          "",
+          "Reply to this e-mail to answer the sender. The enquiry is also in GIO4X Control.",
+        ]
+          .filter((l): l is string => l !== null)
+          .join("\n"),
+        input.email,
+      );
       return json({ ok: true, reference });
     }
 

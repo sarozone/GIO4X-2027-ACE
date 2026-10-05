@@ -5,6 +5,7 @@
  * A new entry goes at the top.
  */
 export const RELEASES: readonly { id: string; title: string; href: string }[] = [
+  { id: "2026-10-05a", title: "Commodities A to Z: from aluminium to zinc", href: "/markets/commodities" },
   { id: "2026-10-04m", title: "Pivot points, Fibonacci levels and swap calculators", href: "/tools" },
   { id: "2026-10-04l", title: "Trading hours and market holidays", href: "/trading/hours" },
   { id: "2026-10-04k", title: "Contract specifications in one table", href: "/trading/specifications" },

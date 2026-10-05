@@ -7,9 +7,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { nav } from "@/config/nav";
 import { Logo } from "@/components/brand/Logo";
 import { AppearanceButton } from "@/components/shell/Appearance";
+import { LanguageSwitcher } from "@/components/shell/LanguageSwitcher";
 import { openCommandBar } from "@/components/shell/CommandBar";
 import { LensButton } from "@/components/shell/Lens";
 import { NavGlyph, panelLight, rowFx } from "@/components/shell/nav-glyphs";
+import { shellLabels } from "@/i18n/shell";
 
 /** Which URL prefixes belong to which primary section (a page is "in" exactly one). */
 const SECTION_PREFIXES: Record<string, string[]> = {
@@ -29,6 +31,9 @@ const SECTION_PREFIXES: Record<string, string[]> = {
  */
 export function SiteHeader() {
   const pathname = usePathname();
+  // on a translated page (/de, /ar/guide) the section names and the three actions are shown in its language;
+  // on every other address this returns the label it is given, so English is rendered exactly as written here
+  const t = shellLabels(pathname);
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
   const [drawer, setDrawer] = useState(false);
@@ -122,7 +127,7 @@ export function SiteHeader() {
                       open === s.key || current ? "text-ink" : "text-ink-2 hover:text-ink"
                     }`}
                   >
-                    {s.label}
+                    {t(s.label)}
                     <span
                       aria-hidden
                       className={`absolute inset-x-13 bottom-[0.4rem] h-px origin-left bg-accent transition-transform duration-[260ms] ${
@@ -144,7 +149,7 @@ export function SiteHeader() {
             aria-label="Search GIO4X (Control K)"
           >
             <SearchIcon />
-            <span className="hidden text-[0.8125rem] font-medium xl:inline">Search</span>
+            <span className="hidden text-[0.8125rem] font-medium xl:inline">{t("Search")}</span>
             <kbd className="hidden rounded-xs border border-line px-5 text-[0.6875rem] font-medium text-ink-3 xl:inline">Ctrl K</kbd>
           </button>
           <button type="button" onClick={() => openCommandBar()} className="btn btn-quiet h-[2.125rem] px-8 sm:hidden" aria-label="Search GIO4X">
@@ -152,13 +157,15 @@ export function SiteHeader() {
           </button>
           <LensButton />
           <AppearanceButton />
+          {/* languages: a popover here where the row has room, a list in the drawer below that, and always in the footer */}
+          <LanguageSwitcher className="hidden min-[1280px]:block" />
           {/* the official social profiles, once they are entered in config/destinations.ts; nothing until then */}
           <SocialLinks limit={5} className="hidden min-[1400px]:flex" />
           <Link href="/sign-in" className="btn btn-quiet btn-sm hidden md:inline-flex">
-            Sign in
+            {t("Sign in")}
           </Link>
           <Link href="/open-account" className="btn btn-primary btn-sm hidden sm:inline-flex">
-            Open account
+            {t("Open account")}
           </Link>
           <button
             type="button"
@@ -245,7 +252,7 @@ export function SiteHeader() {
                     aria-expanded={expanded}
                     onClick={() => setDrawerGroup(expanded ? null : s.key)}
                   >
-                    <span className="font-display text-xl font-light">{s.label}</span>
+                    <span className="font-display text-xl font-light">{t(s.label)}</span>
                     <span aria-hidden className={`relative h-[13px] w-[13px] transition-transform duration-[260ms] ${expanded ? "rotate-45" : ""}`}>
                       <span className="absolute left-0 top-1/2 h-px w-full bg-ink-2" />
                       <span className="absolute left-1/2 top-0 h-full w-px bg-ink-2" />
@@ -285,12 +292,13 @@ export function SiteHeader() {
           </ul>
           <div className="mt-34 grid grid-cols-2 gap-13">
             <Link href="/sign-in" className="btn btn-ghost">
-              Sign in
+              {t("Sign in")}
             </Link>
             <Link href="/open-account" className="btn btn-primary">
-              Open account
+              {t("Open account")}
             </Link>
           </div>
+          <LanguageSwitcher variant="list" className="mt-34 border-t border-line pt-21" />
         </nav>
       </div>
     </>

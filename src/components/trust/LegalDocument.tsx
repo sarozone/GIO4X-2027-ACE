@@ -32,7 +32,7 @@ function Jurisdictions() {
     <div className="border-y border-line py-21">
       <p className="label">Restricted jurisdictions</p>
       <p className="mt-5 text-sm text-ink-3">
-        The list published on the previous GIO4X websites. Services are not available to residents of these <span className="num">{restrictedJurisdictions.length}</span> countries.
+        The list published on the previous GIO4X websites, with the United Kingdom and the United States added on 5 October 2026. Services are not available to residents of these <span className="num">{restrictedJurisdictions.length}</span> countries.
       </p>
       <ul className="mt-13 columns-2 gap-x-21 text-[0.9375rem] text-ink sm:columns-3">
         {restrictedJurisdictions.map((c) => (

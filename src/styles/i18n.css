@@ -1,0 +1,151 @@
+/* ==========================================================================
+   TRANSLATED PAGES (docs/I18N.md)
+
+   Loaded only by the translated pages' layout, and every rule here is scoped to a
+   translated page (`.gx-l10n`, the element that carries the page's `lang`
+   and `dir`) or to a document that contains one. Nothing in this file can
+   match on an English page.
+   ========================================================================== */
+
+/* ---- 1. SCRIPTS THE BRAND FACES DO NOT CARRY -----------------------------
+   TT Norms and Inter are served as Latin subsets. Devanagari, Tamil and
+   Arabic are set in the reader's own system fonts. No file is downloaded:
+   each face below is an alias for fonts already on the device, limited by
+   `unicode-range` to its own script, so Latin text (brand names, figures)
+   stays in the brand faces. Where none of the named fonts is installed the
+   alias is skipped and the browser's own fallback applies, as before. */
+@font-face {
+  font-family: "GX Devanagari";
+  font-weight: 400;
+  src: local("Nirmala UI"), local("Kohinoor Devanagari"), local("KohinoorDevanagari-Regular"), local("Noto Sans Devanagari"), local("Devanagari Sangam MN"), local("Mangal");
+  unicode-range: U+0900-097F, U+1CD0-1CFF, U+A8E0-A8FF, U+200C-200D, U+20B9, U+25CC;
+}
+@font-face {
+  font-family: "GX Devanagari";
+  font-weight: 700;
+  src: local("Nirmala UI Bold"), local("Kohinoor Devanagari Bold"), local("KohinoorDevanagari-Bold"), local("Noto Sans Devanagari Bold"), local("Devanagari Sangam MN Bold"), local("Mangal Bold");
+  unicode-range: U+0900-097F, U+1CD0-1CFF, U+A8E0-A8FF, U+200C-200D, U+20B9, U+25CC;
+}
+@font-face {
+  font-family: "GX Tamil";
+  font-weight: 400;
+  src: local("Nirmala UI"), local("Tamil Sangam MN"), local("TamilSangamMN"), local("Noto Sans Tamil"), local("Latha");
+  unicode-range: U+0B80-0BFF, U+200C-200D, U+20B9, U+25CC;
+}
+@font-face {
+  font-family: "GX Tamil";
+  font-weight: 700;
+  src: local("Nirmala UI Bold"), local("Tamil Sangam MN Bold"), local("TamilSangamMN-Bold"), local("Noto Sans Tamil Bold"), local("Latha Bold");
+  unicode-range: U+0B80-0BFF, U+200C-200D, U+20B9, U+25CC;
+}
+@font-face {
+  font-family: "GX Arabic";
+  font-weight: 400;
+  src: local("Segoe UI"), local("SF Arabic"), local("Geeza Pro"), local("GeezaPro"), local("Noto Sans Arabic"), local("Noto Naskh Arabic"), local("Tahoma");
+  unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF, U+200C-200F;
+}
+@font-face {
+  font-family: "GX Arabic";
+  font-weight: 700;
+  src: local("Segoe UI Bold"), local("SF Arabic Bold"), local("Geeza Pro Bold"), local("GeezaPro-Bold"), local("Noto Sans Arabic Bold"), local("Noto Naskh Arabic Bold"), local("Tahoma Bold");
+  unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF, U+200C-200F;
+}
+
+.gx-l10n:is(:lang(hi), :lang(ta), :lang(ar)) {
+  --gx-script: "GX Devanagari", "GX Tamil", "GX Arabic";
+  font-family: var(--gx-script), var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+.gx-l10n:is(:lang(hi), :lang(ta), :lang(ar)) :is(.eyebrow, .font-sans) {
+  font-family: var(--gx-script), var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+.gx-l10n:is(:lang(hi), :lang(ta), :lang(ar)) :is(.display, .h1, .h2, .h3, .h4, .font-display) {
+  font-family: var(--gx-script), var(--font-norms), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+/* These scripts join or stack their letters: tracking pulls them apart, and
+   the tight leading of the Latin headings cuts their marks. */
+.gx-l10n:is(:lang(hi), :lang(ta), :lang(ar)) :is(.display, .h1, .h2, .h3, .h4, .eyebrow, .label, .chip, .btn, .go, .lead):not(:lang(en)) {
+  letter-spacing: 0;
+}
+.gx-l10n:is(:lang(hi), :lang(ta), :lang(ar)) :is(.display, .h1, .h2) {
+  line-height: 1.32;
+}
+.gx-l10n:is(:lang(hi), :lang(ta), :lang(ar)) :is(.h3, .h4) {
+  line-height: 1.45;
+}
+.gx-l10n:is(:lang(hi), :lang(ta), :lang(ar)) :is(.eyebrow, .label, .chip):not(:lang(en)) {
+  font-size: 0.8125rem;
+}
+/* Tamil and Devanagari words are long and their letters wide: the headings
+   step down so that a word is not broken across two lines, and the opening
+   statement uses the whole of its column. */
+.gx-l10n:lang(hi) :is(.display, .h1) {
+  font-size: clamp(2rem, 1.2rem + 3vw, 3.4375rem);
+}
+.gx-l10n:lang(ta) :is(.display, .h1) {
+  font-size: clamp(1.625rem, 1.1rem + 2vw, 2.75rem);
+}
+.gx-l10n:lang(ta) .h2 {
+  font-size: clamp(1.5rem, 1.1rem + 1.5vw, 2.375rem);
+}
+.gx-l10n:lang(ta) .h3 {
+  font-size: clamp(1.25rem, 1.05rem + 0.8vw, 1.625rem);
+}
+.gx-l10n:is(:lang(hi), :lang(ta), :lang(ar)) .cx-statement :is(.h1, .h2) {
+  max-width: none;
+}
+/* long words (German compounds, Tamil) never push a heading out of its column */
+.gx-l10n :is(.h1, .h2, .h3, .h4) {
+  overflow-wrap: break-word;
+}
+
+/* The header's own words, while a translated page in one of these scripts is open. */
+html:has(.gx-l10n:is([lang="hi"], [lang="ta"], [lang="ar"])) :is([data-site-header], #site-drawer) :is([data-nav], .btn, .font-display, .label) {
+  font-family: "GX Devanagari", "GX Tamil", "GX Arabic", var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0;
+}
+
+/* Translated section names and actions are often longer than the English
+   ones. On a translated page the header finds the room in its own padding,
+   so the row is no wider than the English one; in the drawer the two actions
+   may run to a second line instead of leaving the screen. */
+@media (min-width: 1080px) {
+  html:has(.gx-l10n) [data-site-header] [data-nav] {
+    padding-inline: 0.375rem;
+  }
+  html:has(.gx-l10n) [data-site-header] kbd {
+    display: none;
+  }
+}
+html:has(.gx-l10n) #site-drawer .btn {
+  height: auto;
+  min-height: 2.75rem;
+  padding-block: 0.5rem;
+  white-space: normal;
+  text-align: center;
+}
+
+/* ---- 2. RIGHT TO LEFT ----------------------------------------------------
+   Only the translated page itself runs right to left. The site chrome around
+   it (header, footer, command bar, chat) is English and stays as it is, so
+   the document's direction stops at <body>. The two selectors are the same
+   rule: the first works before the page's script has run, the second in a
+   browser without :has(). */
+html:has(.gx-l10n[dir="rtl"]) body {
+  direction: ltr;
+}
+html[dir="rtl"] body {
+  direction: ltr;
+}
+
+/* The stage keeps its composition: the instrument is drawn on the right by
+   the engine, so the statement stays on the left and only its text turns. */
+.gx-l10n[dir="rtl"] .cx-hero {
+  direction: ltr;
+}
+.gx-l10n[dir="rtl"] :is(.cx-statement, .cx-aside, .cx-companion) {
+  direction: rtl;
+}
+/* the travelling line of an arrow link grows away from its label */
+.gx-l10n[dir="rtl"] .go::after {
+  transform-origin: right;
+}

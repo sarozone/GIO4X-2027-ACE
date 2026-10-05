@@ -1,3 +1,4 @@
+import { COMMODITIES, commodityHref } from "@/data/commodities";
 import { SECTION_PAGES } from "@/data/sections";
 
 /**
@@ -10,4 +11,8 @@ import { SECTION_PAGES } from "@/data/sections";
  * src/data/sections.ts and come in from there. An address already in the
  * index is ignored, so nothing appears twice.
  */
-export const AZ_EXTRA: readonly { label: string; href: string; kind: string }[] = SECTION_PAGES.map((p) => ({ label: p.label, href: p.href, kind: p.kind }));
+export const AZ_EXTRA: readonly { label: string; href: string; kind: string }[] = [
+  ...SECTION_PAGES.map((p) => ({ label: p.label, href: p.href, kind: p.kind })),
+  // the commodities A to Z (/markets/commodities): one entry for each commodity
+  ...COMMODITIES.map((c) => ({ label: c.name, href: commodityHref(c), kind: "Commodity" })),
+];

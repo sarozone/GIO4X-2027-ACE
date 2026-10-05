@@ -18,6 +18,21 @@ const SERVER_FIELD: Record<string, FieldKey> = { name: "name", email: "email", c
  * application is not connected. Posts to /api/contact with the topic
  * "Account opening"; the structured answers travel in the message body.
  */
+const COUNTRY_ALIASES: Record<string, string> = {
+  uk: "united kingdom",
+  gb: "united kingdom",
+  "great britain": "united kingdom",
+  britain: "united kingdom",
+  england: "united kingdom",
+  scotland: "united kingdom",
+  wales: "united kingdom",
+  "northern ireland": "united kingdom",
+  us: "united states",
+  usa: "united states",
+  america: "united states",
+  "united states of america": "united states",
+};
+
 export function InterestForm({ email, accountNames, restricted }: { email: string; accountNames: string[]; restricted: string[] }) {
   const uid = useId();
   const id = (k: string) => `${uid}-${k}`;
@@ -49,7 +64,9 @@ export function InterestForm({ email, accountNames, restricted }: { email: strin
   };
 
   const restrictedMatch = (country: string) => {
-    const c = country.trim().toLowerCase();
+    const typed = country.trim().toLowerCase().replace(/\./g, "").replace(/\s+/g, " ");
+    // the everyday names of two countries on the list, so "UK" or "USA" is recognised as well
+    const c = COUNTRY_ALIASES[typed] ?? typed;
     return c ? restricted.find((r) => r.toLowerCase() === c) : undefined;
   };
 

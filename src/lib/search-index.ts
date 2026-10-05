@@ -1,6 +1,7 @@
 import { nav, secondaryNav } from "@/config/nav";
 import { lessons } from "@/data/academy";
 import { articles } from "@/data/articles";
+import { COMMODITIES, commodityHref, commodityInstrument, commodityLine } from "@/data/commodities";
 import { glossary } from "@/data/glossary";
 import { assetClasses, instrumentHref, instruments } from "@/data/instruments";
 import { centralBanks, currencies, econEvents } from "@/data/knowledge";
@@ -47,6 +48,10 @@ export function buildSearchIndex(): SearchEntry[] {
   }
   for (const e of econEvents) {
     add({ t: e.name, d: e.what.split(". ")[0] + ".", h: `/markets/events/${e.slug}`, g: "Markets", k: [e.short.toLowerCase(), e.kind.toLowerCase(), "economic event", "calendar"] });
+  }
+  // the commodities A to Z: general education, weighted below the instruments so "gold" still lands on XAU/USD first
+  for (const c of COMMODITIES) {
+    add({ t: `${c.name} (commodity)`, d: `${commodityLine(c)} ${commodityInstrument(c) ? "Traded at GIO4X." : "Not a GIO4X instrument."}`, h: commodityHref(c), g: "Markets", k: [c.name.toLowerCase(), c.category.toLowerCase(), "commodity", "commodities", ...(c.aliases ?? [])], w: 0.85 });
   }
   for (const t of tools) {
     add({ t: `${t.name}${t.kind === "Calculator" ? " calculator" : ""}`, d: t.line, h: `/tools/${t.slug}`, g: "Tools", k: [...t.aliases, t.kind.toLowerCase(), "calculator", "tool"], w: 1.15 });

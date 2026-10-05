@@ -10,6 +10,7 @@ import { RiddleSection, TermSection } from "@/components/play/RiddleSection";
 import { SectionHead } from "@/components/ui/Page";
 import { PunchLine } from "@/components/ui/PunchLine";
 import { site } from "@/config/site";
+import { languageAlternates } from "@/i18n/config";
 import { pageMeta } from "@/lib/meta";
 import "@/components/home/home.css";
 
@@ -18,6 +19,8 @@ export const metadata = pageMeta({
   absoluteTitle: true,
   description: site.description,
   path: "/",
+  // the home page exists in seven other languages (docs/I18N.md): tell search engines where
+  languages: languageAlternates(""),
 });
 
 // Reference rates are refreshed hourly; everything else on the page is static.

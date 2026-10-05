@@ -71,6 +71,16 @@ To connect a licensed feed, implement the same shape in a new module and switch 
 services (economic calendar, policy rates, news) beside it with the same `ok | unavailable` contract.
 External payloads are validated at runtime before use.
 
+**Commodities A to Z (added 5 October 2026).** `/markets/commodities` and `/markets/commodities/[slug]` are a
+general reference generated from `src/data/commodities.ts`: what each commodity is, its usual unit, where its
+reference contract is listed, what commonly moves it and where it comes from. The file holds no price, tonnage,
+market share or forecast. Only the entries with a `gio4x` field are GIO4X instruments (they resolve through
+`getInstrument`, so the list follows `instruments.ts`); every other page states that it is not offered. It is not
+an asset class: `AssetClassKey` is unchanged, and the static `commodities` folder is served ahead of the dynamic
+`markets/[class]` route. The pages are registered in the navigation, the markets sitemap, the search index, the
+A to Z index (`src/data/az-extra.ts`), `llms.txt`, the hero scene map and `src/data/releases.ts`. The entries were
+written from general knowledge and should be read by a person before they are promoted.
+
 ## The knowledge graph
 
 `src/data/graph.ts` derives nodes and typed edges from the data modules (instruments, currencies, central

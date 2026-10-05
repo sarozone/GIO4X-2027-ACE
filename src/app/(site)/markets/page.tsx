@@ -9,6 +9,7 @@ import { RatesTable } from "@/components/markets/RatesTable";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { NextSteps, PageHero } from "@/components/ui/Page";
 import { Head } from "@/components/markets/Head";
+import { COMMODITIES, TRADED_COMMODITIES } from "@/data/commodities";
 import { assetClasses, instrumentHref, instruments, instrumentsByClass } from "@/data/instruments";
 import { centralBanks, econEvents } from "@/data/knowledge";
 import { pageMeta } from "@/lib/meta";
@@ -172,6 +173,19 @@ export default async function MarketsPage() {
               </li>
             ))}
           </ul>
+          {/* the commodities A to Z: a reference beside the classes, not a seventh class */}
+          <div className="panel-quiet mt-34 grid gap-x-34 gap-y-13 p-21 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+            <div>
+              <p className="label">Reference</p>
+              <p className="h4 mt-5">Commodities, A to Z</p>
+              <p className="mt-5 max-w-measure text-sm text-ink-2">
+                {COMMODITIES.length} raw materials from aluminium to zinc: what each is, how it is quoted and what commonly moves it. {TRADED_COMMODITIES.length} of them are GIO4X instruments, in Metals and Energy above; the others are general education and are marked as not offered.
+              </p>
+            </div>
+            <Link href="/markets/commodities" className="go py-13 lg:py-0">
+              Open the A to Z
+            </Link>
+          </div>
         </div>
       </section>
 

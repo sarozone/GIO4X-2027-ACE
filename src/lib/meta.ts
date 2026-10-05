@@ -16,6 +16,13 @@ type PageMeta = {
   ownCard?: boolean;
   /** use the title as-is, without the "| GIO4X" template */
   absoluteTitle?: boolean;
+  /**
+   * `hreflang`: the addresses of this page in other languages, keyed by language tag (with "x-default").
+   * Only pages that exist in another language pass it (src/i18n/config.ts); left out, nothing is emitted.
+   */
+  languages?: Record<string, string>;
+  /** Open Graph locale of the page; English (en_GB) unless a translated page says otherwise */
+  locale?: string;
 };
 
 /**
@@ -43,12 +50,12 @@ export function pageMeta(input: PageMeta): Metadata {
   return {
     title: alone ? { absolute: m.title } : m.title,
     description: m.description,
-    alternates: { canonical: m.path },
+    alternates: { canonical: m.path, ...(m.languages ? { languages: m.languages } : {}) },
     ...(m.index === false ? { robots: { index: false, follow: true } } : {}),
     openGraph: {
       type: m.type ?? "website",
       siteName: site.name,
-      locale: "en_GB",
+      locale: m.locale ?? "en_GB",
       url: m.path,
       title: fullTitle,
       description: m.description,

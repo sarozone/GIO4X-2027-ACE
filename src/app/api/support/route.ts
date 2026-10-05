@@ -20,6 +20,7 @@
  */
 import { GENERIC_RATE_LIMITED, GENERIC_UNAVAILABLE, PRIVACY_VERSION } from "@/lib/server/constants";
 import { fail, json, newId } from "@/lib/server/http";
+import { notifyInbox } from "@/lib/server/mailer";
 import { classifyStorageError, honeypotFilled, openGate, submissionAllowed, tooFast } from "@/lib/server/public-form";
 import { countForm } from "@/lib/server/pulse";
 import { newTicketReference } from "@/lib/server/support";
@@ -80,6 +81,12 @@ export async function POST(request: Request) {
     if (!error) {
       // +1 on the day's total for this form (a count, nothing about the sender); it cannot fail the request
       await countForm(request, "support");
+      // a copy to GIO4X's inbox, when outgoing e-mail is set up; the stored ticket is the record either way
+      await notifyInbox(
+        `Support request ${reference}: ${input.subject}`,
+        [`Reference: ${reference}`, `Name: ${input.name}`, `Email: ${input.email}`, `Category: ${input.category}`, `Page: ${input.page ?? "-"}`, "", input.message, "", "Answer in GIO4X Control (Tickets), so that the reply is kept on the ticket."].join("\n"),
+        input.email,
+      );
       return json({ ok: true, reference });
     }
 

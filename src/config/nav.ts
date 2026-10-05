@@ -53,6 +53,7 @@ export const nav: NavSection[] = [
           { label: "Central Bank Watch", href: "/markets/central-banks", note: "Who sets rates, and how" },
           { label: "Economic Events", href: "/markets/events", note: "What the releases mean" },
           { label: "Market history", href: "/history", note: "Eleven crashes and bubbles, 1637 to 2020" },
+          { label: "Commodities A to Z", href: "/markets/commodities", note: "From aluminium to zinc, explained" },
         ],
       },
     ],
