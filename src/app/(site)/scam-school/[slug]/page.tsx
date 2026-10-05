@@ -70,6 +70,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
       <PageHero
         quiet
         crumbs={[
+          { name: "Academy", href: "/academy" },
           { name: "Scam school", href: "/scam-school" },
           { name: scam.name, href: path },
         ]}

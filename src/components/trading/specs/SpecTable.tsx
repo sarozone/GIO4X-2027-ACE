@@ -116,7 +116,9 @@ export function SpecTable({ rows, classes }: { rows: SpecRow[]; classes: { key: 
                         <button
                           type="button"
                           onClick={() => toggle(c.key)}
-                          className={`inline-flex items-center gap-5 uppercase tracking-[0.1em] transition-colors duration-fast hover:text-ink ${on ? "text-ink" : ""}`}
+                          // a column of figures is read down its right edge: there the sort mark goes before the words,
+                          // so the heading ends exactly where the figures end instead of a mark's width short of them
+                          className={`inline-flex items-center gap-5 uppercase tracking-[0.1em] transition-colors duration-fast hover:text-ink ${c.numeric ? "flex-row-reverse" : ""} ${on ? "text-ink" : ""}`}
                           title={`Sort by ${c.label.toLowerCase()}`}
                         >
                           {c.label}

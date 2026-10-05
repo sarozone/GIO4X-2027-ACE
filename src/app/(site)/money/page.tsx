@@ -34,7 +34,10 @@ export default function Page() {
       <JsonLd data={webPageSchema({ path: "/money", name: "Money calculators", description: DESCRIPTION, type: "CollectionPage" })} />
       <PageHero
         quiet
-        crumbs={[{ name: "Money", href: "/money" }]}
+        crumbs={[
+          { name: "Academy", href: "/academy" },
+          { name: "Money", href: "/money" },
+        ]}
         eyebrow="Money · personal finance calculators"
         title="Money calculators"
         lead={`${MONEY.length} calculators for everyday money questions. Each works on your own figures, shows its formula and its working, and draws the result. None of them says what to do.`}

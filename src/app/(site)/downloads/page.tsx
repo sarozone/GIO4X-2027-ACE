@@ -116,7 +116,10 @@ export default function Page() {
       <div className="no-print">
         <PageHero
           quiet
-          crumbs={[{ name: "Downloads", href: "/downloads" }]}
+          crumbs={[
+            { name: "Trading", href: "/trading" },
+            { name: "Downloads", href: "/downloads" },
+          ]}
           eyebrow="Downloads · to print"
           title="Eight sheets to print."
           lead="One A4 page each. Every sheet has its own Print button, which prints that sheet alone; choose “Save as PDF” in the print dialogue to keep it as a file. They are blank forms and reminders, to be filled in by hand with your own answers."

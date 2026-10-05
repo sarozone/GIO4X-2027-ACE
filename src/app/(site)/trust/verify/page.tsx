@@ -28,6 +28,7 @@ export default function VerifyPage() {
       <PageHero
         quiet
         crumbs={[
+          { name: "Company", href: "/about" },
           { name: "Trust Centre", href: "/trust" },
           { name: "Verify a link", href: "/trust/verify" },
         ]}

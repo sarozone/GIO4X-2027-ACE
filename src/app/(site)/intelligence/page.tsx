@@ -11,6 +11,7 @@ import { articles, articlesBySection, sectionLabels } from "@/data/articles";
 import { pageMeta } from "@/lib/meta";
 import { webPageSchema } from "@/lib/schema";
 import "@/components/knowledge/knowledge.css";
+import { AskAiBox } from "@/components/shell/AskAi";
 
 const description = "GIO4X Intelligence: analysis, explainers and guides on currencies, commodities, risk and market structure. Desk bylines, dated pieces, no forecasts and no trade calls.";
 
@@ -76,6 +77,7 @@ export default function IntelligencePage() {
           </div>
         </div>
       </header>
+      <AskAiBox className="hairline-b" />
 
       {!lead ? (
         <section className="section">

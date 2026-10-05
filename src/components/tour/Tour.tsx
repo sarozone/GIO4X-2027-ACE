@@ -31,6 +31,7 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useFooterLift } from "@/components/shell/ChatWidget";
 import { signalSound } from "@/components/sound/signal";
 import { PLACE, RING_CLASS, RING_STYLE, SMALL, TOUR_END_EVENT, useTourRing } from "@/components/tour/shared";
+import { TourCard } from "@/components/tour/TourCard";
 import { TOUR_HASH, TOUR_KEY, TOUR_STOPS } from "@/components/tour/stops";
 import { usePrefs } from "@/hooks/usePrefs";
 import { INTRO_END, introPlaying } from "@/lib/boot";
@@ -131,9 +132,13 @@ export function Tour() {
     update({ tourDone: true });
   };
 
-  /** `/#tour` in the address: take the fragment out again and start. */
+  /**
+   * `/#tour` in the address: take the fragment out again and start. The homepage's address only: the same
+   * fragment on another page is that page's own (on /platforms/raptor, "Walk around it" leads to the section
+   * with that id), and used to start this tour by accident and carry the visitor away to the homepage.
+   */
   const checkHash = useCallback(() => {
-    if (window.location.hash !== TOUR_HASH) return;
+    if (window.location.hash !== TOUR_HASH || window.location.pathname !== "/") return;
     try {
       window.history.replaceState(null, "", window.location.pathname + window.location.search);
     } catch {
@@ -302,11 +307,13 @@ export function Tour() {
     }
   }, [stop]);
 
-  /* ---- the one element a stop points at: brought into view, then ringed ---- */
+  /* ---- where a stop puts the page, and the one element it points at: brought into view, then ringed ---- */
   const current = stop !== null ? TOUR_STOPS[stop] : null;
   const onPath = !!current && pathname === current.path;
-  const target = current && onPath && !going ? current.target : undefined;
-  useTourRing(ringRef, panelRef, target ? `[data-tour="${target}"]` : undefined);
+  // the stop is "shown" once its page is the one on screen: every showing takes the stop's own position
+  const shown = current && onPath && !going ? String(stop) : null;
+  const target = shown !== null ? current?.target : undefined;
+  useTourRing(ringRef, target ? `[data-tour="${target}"]` : undefined, shown);
 
   if (blocked) return null;
 
@@ -343,79 +350,35 @@ export function Tour() {
       )}
 
       {current && stop !== null && (
-        <section
-          ref={panelRef}
-          role="dialog"
-          aria-modal="false"
-          aria-labelledby={`${uid}-title`}
-          tabIndex={-1}
-          data-tour-panel=""
-          className={`panel ${PLACE} flex max-h-[calc(100dvh-var(--header-h)-1rem)] flex-col shadow-3 focus:outline-none sm:w-[23rem]`}
+        <TourCard
+          panelRef={panelRef}
+          uid={uid}
+          name="Tour"
+          word="Stop"
+          at={stop}
+          total={total}
+          // on a slow connection the panel changes before the page does: say that the page is on its way
+          note={going ? "opening" : undefined}
+          title={current.title}
+          body={onPath || going ? current.body : "This page is not one of the tour’s stops. The tour is waiting where you left it, and goes on from there when you are ready."}
+          back={(onPath || going) && stop > 0 ? { title: TOUR_STOPS[stop - 1].title, go: () => go(stop - 1) } : undefined}
+          next={(onPath || going) && !last ? { title: TOUR_STOPS[stop + 1].title, go: () => go(stop + 1) } : undefined}
+          onFinish={(onPath || going) && last ? () => end(true) : undefined}
+          action={
+            onPath || going
+              ? undefined
+              : {
+                  label: "Return to the tour",
+                  short: "Return",
+                  go: () => {
+                    setGoing(true);
+                    router.push(current.path);
+                  },
+                }
+          }
+          onEnd={() => end(false)}
           style={{ marginBottom: lift || undefined, animation: "gx-rise 260ms var(--ease-out)" }}
-        >
-          <div className="flex items-center justify-between gap-13 border-b border-line py-3 pl-13 pr-5">
-            <p className="label">
-              Tour · <span className="num">{stop + 1}</span> of <span className="num">{total}</span>
-              {/* on a slow connection the panel changes before the page does: say that the page is on its way */}
-              {going && <span className="text-ink-3"> · opening</span>}
-            </p>
-            <button type="button" className={`btn btn-quiet ${SMALL}`} onClick={() => end(false)}>
-              End tour
-            </button>
-          </div>
-
-          <div aria-live="polite" aria-atomic="true" className="min-h-0 overflow-y-auto px-13 py-13">
-            <p id={`${uid}-title`} className="h4">
-              <span className="sr-only">
-                Stop {stop + 1} of {total}:{" "}
-              </span>
-              {current.title}
-            </p>
-            {onPath || going ? (
-              <p className="mt-5 text-sm leading-snug text-ink-2">{current.body}</p>
-            ) : (
-              <p className="mt-5 text-sm leading-snug text-ink-2">This page is not one of the tour’s stops. The tour is waiting where you left it, and goes on from there when you are ready.</p>
-            )}
-          </div>
-
-          <div className="flex items-center justify-between gap-8 border-t border-line px-13 py-8">
-            {/* drawn progress; the count above says the same in words */}
-            <span aria-hidden className="flex items-center gap-3">
-              {TOUR_STOPS.map((s, i) => (
-                <span key={s.path} className={`h-[3px] rounded-full ${i === stop ? "w-13 bg-accent" : i < stop ? "w-5 bg-ink-3" : "w-5 bg-line-strong"}`} />
-              ))}
-            </span>
-            {onPath || going ? (
-              <span className="flex items-center gap-5">
-                {stop > 0 && (
-                  <button type="button" className={`btn btn-quiet ${SMALL}`} onClick={() => go(stop - 1)} aria-label={`Back: ${TOUR_STOPS[stop - 1].title}`}>
-                    Back
-                  </button>
-                )}
-                {last ? (
-                  <button type="button" className={`btn btn-primary ${SMALL}`} onClick={() => end(true)}>
-                    Finish
-                  </button>
-                ) : (
-                  <button type="button" className={`btn btn-primary ${SMALL}`} onClick={() => go(stop + 1)} aria-label={`Next: ${TOUR_STOPS[stop + 1].title}`}>
-                    Next
-                  </button>
-                )}
-              </span>
-            ) : (
-              <button
-                type="button"
-                className={`btn btn-primary ${SMALL}`}
-                onClick={() => {
-                  setGoing(true);
-                  router.push(current.path);
-                }}
-              >
-                Return to the tour
-              </button>
-            )}
-          </div>
-        </section>
+        />
       )}
     </>
   );

@@ -33,7 +33,10 @@ export default function CareersPage() {
   return (
     <>
       <PageHero
-        crumbs={[{ name: "Careers", href: "/careers" }]}
+        crumbs={[
+          { name: "Company", href: "/about" },
+          { name: "Careers", href: "/careers" },
+        ]}
         eyebrow="Careers"
         title="Work that is meant to be checked."
         lead="GIO4X is built by people who care about getting small things exactly right, and who would rather say less than say something they cannot stand behind."

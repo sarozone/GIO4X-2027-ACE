@@ -191,10 +191,11 @@ export default function Mt5Page() {
                   <span className="num text-xs font-semibold tracking-[0.1em] text-prestige-ink">{String(i + 1).padStart(2, "0")}</span>
                   <h3 className="h4">{t.topic}</h3>
                   <p className="text-sm text-ink-2">{t.line}</p>
+                  {/* everything in this column that can be pressed is a .link, term and tool alike; the one thing that cannot ("Lesson to come") stays plain */}
                   <ul className="flex flex-wrap gap-x-13 gap-y-5 text-sm md:col-span-2 md:col-start-2 lg:col-span-1 lg:col-start-auto lg:justify-end">
                     {terms.map((g) => (
                       <li key={g.slug}>
-                        <Link href={`/glossary/${g.slug}`} className="link-quiet underline decoration-line-strong decoration-dotted underline-offset-4">
+                        <Link href={`/glossary/${g.slug}`} className="link">
                           {g.term}
                         </Link>
                       </li>

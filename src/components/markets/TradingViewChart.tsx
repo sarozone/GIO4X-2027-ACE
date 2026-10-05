@@ -11,7 +11,20 @@ import { useTradingViewFrame } from "@/components/markets/TradingViewWidget";
  * iframe is sandboxed, sends no referrer and follows the visitor's current
  * theme. The data inside it is TradingView's, not GIO4X's, and the caption
  * says so.
+ *
+ * The chart's own camera menu ("Download image", "Copy image") needs two
+ * things from the page that frames it, and is given exactly those two:
+ * `allow-downloads` in the sandbox, without which the browser silently drops
+ * the file, and the clipboard-write permission, without which the copy fails
+ * and TradingView falls back to opening the picture in a new tab. Nothing else
+ * is granted: no clipboard reading, no forms, no top navigation.
  */
+
+/** Run its own script, open TradingView in a new tab, save a picture of the chart. Nothing more. */
+const SANDBOX = "allow-scripts allow-same-origin allow-popups allow-downloads";
+/** Permissions delegated to the frame: writing (never reading) the clipboard, for "Copy image". */
+const ALLOW = "clipboard-write";
+
 export function TradingViewChart({ symbol, tv, name }: { symbol: string; tv: string; name: string }) {
   const { ref, loaded, load, theme } = useTradingViewFrame<HTMLDivElement>();
   const src = `https://s.tradingview.com/widgetembed/?symbol=${encodeURIComponent(tv)}&interval=D&hidesidetoolbar=1&symboledit=0&saveimage=0&theme=${theme}&style=2&timezone=Etc%2FUTC&locale=en`;
@@ -26,7 +39,8 @@ export function TradingViewChart({ symbol, tv, name }: { symbol: string; tv: str
             title={`${symbol} daily chart by TradingView`}
             loading="lazy"
             referrerPolicy="no-referrer"
-            sandbox="allow-scripts allow-same-origin allow-popups"
+            sandbox={SANDBOX}
+            allow={ALLOW}
             className="absolute inset-0 h-full w-full border-0"
           />
         ) : (

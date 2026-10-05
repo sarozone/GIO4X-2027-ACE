@@ -31,7 +31,10 @@ export default function LegalCentrePage() {
   return (
     <>
       <PageHero
-        crumbs={[{ name: "Legal & documents", href: "/legal" }]}
+        crumbs={[
+          { name: "Company", href: "/about" },
+          { name: "Legal & documents", href: "/legal" },
+        ]}
         eyebrow="Legal & Document Centre"
         title="The documents, and their status."
         lead="Each document shows where its text came from, when it was last updated and whether it is under review. Documents that do not exist yet are listed as missing, not left out."

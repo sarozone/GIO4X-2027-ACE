@@ -1117,3 +1117,76 @@
     height: 2.75rem;
   }
 }
+
+/* ==========================================================================
+   IN-PAGE TARGETS: ONE OFFSET
+   Where a link to a place on the page ("#instruments", a letter, a section of
+   a document) stops. The rule is one line: the page keeps clear of what is
+   fixed at its top, and a target adds only what is its own.
+
+     html   scroll-padding-top = the site header as it is once the page has
+            moved (SiteHeader: 3.4375rem and its hairline). It is the header's
+            real height, not --header-h, which is the taller header drawn at
+            the very top of a page.
+     target scroll-margin-top = a little air (1.3125rem) for a heading, a row,
+            a card; none for a section that brings its own padding, so its top
+            edge meets the header and nothing of the section before it shows;
+            and, on the few pages with a bar that sticks under the header, the
+            room that bar takes.
+
+   Before this, both halves counted the header: the page kept header + 21px
+   clear, and each target then added the header again through a class of its
+   own (scroll-mt-[var(--header-h)] and its relatives), so a jump stopped
+   about 100px short with the end of the previous section above the target.
+   Those classes are still in the markup and are read here for what they
+   meant, so no page had to change; a new target needs no class at all, only
+   its id.
+
+   Scoped to the public site (the pages under the site header): GIO4X Control
+   has its own shell and keeps the allowance it was built with. A browser
+   without :has() keeps the old behaviour whole.
+   ========================================================================== */
+:root {
+  --chrome-h: calc(3.4375rem + 1px);
+}
+@supports selector(:has(*)) {
+  html:has(header[data-site-header]) {
+    scroll-padding-top: var(--chrome-h);
+  }
+  /* any target: a little air under the header (this also retires the per-element classes) */
+  :where(header[data-site-header] ~ main) :is([id], [class*="scroll-mt-"]),
+  :where(header[data-site-header] ~ main) .prose-gx h2 {
+    scroll-margin-top: 1.3125rem;
+  }
+  /* a section with its own padding, or a block that holds one: its top edge is the line */
+  :where(header[data-site-header] ~ main) :is(.section, .section-quiet, [data-az-group], :has(> .section), :has(> .section-quiet)) {
+    scroll-margin-top: 0px;
+  }
+  /* Pages with a bar that sticks under the header. The bar sticks at --header-h, a little below
+     the header as drawn, so the room is: that gap, and the bar. */
+  /* the letter bar of /a-z and /markets/commodities */
+  :where(header[data-site-header] ~ main) [class*="scroll-mt-[calc(var(--header-h)+3.5rem)]"] {
+    scroll-margin-top: calc(var(--header-h) - var(--chrome-h) + 3.5rem);
+  }
+  /* "On this page" on /explore and /explore/sitemap */
+  :where(header[data-site-header] ~ main) [class*="scroll-mt-[calc(var(--header-h)+4.25rem)]"] {
+    scroll-margin-top: calc(var(--header-h) - var(--chrome-h) + 4.25rem);
+  }
+  /* the glossary's letters: a bar across the top below the desktop layout, a rail at the side from it */
+  @media (max-width: 1079px) {
+    :where(header[data-site-header] ~ main) [class*="scroll-mt-[calc(var(--header-h)+3.4375rem)]"] {
+      scroll-margin-top: calc(var(--header-h) - var(--chrome-h) + 3.4375rem);
+    }
+  }
+  /* a lesson in story mode: the Read / Story bar, and a chapter's heading below its panel */
+  :where(header[data-site-header] ~ main) .gx-lesson .gx-story-chapter {
+    scroll-margin-top: calc(var(--header-h) - var(--chrome-h) + 3.4375rem);
+  }
+  :where(header[data-site-header] ~ main) .gx-lesson [data-story-head] {
+    scroll-margin-top: calc(var(--header-h) - var(--chrome-h) + 5.5625rem);
+  }
+  /* the leverage story: a step is brought to the middle of the window, under its drawing, not to the top */
+  :where(header[data-site-header] ~ main) [class*="scroll-mt-[40vh]"] {
+    scroll-margin-top: calc(40vh + var(--header-h) - var(--chrome-h) + 1.3125rem);
+  }
+}

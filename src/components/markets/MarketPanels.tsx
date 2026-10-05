@@ -86,7 +86,8 @@ export function MarketOverviewPanel() {
         showFloatingTooltip: false,
         tabs: [tab("Forex", FOREX), tab("Indices", INDICES), tab("Commodities", [...METALS.slice(0, 2), ...ENERGY]), tab("Crypto", CRYPTO)],
       }}
-      note="Symbols are TradingView’s own and come from several venues; they are not GIO4X’s instruments or contract specifications."
+      // the tabs and ranges are drawn by TradingView inside its frame, where this site's styles cannot reach: the caption names them instead
+      note="Inside the panel, Forex, Indices, Commodities and Crypto are tabs, and 1D, 1M, 3M, 1Y, 5Y and All are time ranges: each can be pressed. Symbols are TradingView’s own and come from several venues; they are not GIO4X’s instruments or contract specifications."
     />
   );
 }

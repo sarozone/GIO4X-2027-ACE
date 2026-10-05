@@ -71,7 +71,8 @@ export function SessionTable({ kind }: { kind: "fx" | "exchange" }) {
               <tr key={r.key}>
                 <th scope="row" className="!border-line !py-8 !text-[0.9375rem] !font-medium !normal-case !tracking-normal !text-ink">
                   {r.name}
-                  <span className="block text-xs font-normal text-ink-3">{r.sub}</span>
+                  {/* under the name on a narrow screen; beside it from `lg`, so a row is one line and each table can be seen whole in a short window */}
+                  <span className="block text-xs font-normal text-ink-3 lg:ml-8 lg:inline">{r.sub}</span>
                 </th>
                 <td className="num text-[0.9375rem]">{r.local}</td>
                 {r.utc.map((u, k) => (
@@ -85,6 +86,10 @@ export function SessionTable({ kind }: { kind: "fx" | "exchange" }) {
           </tbody>
         </table>
       </div>
+      {/* below about 770px the table (44rem) is wider than the column and scrolls inside its own frame: say so, since a phone draws no scrollbar */}
+      <p aria-hidden className="mt-8 flex items-center gap-5 text-xs text-ink-2 min-[770px]:hidden">
+        <span className="text-accent">←→</span> Slide the table sideways to see every column.
+      </p>
       <p className="mt-8 text-xs text-ink-3">
         “+1” means the window ends on the following day on that clock.{" "}
         <span aria-live="polite">{tz ? `Your time is read from this device: ${tz.replace(/_/g, " ")}.` : "Your own time is filled in once your clock has been read."}</span>

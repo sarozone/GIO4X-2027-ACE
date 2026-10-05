@@ -27,10 +27,10 @@ export default function Page() {
       <PageHero
         quiet
         crumbs={[
-          { name: "Academy", href: "/academy" },
+          { name: "Markets", href: "/markets" },
           { name: "Market history", href: "/history" },
         ]}
-        eyebrow="Academy · market history"
+        eyebrow="Markets · market history"
         title="Market history"
         lead={`${HISTORY.length} episodes across four centuries. Each page sets out what led up to it, what happened in order, what changed afterwards and what it helps to understand. Dates and established facts only; where the record is disputed, the page says so.`}
       />

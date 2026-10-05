@@ -25,7 +25,10 @@ export default function Page() {
       <JsonLd data={webPageSchema({ path: "/guides", name: "Region guides", description: DESCRIPTION, type: "CollectionPage" })} />
       <PageHero
         quiet
-        crumbs={[{ name: "Guides", href: "/guides" }]}
+        crumbs={[
+          { name: "Markets", href: "/markets" },
+          { name: "Guides", href: "/guides" },
+        ]}
         eyebrow="Guides · by region"
         title="The trading day, where you are."
         lead={`${GUIDES.length} guides, one for each part of the world. Each shows when the four FX sessions and the main exchanges are open on local clocks, which hours overlap, why the times move twice a year and what kinds of day markets close.`}

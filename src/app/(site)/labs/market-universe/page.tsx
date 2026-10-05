@@ -23,6 +23,7 @@ export default function MarketUniversePage() {
       <PageHero
         quiet
         crumbs={[
+          { name: "Intelligence", href: "/intelligence" },
           { name: "Labs", href: "/labs" },
           { name: "Market Universe", href: "/labs/market-universe" },
         ]}

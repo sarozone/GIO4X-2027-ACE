@@ -88,6 +88,7 @@ export default function DataMethodologyPage() {
       <JsonLd data={webPageSchema({ path: "/trust/data-methodology", name: "Data methodology", description })} />
       <PageHero
         crumbs={[
+          { name: "Company", href: "/about" },
           { name: "Trust Centre", href: "/trust" },
           { name: "Data methodology", href: "/trust/data-methodology" },
         ]}

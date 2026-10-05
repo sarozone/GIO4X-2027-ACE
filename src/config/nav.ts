@@ -19,6 +19,10 @@ export type NavSection = {
  * groups shows twice in the menu, in the footer and in the site directory. The
  * groups are kept to a similar length (three to eight rows) so the columns of
  * the mega-menu and the blocks of the footer stand level.
+ *
+ * A section's own page (its `href`) is not repeated as a row: the menu, the
+ * drawer, the footer and the site directory each link it from the section's
+ * name, so a row for it would be the same link twice.
  */
 export const nav: NavSection[] = [
   {
@@ -41,7 +45,6 @@ export const nav: NavSection[] = [
       {
         title: "Market Command",
         items: [
-          { label: "Overview", href: "/markets", note: "Sessions, reference rates, structure" },
           { label: "World Market Clock", href: "/markets/clock", note: "Who is open right now" },
           { label: "Currency Strength", href: "/markets/currency-strength", note: "ECB reference data" },
           { label: "Currency profiles", href: "/markets/currencies", note: "Who issues each, and what moves it" },
@@ -152,7 +155,6 @@ export const nav: NavSection[] = [
       {
         title: "Read",
         items: [
-          { label: "Latest", href: "/intelligence", note: "Analysis and explainers" },
           { label: "Daily blog", href: "/intelligence/blog", note: "One market. One story. Every day." },
           { label: "Morning Room", href: "/morning-room", note: "Today in sessions and schedule" },
         ],
@@ -314,3 +316,54 @@ export const secondaryNav: NavGroup[] = [
     ],
   },
 ];
+
+/* ---- where a page stands -------------------------------------------------- */
+
+/**
+ * A page's place in the primary navigation: the section that lists it and, when
+ * one of that section's rows is the page (or the listed page above it), that
+ * row's href exactly as written above. `exact` is false for a page below a
+ * listed page, which inherits its parent's place.
+ */
+export type NavPlace = { section: NavSection; href: string | null; exact: boolean };
+
+/**
+ * The one rule for "which section is this page in", read from the list above
+ * and from nothing else, so the header and the breadcrumbs cannot disagree
+ * with the menus. A page is in the section that LISTS it, whatever its URL
+ * begins with. Where a path is listed more than once, the listing whose hash
+ * is the current hash wins; otherwise the first that lists the bare path.
+ * A path listed nowhere takes the place of the nearest listed page above it;
+ * with none (the home page, a translated page, a utility page) it is null.
+ */
+export function navPlace(pathname: string | null | undefined, hash = ""): NavPlace | null {
+  const path = (pathname ?? "").split(/[?#]/)[0].replace(/\/+$/, "");
+  if (!path.startsWith("/")) return null;
+  for (let at = path; at; at = at.slice(0, at.lastIndexOf("/"))) {
+    // every listing of this path, in the order of the menus; within a section its rows come before its own page
+    const listed: { section: NavSection; href: string | null }[] = [];
+    for (const section of nav) {
+      for (const g of section.groups) for (const i of g.items) if (i.href.split("#")[0] === at) listed.push({ section, href: i.href });
+      if (section.href === at) listed.push({ section, href: null });
+    }
+    if (!listed.length) continue;
+    const exact = at === path;
+    const byHash = exact && hash.length > 1 ? listed.find((l) => l.href === at + hash) : undefined;
+    const bare = listed.find((l) => !l.href?.includes("#"));
+    const hit = byHash ?? bare;
+    // listed only as a place on the page, and this is not that place: the section is known, no row is the page
+    return hit ? { section: hit.section, href: hit.href, exact } : { section: listed[0].section, href: null, exact };
+  }
+  return null;
+}
+
+/** The key of the one section to mark as current for a page, or null. */
+export function activeSection(pathname: string | null | undefined, hash = ""): string | null {
+  return navPlace(pathname, hash)?.section.key ?? null;
+}
+
+/** The first breadcrumb of a page: the section that lists it (or lists the page above it), or null. */
+export function sectionCrumb(pathname: string): { name: string; href: string } | null {
+  const section = navPlace(pathname)?.section;
+  return section ? { name: section.label, href: section.href } : null;
+}

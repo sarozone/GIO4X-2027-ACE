@@ -113,12 +113,16 @@ export function socialSlots(): { key: SocialKey; url: string | null }[] {
 export function SocialLinks({ names = false, className = "", limit }: { names?: boolean; className?: string; limit?: number }) {
   const slots = socialSlots().slice(0, limit);
   if (slots.length === 0) return null;
-  const mark = (key: SocialKey) => (
-    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden style={{ color: TINTS[key] }}>
+  // a mark without an address is drawn in the quiet text colour, not its channel's: colour is kept for what can be followed
+  const mark = (key: SocialKey, linked = true) => (
+    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden style={linked ? { color: TINTS[key] } : undefined}>
       {MARKS[key]}
     </svg>
   );
   const shape = names ? "link-quiet inline-flex min-h-[2.75rem] items-center gap-8 text-sm" : "btn btn-quiet h-[2.125rem] px-5";
+  // the same box as a link, so nothing moves when an address arrives, but none of a link's manners:
+  // no pointer, no hover, a quieter colour, and a tooltip that says why
+  const idle = `inline-flex cursor-default select-none items-center text-ink-3 opacity-70 ${names ? "min-h-[2.75rem] gap-8 text-sm" : "h-[2.125rem] justify-center px-5"}`;
   return (
     <ul className={`flex items-center ${names ? "flex-wrap gap-x-21 gap-y-8" : "shrink-0 flex-nowrap gap-0"} ${className}`} aria-label="GIO4X on social media">
       {slots.map(({ key, url }) => (
@@ -130,8 +134,8 @@ export function SocialLinks({ names = false, className = "", limit }: { names?: 
             </a>
           ) : (
             // no address yet: the mark is shown, and is not a link
-            <span role="img" aria-label={`${SOCIAL_LABELS[key]}: link to follow`} title={`${SOCIAL_LABELS[key]}: link to follow`} className={`${shape} cursor-default`}>
-              {mark(key)}
+            <span role="img" aria-label={`${SOCIAL_LABELS[key]}: address coming soon, not a link yet`} title={`${SOCIAL_LABELS[key]}: address coming soon`} data-social-pending className={idle}>
+              {mark(key, false)}
               {names && <span>{SOCIAL_LABELS[key]}</span>}
             </span>
           )}

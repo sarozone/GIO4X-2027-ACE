@@ -38,6 +38,7 @@ export default function SimulatorPage() {
       <PageHero
         quiet
         crumbs={[
+          { name: "Intelligence", href: "/intelligence" },
           { name: "Labs", href: "/labs" },
           { name: "Practice desk", href: "/labs/simulator" },
         ]}

@@ -21,6 +21,7 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useFooterLift } from "@/components/shell/ChatWidget";
 import { PLACE, RING_CLASS, RING_STYLE, SMALL, TOUR_END_EVENT, useTourRing } from "@/components/tour/shared";
+import { TourCard } from "@/components/tour/TourCard";
 import { PAGE_TOUR_FLAG, PAGE_TOUR_HASH, PAGE_TOURS, TOUR_KEY, type PageTourId, type PageTourStop } from "@/components/tour/stops";
 import { usePrefs } from "@/hooks/usePrefs";
 import { readPrefs, type Prefs } from "@/lib/prefs";
@@ -152,7 +153,8 @@ export function PageTour({ id, stops }: { id: PageTourId; stops: PageTourStop[] 
   }, [step]);
 
   const current = step !== null ? (stops[step] ?? null) : null;
-  useTourRing(ringRef, panelRef, current?.target);
+  // every showing of a step, first, by Next or by Back, takes the step's own position
+  useTourRing(ringRef, current?.target, current && step !== null ? String(step) : null);
 
   const total = stops.length;
   const last = step === total - 1;
@@ -185,60 +187,21 @@ export function PageTour({ id, stops }: { id: PageTourId; stops: PageTourStop[] 
       )}
 
       {current && step !== null && (
-        <section
-          ref={panelRef}
-          role="dialog"
-          aria-modal="false"
-          aria-labelledby={`${uid}-title`}
-          tabIndex={-1}
-          data-tour-panel=""
-          className={`panel ${PLACE} flex max-h-[calc(100dvh-var(--header-h)-1rem)] flex-col shadow-3 focus:outline-none sm:w-[23rem]`}
+        <TourCard
+          panelRef={panelRef}
+          uid={uid}
+          name={meta.name}
+          word="Step"
+          at={step}
+          total={total}
+          title={current.title}
+          body={current.body}
+          back={step > 0 ? { title: stops[step - 1].title, go: () => setStep(step - 1) } : undefined}
+          next={last ? undefined : { title: stops[step + 1].title, go: () => setStep(step + 1) }}
+          onFinish={last ? () => end(true) : undefined}
+          onEnd={() => end(false)}
           style={{ marginBottom: lift || undefined, animation: "gx-rise 260ms var(--ease-out)" }}
-        >
-          <div className="flex items-center justify-between gap-13 border-b border-line py-3 pl-13 pr-5">
-            <p className="label">
-              {meta.name} · <span className="num">{step + 1}</span> of <span className="num">{total}</span>
-            </p>
-            <button type="button" className={`btn btn-quiet ${SMALL}`} onClick={() => end(false)}>
-              End tour
-            </button>
-          </div>
-
-          <div aria-live="polite" aria-atomic="true" className="min-h-0 overflow-y-auto px-13 py-13">
-            <p id={`${uid}-title`} className="h4">
-              <span className="sr-only">
-                Step {step + 1} of {total}:{" "}
-              </span>
-              {current.title}
-            </p>
-            <p className="mt-5 text-sm leading-snug text-ink-2">{current.body}</p>
-          </div>
-
-          <div className="flex items-center justify-between gap-8 border-t border-line px-13 py-8">
-            {/* drawn progress; the count above says the same in words */}
-            <span aria-hidden className="flex items-center gap-3">
-              {stops.map((s, i) => (
-                <span key={s.title} className={`h-[3px] rounded-full ${i === step ? "w-13 bg-accent" : i < step ? "w-5 bg-ink-3" : "w-5 bg-line-strong"}`} />
-              ))}
-            </span>
-            <span className="flex items-center gap-5">
-              {step > 0 && (
-                <button type="button" className={`btn btn-quiet ${SMALL}`} onClick={() => setStep(step - 1)} aria-label={`Back: ${stops[step - 1].title}`}>
-                  Back
-                </button>
-              )}
-              {last ? (
-                <button type="button" className={`btn btn-primary ${SMALL}`} onClick={() => end(true)}>
-                  Finish
-                </button>
-              ) : (
-                <button type="button" className={`btn btn-primary ${SMALL}`} onClick={() => setStep(step + 1)} aria-label={`Next: ${stops[step + 1].title}`}>
-                  Next
-                </button>
-              )}
-            </span>
-          </div>
-        </section>
+        />
       )}
     </>
   );

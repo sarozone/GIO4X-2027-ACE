@@ -10,7 +10,9 @@ import { useEffect, useRef } from "react";
  * owns everything that is the same for all of them: sizing to the device pixel
  * ratio, colours read from the design tokens (so theme and accent follow),
  * pausing off-screen and in hidden tabs, a single composed still frame under
- * reduced motion or "low visual effects", and the pointer.
+ * reduced motion or "low visual effects", and the pointer. The same composed
+ * frame is what goes to paper: a page printed or saved as a PDF never carries
+ * a figure caught half-way through drawing itself.
  *
  * Figures illustrate an idea. They never show a price, a statistic or anything
  * that could be read as live data, and they carry no meaning the text beside
@@ -126,6 +128,8 @@ export function Figure({ draw, ratio = 1.618, className = "", rev = 0 }: Props) 
     /** 0 to 1: progress of the arrival since the figure first came into view */
     let seen = 0;
     let arrived = false;
+    /** true from the moment the browser prepares a print until it has finished */
+    let printing = false;
 
     /** Any CSS colour, through the canvas's own parser, as numbers. */
     const parse = (value: string): Colour | null => {
@@ -191,6 +195,11 @@ export function Figure({ draw, ratio = 1.618, className = "", rev = 0 }: Props) 
     const frame = (now: number) => {
       raf = 0;
       if (disposed) return;
+      if (printing) {
+        // the frame on the sheet is already drawn (toPaper below); nothing moves until the print is over
+        stillFrame();
+        return;
+      }
       if (isStill()) {
         hover = over ? 1 : 0;
         mx = tx;
@@ -217,9 +226,46 @@ export function Figure({ draw, ratio = 1.618, className = "", rev = 0 }: Props) 
       raf = requestAnimationFrame(frame);
     };
 
-    const ro = new ResizeObserver(() => {
+    /** The composed frame, drawn now and not on the next animation frame: a print does not wait for one. */
+    const stillFrame = () => {
+      hover = 0;
+      mx = tx = w / 2;
+      my = ty = h / 2;
+      paint(STILL_T, 0, true);
+    };
+    /**
+     * Printing, or saving as a PDF. The browser photographs the canvas as it stands, so without this
+     * the sheet carries whatever moment of the animation was on screen, or nothing at all for a figure
+     * that had not yet scrolled into view. The finished frame is drawn at once, in the colours of the
+     * print style sheet where the browser has already applied it.
+     */
+    const toPaper = () => {
+      if (disposed) return;
+      printing = true;
+      cancelAnimationFrame(raf);
+      raf = 0;
+      canvas.parentElement?.setAttribute("data-arrived", "");
+      arrived = true;
+      pal = readPalette();
+      resize();
+      stillFrame();
+    };
+    const fromPaper = () => {
+      if (disposed || !printing) return;
+      printing = false;
+      seen = 1;
+      pal = readPalette();
       resize();
       start();
+    };
+    const printQuery = window.matchMedia("print");
+    const onPrintQuery = (e: MediaQueryListEvent) => (e.matches ? toPaper() : fromPaper());
+
+    const ro = new ResizeObserver(() => {
+      resize();
+      // sizing a canvas empties it, and no animation frame comes while the page is being printed
+      if (printing) stillFrame();
+      else start();
     });
     ro.observe(canvas);
     const io = new IntersectionObserver(([entry]) => {
@@ -269,6 +315,10 @@ export function Figure({ draw, ratio = 1.618, className = "", rev = 0 }: Props) 
     canvas.addEventListener("pointermove", onMove, { passive: true });
     canvas.addEventListener("pointerleave", onLeave, { passive: true });
     reduced.addEventListener("change", onPrefs);
+    // both are needed: `beforeprint` comes before the print styles apply, the media query after
+    window.addEventListener("beforeprint", toPaper);
+    window.addEventListener("afterprint", fromPaper);
+    printQuery.addEventListener("change", onPrintQuery);
 
     return () => {
       disposed = true;
@@ -280,13 +330,16 @@ export function Figure({ draw, ratio = 1.618, className = "", rev = 0 }: Props) 
       canvas.removeEventListener("pointermove", onMove);
       canvas.removeEventListener("pointerleave", onLeave);
       reduced.removeEventListener("change", onPrefs);
+      window.removeEventListener("beforeprint", toPaper);
+      window.removeEventListener("afterprint", fromPaper);
+      printQuery.removeEventListener("change", onPrintQuery);
     };
   }, []);
 
   return (
     <div
       aria-hidden
-      className={`relative w-full translate-y-[8px] select-none opacity-0 transition-[opacity,transform] duration-700 ease-out data-[arrived]:translate-y-0 data-[arrived]:opacity-100 motion-reduce:translate-y-0 motion-reduce:opacity-100 motion-reduce:transition-none ${className}`}
+      className={`relative w-full translate-y-[8px] select-none opacity-0 transition-[opacity,transform] duration-700 ease-out data-[arrived]:translate-y-0 data-[arrived]:opacity-100 motion-reduce:translate-y-0 motion-reduce:opacity-100 motion-reduce:transition-none print:!translate-y-0 print:!opacity-100 print:!transition-none ${className}`}
       style={{ aspectRatio: String(ratio) }}
     >
       <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />

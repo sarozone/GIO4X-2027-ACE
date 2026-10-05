@@ -4,7 +4,7 @@ import Link from "next/link";
 import { SocialLinks } from "@/components/shell/SocialLinks";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { nav } from "@/config/nav";
+import { nav, navPlace } from "@/config/nav";
 import { Logo } from "@/components/brand/Logo";
 import { AppearanceButton } from "@/components/shell/Appearance";
 import { AskAiButton } from "@/components/shell/AskAi";
@@ -14,16 +14,6 @@ import { LensButton, openLensAsk } from "@/components/shell/Lens";
 import { useAiAvailable } from "@/components/shell/LensAsk";
 import { NavGlyph, panelLight, rowFx } from "@/components/shell/nav-glyphs";
 import { shellLabels } from "@/i18n/shell";
-
-/** Which URL prefixes belong to which primary section (a page is "in" exactly one). */
-const SECTION_PREFIXES: Record<string, string[]> = {
-  markets: ["/markets"],
-  trading: ["/trading", "/partners", "/tools"],
-  platforms: ["/platforms"],
-  intelligence: ["/intelligence", "/morning-room", "/labs"],
-  academy: ["/academy", "/glossary", "/faq"],
-  company: ["/about", "/careers", "/media", "/contact", "/trust", "/legal", "/design", "/status"],
-};
 
 /**
  * Institutional navigation.
@@ -43,6 +33,9 @@ export function SiteHeader() {
   const closeTimer = useRef<number | undefined>(undefined);
   const openTimer = useRef<number | undefined>(undefined);
   const headerRef = useRef<HTMLElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  // the part of the address after "#": two sections may list the same page at different places on it (see navPlace)
+  const [hash, setHash] = useState("");
   // GIO4X AI: false on the server and on the first render in the browser, so "Ask AI" is in neither; it joins the row once the server has said the assistant is there
   const ai = useAiAvailable(true);
 
@@ -74,6 +67,32 @@ export function SiteHeader() {
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
+  // The router does not report the hash, and a link to a place on the page that is already open fires no
+  // "hashchange": so it is read on arrival, on back and forward, and from such a link as it is followed.
+  useEffect(() => {
+    const read = () => setHash(window.location.hash);
+    const onClick = (e: MouseEvent) => {
+      if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const a = e.target instanceof Element ? e.target.closest<HTMLAnchorElement>("a[href]") : null;
+      if (!a || (a.target && a.target !== "_self") || a.origin !== window.location.origin || a.pathname !== window.location.pathname) return;
+      setHash(a.hash);
+    };
+    read();
+    window.addEventListener("hashchange", read);
+    window.addEventListener("popstate", read);
+    document.addEventListener("click", onClick);
+    return () => {
+      window.removeEventListener("hashchange", read);
+      window.removeEventListener("popstate", read);
+      document.removeEventListener("click", onClick);
+    };
+  }, [pathname]);
+
+  // a tray taller than the window scrolls within itself: each section opens at its top
+  useEffect(() => {
+    if (panelRef.current) panelRef.current.scrollTop = 0;
+  }, [open]);
+
   useEffect(() => {
     document.documentElement.style.overflow = drawer ? "hidden" : "";
     return () => {
@@ -93,7 +112,9 @@ export function SiteHeader() {
 
   const active = nav.find((s) => s.key === open);
   const solid = scrolled || !!open || drawer;
-  const isCurrent = (href: string) => pathname === href || (href !== "/" && pathname.startsWith(`${href}/`));
+  // where this page stands in the menus: one section at most, and the row that is the page (or the listed page above it)
+  const place = navPlace(pathname, hash);
+  const rowCurrent = (href: string) => (place?.href === href ? (place.exact ? "page" : "true") : undefined);
 
   return (
     <>
@@ -118,7 +139,7 @@ export function SiteHeader() {
         <nav aria-label="Primary" className="ml-13 hidden lg:block">
           <ul className="flex items-center">
             {nav.map((s) => {
-              const current = (SECTION_PREFIXES[s.key] ?? [s.href]).some((p) => isCurrent(p));
+              const current = place?.section.key === s.key;
               return (
                 <li key={s.key} onMouseEnter={() => intentOpen(s.key)}>
                   <button
@@ -192,11 +213,12 @@ export function SiteHeader() {
         </div>
       </div>
 
-      {/* mega-menu (desktop) */}
+      {/* mega-menu (desktop). Never taller than the window beneath the header: a long section scrolls inside the tray. */}
       <div
-        className={`mg-panel absolute inset-x-0 top-full hidden overflow-hidden border-b border-line bg-paper shadow-2 transition-[opacity,visibility,transform] duration-[260ms] lg:block ${
-          active ? "visible translate-y-0 opacity-100" : "invisible -translate-y-5 opacity-0"
-        }`}
+        ref={panelRef}
+        className={`mg-panel absolute inset-x-0 top-full hidden overflow-y-auto overflow-x-hidden overscroll-contain border-b border-line bg-paper shadow-2 transition-[opacity,visibility,transform] duration-[260ms] lg:block ${
+          scrolled ? "max-h-[calc(100dvh-3.4375rem)]" : "max-h-[calc(100dvh-4.25rem)]"
+        } ${active ? "visible translate-y-0 opacity-100" : "invisible -translate-y-5 opacity-0"}`}
         onMouseEnter={() => window.clearTimeout(closeTimer.current)}
         onPointerMove={panelLight}
       >
@@ -221,7 +243,7 @@ export function SiteHeader() {
                         <Link
                           href={i.href}
                           className="mg-row group -mx-8 flex items-start gap-8 rounded-sm px-8 py-[0.4rem]"
-                          aria-current={pathname === i.href ? "page" : undefined}
+                          aria-current={rowCurrent(i.href)}
                         >
                           <NavGlyph href={i.href} section={s.key} />
                           <span className="mg-text">
@@ -273,7 +295,7 @@ export function SiteHeader() {
                       </Link>
                       {/* each group opens on its own, so a long section is a few lines until one is wanted */}
                       {s.groups.map((g, gi) => (
-                        <details key={g.title} open={gi === 0} className="group/d border-t border-line pt-13 first:border-t-0 first:pt-0">
+                        <details key={g.title} open={gi === 0 || g.items.some((i) => i.href === place?.href)} className="group/d border-t border-line pt-13 first:border-t-0 first:pt-0">
                           <summary className="flex min-h-[2.75rem] cursor-pointer list-none items-center justify-between [&::-webkit-details-marker]:hidden">
                             <span className="label !text-accent">{g.title}</span>
                             <span className="num text-xs text-ink-3">
@@ -283,9 +305,14 @@ export function SiteHeader() {
                           <ul className="mt-5">
                             {g.items.map((i, ii) => (
                               <li key={i.href}>
-                                <Link href={i.href} className="flex items-center gap-8 py-[0.45rem] text-base text-ink-2">
+                                {/* the open page's row: full ink, with the header's accent rule beneath its name */}
+                                <Link
+                                  href={i.href}
+                                  aria-current={rowCurrent(i.href)}
+                                  className={`flex items-center gap-8 py-[0.45rem] text-base ${rowCurrent(i.href) ? "font-medium text-ink" : "text-ink-2"}`}
+                                >
                                   <NavGlyph href={i.href} section={s.key} once={ii} />
-                                  {i.label}
+                                  <span className={rowCurrent(i.href) ? "underline decoration-accent decoration-1 underline-offset-[0.35em]" : undefined}>{i.label}</span>
                                 </Link>
                               </li>
                             ))}

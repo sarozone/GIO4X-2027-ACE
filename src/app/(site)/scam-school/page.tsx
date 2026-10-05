@@ -49,7 +49,10 @@ export default function Page() {
       <JsonLd data={webPageSchema({ path: "/scam-school", name: "Scam school", description: DESCRIPTION, type: "CollectionPage" })} />
       <JsonLd data={faqSchema(FAQ)} />
       <PageHero
-        crumbs={[{ name: "Scam school", href: "/scam-school" }]}
+        crumbs={[
+          { name: "Academy", href: "/academy" },
+          { name: "Scam school", href: "/scam-school" },
+        ]}
         quiet
         eyebrow="How frauds work"
         title="Scam school"

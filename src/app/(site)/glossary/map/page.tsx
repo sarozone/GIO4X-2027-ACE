@@ -48,6 +48,7 @@ export default function Page() {
       <PageHero
         quiet
         crumbs={[
+          { name: "Academy", href: "/academy" },
           { name: "Glossary", href: "/glossary" },
           { name: "Star map", href: "/glossary/map" },
         ]}

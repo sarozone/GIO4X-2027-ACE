@@ -20,6 +20,7 @@ import { shots, shotsNote } from "@/data/platform-shots";
 import { platforms, raptorBeats, raptorPending } from "@/data/platforms";
 import { pageMeta } from "@/lib/meta";
 import { softwareSchema } from "@/lib/schema";
+import { AskAiBox } from "@/components/shell/AskAi";
 
 const p = platforms.raptor;
 const description = "777 Raptor is the GIO4X flagship platform: a multi-asset trading workspace on web, desktop and mobile. See how a trader uses each part of it, and what has not been published yet.";
@@ -140,6 +141,7 @@ export default function RaptorPage() {
             </div>
           </div>
         </header>
+        <AskAiBox className="hairline-b" />
 
         {/* the workspace itself: the first thing under the stage */}
         <div className="relative overflow-hidden">

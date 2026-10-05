@@ -94,6 +94,7 @@ export default function SecurityPage() {
       <JsonLd data={webPageSchema({ path: "/trust/security", name: "Online security", description })} />
       <PageHero
         crumbs={[
+          { name: "Company", href: "/about" },
           { name: "Trust Centre", href: "/trust" },
           { name: "Online security", href: "/trust/security" },
         ]}

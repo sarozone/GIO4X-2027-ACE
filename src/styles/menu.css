@@ -288,6 +288,23 @@
   transition-duration: var(--t-base);
 }
 
+/* e. THE OPEN PAGE: the row for the page being read (aria-current, set in
+   SiteHeader) holds its lit state without the pointer, and its name takes the
+   accent, so the open tray shows where the reader is. Each treatment above
+   keeps its own way of being lit; nothing here moves. */
+.mg-row[aria-current]::before {
+  opacity: 1;
+}
+.mg-row[aria-current] .mg-label {
+  color: var(--accent);
+}
+[data-mg-fx="wipe"] .mg-row[aria-current] .mg-label::after {
+  transform: scaleX(1);
+}
+[data-mg-fx="edge"] .mg-row[aria-current]::after {
+  transform: scaleY(1);
+}
+
 /* ---- 3. THE PANEL -------------------------------------------------------- */
 /* A soft light follows the pointer across the open tray. */
 .mg-panel::before {

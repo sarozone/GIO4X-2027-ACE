@@ -50,7 +50,10 @@ export default function LabsPage() {
   return (
     <>
       <PageHero
-        crumbs={[{ name: "Labs", href: "/labs" }]}
+        crumbs={[
+          { name: "Intelligence", href: "/intelligence" },
+          { name: "Labs", href: "/labs" },
+        ]}
         eyebrow="GIO4X Labs"
         title="Experiments, kept apart on purpose."
         lead="Labs is where GIO4X tries other ways of seeing markets. Experiments live here so that the core site stays calm: accounts, conditions and disclosures do not move because an idea did."

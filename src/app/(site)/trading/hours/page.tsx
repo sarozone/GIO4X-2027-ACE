@@ -175,7 +175,8 @@ export default function HoursPage() {
             title={<span id="sessions">The timetable in UTC, and in your time.</span>}
             lead={`The ${fxSessions.length} conventional FX session windows and the regular hours of ${centres.length} exchanges. UTC is given for the middle of January and the middle of July, because the answer differs between the two halves of the year.`}
           />
-          <h3 className="label mt-34 lg:mt-55">The four FX sessions</h3>
+          {/* close under the heading, so the four sessions are read with it in one window of a laptop's height */}
+          <h3 className="label mt-34">The four FX sessions</h3>
           <div className="mt-8">
             <SessionTable kind="fx" />
           </div>

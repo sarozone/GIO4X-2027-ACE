@@ -29,6 +29,7 @@ import { ToolPager, type PagerTool } from "@/components/tools/ToolPager";
 import type { RatesProp } from "@/components/tools/calc";
 import { toolContent, toolGroups } from "@/components/tools/content";
 import type { ToolProps } from "@/components/tools/ui";
+import { sectionCrumb } from "@/config/nav";
 import { getTerm } from "@/data/glossary";
 import { getTool, tools } from "@/data/tools";
 import { pageMeta } from "@/lib/meta";
@@ -120,6 +121,8 @@ export default async function ToolPage({ params }: Params) {
       <PageHero
         quiet
         crumbs={[
+          // the section that lists this tool in the menus: Trading for most, Academy for the four visualisers
+          sectionCrumb(`/tools/${tool.slug}`) ?? { name: "Trading", href: "/trading" },
           { name: "Tools", href: "/tools" },
           { name: tool.name, href: `/tools/${tool.slug}` },
         ]}

@@ -44,7 +44,10 @@ export default function Page() {
     <>
       <JsonLd data={webPageSchema({ path: "/investing", name: "Investing explained", description: DESCRIPTION, type: "CollectionPage" })} />
       <PageHero
-        crumbs={[{ name: "Investing", href: "/investing" }]}
+        crumbs={[
+          { name: "Academy", href: "/academy" },
+          { name: "Investing", href: "/investing" },
+        ]}
         eyebrow="Investing · explained"
         title="What an investor actually holds."
         lead={`${INVESTING.length} pages, one for each thing a long-term investor meets. Each says what it is, how it works, what it costs and where people go wrong, and each has one working example to move with your own hands. None of them says what to buy.`}

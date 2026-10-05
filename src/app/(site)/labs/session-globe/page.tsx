@@ -28,6 +28,7 @@ export default function SessionGlobePage() {
       <PageHero
         quiet
         crumbs={[
+          { name: "Intelligence", href: "/intelligence" },
           { name: "Labs", href: "/labs" },
           { name: "Session globe", href: "/labs/session-globe" },
         ]}

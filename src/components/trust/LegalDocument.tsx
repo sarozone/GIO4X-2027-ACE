@@ -124,6 +124,7 @@ export function LegalDocument({ doc }: { doc: LegalDoc }) {
       <PageHero
         quiet
         crumbs={[
+          { name: "Company", href: "/about" },
           { name: "Legal & documents", href: "/legal" },
           { name: doc.short, href: doc.path },
         ]}

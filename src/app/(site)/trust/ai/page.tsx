@@ -72,6 +72,7 @@ export default function AiPage() {
       <JsonLd data={webPageSchema({ path: "/trust/ai", name: "AI at GIO4X", description })} />
       <PageHero
         crumbs={[
+          { name: "Company", href: "/about" },
           { name: "Trust Centre", href: "/trust" },
           { name: "AI at GIO4X", href: "/trust/ai" },
         ]}

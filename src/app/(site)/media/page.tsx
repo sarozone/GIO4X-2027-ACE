@@ -35,7 +35,10 @@ export default function MediaPage() {
   return (
     <>
       <PageHero
-        crumbs={[{ name: "Media Centre", href: "/media" }]}
+        crumbs={[
+          { name: "Company", href: "/about" },
+          { name: "Media Centre", href: "/media" },
+        ]}
         eyebrow="Media Centre"
         title="How to describe GIO4X, accurately."
         lead="The approved description, the correct names, the logo files and the person to ask. If a fact you need is not here, it has not been published; please ask rather than infer."

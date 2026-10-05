@@ -8,6 +8,7 @@ import { CopyButton, Share } from "./Share";
 import { ReadingProgress } from "./ReadingProgress";
 import { longDate } from "./prose";
 import "./knowledge.css";
+import { AskAiBox } from "@/components/shell/AskAi";
 
 export type TocItem = { id: string; text: string };
 
@@ -102,6 +103,7 @@ export function Reader({ crumbs, kicker, title, lead, meta, notice, brief, toc, 
           </div>
         </div>
       </header>
+      <AskAiBox className="hairline-b" />
 
       <div className="wrap section-quiet">
         <div className="grid grid-cols-[minmax(0,1fr)] gap-55 lg:grid-cols-[minmax(0,1fr)_minmax(0,21rem)] lg:gap-89">

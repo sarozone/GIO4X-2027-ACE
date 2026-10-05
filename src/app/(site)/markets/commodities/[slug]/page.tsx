@@ -1,10 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import type { SceneId } from "@/components/cockpit/scenes";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { NextSteps, PageHero, SpecList } from "@/components/ui/Page";
 import { educationalNote, riskWarning } from "@/config/legal";
-import { COMMODITIES, COMMODITY_TERMS, TRADED_COMMODITIES, TRADED_TERMS, TRADED_TOOLS, commodityHref, commodityInstrument, commodityLine, getCommodity, type Commodity, type CommodityCategory } from "@/data/commodities";
+import { COMMODITIES, COMMODITY_TERMS, TRADED_COMMODITIES, TRADED_TERMS, TRADED_TOOLS, commodityHref, commodityInstrument, commodityLine, getCommodity, type Commodity } from "@/data/commodities";
 import { getTerm } from "@/data/glossary";
 import { getAssetClass, instrumentHref } from "@/data/instruments";
 import { getTool } from "@/data/tools";
@@ -36,8 +35,6 @@ export async function generateMetadata({ params }: Params) {
   return pageMeta({ title: `${c.name}: what it is, how it is quoted and what moves it`, description: describe(c, !!commodityInstrument(c)), path: commodityHref(c) });
 }
 
-/** the two families with a hero scene of their own keep it; the others open with the Markets instrument */
-const SCENE: Partial<Record<CommodityCategory, SceneId>> = { Energy: "energy", "Precious metals": "metals" };
 
 function Block({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
   return (
@@ -71,7 +68,6 @@ export default async function Page({ params }: Params) {
       <JsonLd data={webPageSchema({ path, name: `${c.name} (commodity)`, description: describe(c, !!inst) })} />
       <PageHero
         quiet
-        scene={SCENE[c.category]}
         crumbs={[
           { name: "Markets", href: "/markets" },
           { name: "Commodities A to Z", href: INDEX },

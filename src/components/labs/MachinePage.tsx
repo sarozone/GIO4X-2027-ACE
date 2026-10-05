@@ -4,6 +4,7 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { NextSteps, PageHero } from "@/components/ui/Page";
 import { PunchLine } from "@/components/ui/PunchLine";
 import { riskWarning } from "@/config/legal";
+import { sectionCrumb } from "@/config/nav";
 import type { PunchKey } from "@/data/punchlines";
 import { webPageSchema } from "@/lib/schema";
 
@@ -42,10 +43,13 @@ export function MachinePage({
   /** whether the page has machines with sliders and buttons the keyboard line applies to */
   keys?: boolean;
 }) {
+  // the breadcrumb opens with the section that lists the page in the menus (Intelligence for a Labs page), unless the parent is that section
+  const section = sectionCrumb(path);
+  const above = section && section.href !== parent.href ? [section] : [];
   return (
     <>
       <JsonLd data={webPageSchema({ path, name: title, description })} />
-      <PageHero quiet crumbs={[parent, { name: title, href: path }]} eyebrow={eyebrow} title={title} lead={lead} />
+      <PageHero quiet crumbs={[...above, parent, { name: title, href: path }]} eyebrow={eyebrow} title={title} lead={lead} />
 
       {keys && <p className="wrap hidden pt-13 text-xs text-ink-3 lg:block">On a keyboard: with the pointer over a machine, the left and right arrows move its slider and Enter presses its main button.</p>}
 

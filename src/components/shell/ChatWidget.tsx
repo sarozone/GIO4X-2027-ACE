@@ -138,11 +138,14 @@ function ChatGlyph() {
 const FOOTER_ROW_FROM = 820;
 
 /**
- * How far the launcher has to rise so that it does not sit on the footer's
- * last line. On a phone that line is stacked and its right-hand corner is
- * empty, so a 44px button fits there and nothing moves. From `md` up the
- * corner holds the technology partner's logo (a link), so the button rides
- * just above the line while the line is on screen.
+ * How far a panel in the bottom-left corner (the tours' cards) has to rise so
+ * that it does not sit on the footer's last line while that line is on screen.
+ *
+ * The launcher and the scroll arrows no longer use it: a button that rode up
+ * and down with the footer was a button that moved, and once the motto became
+ * the footer's last line it came to rest on the technology partner's logo.
+ * They now keep one position, and the footer keeps its right-hand corner clear
+ * for them instead (`.gx-colophon` and `.gx-motto` in fx.css).
  */
 export function useFooterLift(): number {
   const [lift, setLift] = useState(0);
@@ -174,7 +177,8 @@ export function useFooterLift(): number {
  * square, so it takes as little of the page as a touch target allows. It is
  * kept clear of the home indicator and rounded screen corners by the
  * safe-area insets, and it sits below the header's layer, so the mobile menu,
- * the Lens and the command bar all cover it instead of fighting it.
+ * the Lens and the command bar all cover it instead of fighting it. It never
+ * moves: the footer leaves the corner empty for it (see useFooterLift above).
  */
 export function ChatLauncher({
   unread = 0,
@@ -190,7 +194,6 @@ export function ChatLauncher({
   onOpen?: () => void;
   buttonRef?: Ref<HTMLButtonElement>;
 }) {
-  const lift = useFooterLift();
   const label =
     unread > 0
       ? `Open chat: ${unread} new ${unread === 1 ? "message" : "messages"} from GIO4X`
@@ -206,7 +209,6 @@ export function ChatLauncher({
       onClick={onOpen}
       aria-label={label}
       title={label}
-      style={lift ? { marginBottom: lift } : undefined}
       className="btn btn-accent no-print fixed bottom-[max(0.8125rem,env(safe-area-inset-bottom))] right-[max(0.8125rem,env(safe-area-inset-right))] z-[39] w-[2.75rem] px-0 sm:bottom-[max(1.3125rem,env(safe-area-inset-bottom))] sm:right-[max(1.3125rem,env(safe-area-inset-right))] sm:w-auto sm:px-21"
     >
       <ChatGlyph />

@@ -70,7 +70,10 @@ export default function Page() {
       <JsonLd data={faqSchema(faq)} />
       <PageHero
         quiet
-        crumbs={[{ name: TITLE, href: PATH }]}
+        crumbs={[
+          { name: "Trading", href: "/trading" },
+          { name: TITLE, href: PATH },
+        ]}
         eyebrow="Private · kept in your browser"
         title={TITLE}
         lead="Write each trade down: what the plan was, what happened, and how you felt. The page keeps the list in this browser, works out the figures from it and draws the running total. A journal records what happened. It does not say what will."

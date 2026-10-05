@@ -23,7 +23,9 @@ Two consequences that matter here:
 
 - **The TradingView frames are not a feed.** They are TradingView's own pages inside a sandboxed
   `<iframe>`. The site cannot read a price or a release time out of them, so it cannot build a
-  ticker, an alert or a countdown from them.
+  ticker, an alert or a countdown from them. The instrument chart's frame is allowed to save a
+  picture of itself (`allow-downloads`) and to copy one (`allow="clipboard-write"`), because
+  TradingView's own chart menu offers both; see `docs/SECURITY.md`, section 7.
 - **There is no dated release in the repository.** `econEvents` deliberately carries no dates,
   forecasts or outcomes ("a wrong date is worse than none"), and the central-bank data carries no
   meeting dates. For that reason **no "next release" countdown was added** to `/markets/events`: a

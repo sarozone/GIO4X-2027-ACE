@@ -5,6 +5,7 @@ import type { SceneId } from "@/components/cockpit/scenes";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { breadcrumbSchema, type Crumb } from "@/lib/schema";
 import { Rosette } from "@/components/brand/Rosette";
+import { AskAiBox } from "@/components/shell/AskAi";
 import { Backdrop, type BackdropVariant } from "@/components/figures/Backdrop";
 
 /** Visible breadcrumbs backed by BreadcrumbList structured data. Humans first. */
@@ -72,6 +73,7 @@ type HeroProps = {
  */
 export function PageHero({ crumbs, eyebrow, title, lead, children, aside, companion, quiet, scene }: HeroProps) {
   return (
+    <>
     <header className={`cx-hero on-night ${aside ? "cx-has-aside" : ""}`}>
       <div className="cx-stage" aria-hidden>
         <RouteScene scene={scene} />
@@ -90,6 +92,9 @@ export function PageHero({ crumbs, eyebrow, title, lead, children, aside, compan
         {aside && companion && <div className="cx-companion">{companion}</div>}
       </div>
     </header>
+    {/* the question box for GIO4X AI stands under every page's opening (owner, 5 October 2026); it renders nothing while the assistant is off */}
+    <AskAiBox className="hairline-b" />
+    </>
   );
 }
 

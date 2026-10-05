@@ -46,7 +46,10 @@ export default function GlossaryPage() {
       />
       <PageHero
         quiet
-        crumbs={[{ name: "Glossary", href: "/glossary" }]}
+        crumbs={[
+          { name: "Academy", href: "/academy" },
+          { name: "Glossary", href: "/glossary" },
+        ]}
         eyebrow="Reference"
         title="Financial Glossary"
         lead={`${glossary.length} terms, defined plainly. Many carry a worked example, a formula, and a link to the tool or lesson that puts the idea to work.`}

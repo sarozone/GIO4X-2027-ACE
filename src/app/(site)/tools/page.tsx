@@ -64,7 +64,10 @@ export default function ToolsHub() {
       <JsonLd data={webPageSchema({ path: "/tools", name: "GIO4X Trader Toolkit", description })} />
       <PageTour id="tools" stops={tour} />
       <PageHero
-        crumbs={[{ name: "Tools", href: "/tools" }]}
+        crumbs={[
+          { name: "Trading", href: "/trading" },
+          { name: "Tools", href: "/tools" },
+        ]}
         eyebrow="Trader Toolkit"
         title="GIO4X Trader Toolkit"
         lead={`${COUNT_CAP} calculators and visualisers that work as one system. Set a balance, an instrument or a risk figure in one and it is there in the next. Each shows its formula and the working with your own numbers. None of them tells you what to trade.`}

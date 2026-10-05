@@ -43,7 +43,10 @@ export default function TrustCentrePage() {
     <>
       <JsonLd data={webPageSchema({ path: "/trust", name: "GIO4X Trust Centre", description })} />
       <PageHero
-        crumbs={[{ name: "Trust Centre", href: "/trust" }]}
+        crumbs={[
+          { name: "Company", href: "/about" },
+          { name: "Trust Centre", href: "/trust" },
+        ]}
         eyebrow="GIO4X Trust Centre"
         title="Trust should never be an assumption."
         lead="Trust is not a claim. It is an architecture. These pages are built so that you can check what GIO4X says, and see plainly what it has not yet said."

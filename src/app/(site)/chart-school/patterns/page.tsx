@@ -26,6 +26,7 @@ export default function Page() {
       <PageHero
         quiet
         crumbs={[
+          { name: "Academy", href: "/academy" },
           { name: "Chart School", href: "/chart-school" },
           { name: "Chart patterns", href: PATH },
         ]}

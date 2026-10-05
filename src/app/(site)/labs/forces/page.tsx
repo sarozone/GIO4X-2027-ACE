@@ -25,6 +25,7 @@ export default function Page() {
       <PageHero
         quiet
         crumbs={[
+          { name: "Intelligence", href: "/intelligence" },
           { name: "Labs", href: "/labs" },
           { name: "Forces", href: "/labs/forces" },
         ]}

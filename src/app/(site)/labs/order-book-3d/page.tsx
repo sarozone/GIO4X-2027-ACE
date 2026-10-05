@@ -26,6 +26,7 @@ export default function OrderBook3DPage() {
       <PageHero
         quiet
         crumbs={[
+          { name: "Intelligence", href: "/intelligence" },
           { name: "Labs", href: "/labs" },
           { name: "Order book in 3D", href: "/labs/order-book-3d" },
         ]}

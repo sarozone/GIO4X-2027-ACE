@@ -22,6 +22,7 @@ export default function TransparencyPage() {
       <JsonLd data={webPageSchema({ path: "/trust/transparency", name: "What we disclose", description })} />
       <PageHero
         crumbs={[
+          { name: "Company", href: "/about" },
           { name: "Trust Centre", href: "/trust" },
           { name: "What we disclose", href: "/trust/transparency" },
         ]}

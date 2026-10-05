@@ -18,6 +18,7 @@ export default function ScalePage() {
       <PageHero
         quiet
         crumbs={[
+          { name: "Intelligence", href: "/intelligence" },
           { name: "Labs", href: "/labs" },
           { name: "The Long Scroll", href: "/labs/scale" },
         ]}

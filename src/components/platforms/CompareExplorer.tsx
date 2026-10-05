@@ -8,12 +8,22 @@ import { FactCell, MatrixLegend } from "./FactState";
  * "What matters to you?" + the comparison matrix. Choosing a need brings the
  * relevant rows forward (a marker, a rule and a label: not colour alone) and
  * reports how many of them are documented for each platform. It never ranks.
+ *
+ * "Forward" is meant literally: the rows that bear on the choice move to the
+ * top, in the order they are published in, and the rest follow beneath a
+ * labelled rule, also in their published order. With nothing chosen the
+ * matrix is in its published order again. The order says what was asked
+ * about, not which platform is better.
  */
 export function CompareExplorer() {
   const [selected, setSelected] = useState<NeedKey[]>([]);
   const toggle = (k: NeedKey) => setSelected((s) => (s.includes(k) ? s.filter((x) => x !== k) : [...s, k]));
   const matches = (rowNeeds: NeedKey[]) => selected.length > 0 && rowNeeds.some((n) => selected.includes(n));
   const matched = compareRows.filter((r) => matches(r.needs));
+  // filter keeps the published order within each group, so nothing is re-ranked
+  const ordered = matched.length > 0 ? [...matched, ...compareRows.filter((r) => !matches(r.needs))] : compareRows;
+  /** the first row that does not bear on the choice, when some do: the rule is drawn above it */
+  const firstOther = matched.length > 0 && matched.length < compareRows.length ? ordered[matched.length]?.key : undefined;
 
   const summary = platformOrder.map((k) => {
     const documented = matched.filter((r) => r[k].status === "verified").length;
@@ -25,7 +35,7 @@ export function CompareExplorer() {
       <div id="matters" className="scroll-mt-[8rem]">
         <fieldset>
           <legend className="h3">What matters to you?</legend>
-          <p className="mt-8 max-w-measure text-sm text-ink-2">Choose any number. The rows that bear on your choice are marked in the matrix below.</p>
+          <p className="mt-8 max-w-measure text-sm text-ink-2">Choose any number. The rows that bear on your choice are marked and moved to the top of the matrix below.</p>
           <div className="mt-21 flex flex-wrap gap-8">
             {needs.map((n) => {
               const on = selected.includes(n.key);
@@ -55,7 +65,7 @@ export function CompareExplorer() {
         <p className="mt-21 min-h-[3rem] max-w-measure text-sm text-ink-2" aria-live="polite">
           {selected.length === 0
             ? "Nothing selected: every row is shown with equal weight."
-            : `${matched.length} ${matched.length === 1 ? "row bears" : "rows bear"} on your choice. ${summary
+            : `${matched.length} ${matched.length === 1 ? "row bears" : "rows bear"} on your choice${matched.length === 0 ? "" : matched.length === 1 ? " and is listed first" : " and are listed first"}. ${summary
                 .map((s) => `${platforms[s.k].name}: ${s.documented} documented${s.pending ? `, ${s.pending} not yet published` : ""}`)
                 .join(". ")}. A count of rows is not a score; read the rows.`}
         </p>
@@ -66,10 +76,10 @@ export function CompareExplorer() {
         <p className="mt-8 text-xs text-ink-3">No verified cell currently uses ○ or —. They are kept in the legend so that a difference or an absence can be shown the moment one is confirmed.</p>
         {/* mobile: one dimension at a time, both platforms stacked, nothing off-screen */}
         <dl className="mt-21 border-t border-line-strong md:hidden">
-          {compareRows.map((r) => {
+          {ordered.map((r) => {
             const on = matches(r.needs);
             return (
-              <div key={r.key} className={`border-b border-line py-13 ${on ? "bg-brand-soft px-8" : ""}`}>
+              <div key={r.key} className={`border-b border-line py-13 ${on ? "bg-brand-soft px-8" : ""} ${r.key === firstOther ? "mt-21 border-t-2 border-t-line-strong" : ""}`}>
                 <dt className="font-medium text-ink">
                   {r.label}
                   {on && <span className="ml-8 text-[0.6875rem] font-semibold uppercase tracking-[0.1em] text-accent">Matters to you</span>}
@@ -102,9 +112,9 @@ export function CompareExplorer() {
               </tr>
             </thead>
             <tbody>
-              {compareRows.map((r) => {
+              {ordered.flatMap((r) => {
                 const on = matches(r.needs);
-                return (
+                const row = (
                   <tr key={r.key} data-match={on || undefined}>
                     <th scope="row" className={`!whitespace-normal !border-line !py-13 !pl-13 !align-top !text-[0.8125rem] !font-medium !normal-case !tracking-normal !text-ink ${on ? "bg-brand-soft" : ""}`}>
                       {r.label}
@@ -117,6 +127,17 @@ export function CompareExplorer() {
                     ))}
                   </tr>
                 );
+                // the rule between what was asked about and everything else
+                return r.key === firstOther
+                  ? [
+                      <tr key="other-rows">
+                        <th scope="colgroup" colSpan={platformOrder.length + 1} className="!border-b-line-strong !pb-8 !pl-13 !pt-21">
+                          The other rows
+                        </th>
+                      </tr>,
+                      row,
+                    ]
+                  : [row];
               })}
             </tbody>
           </table>

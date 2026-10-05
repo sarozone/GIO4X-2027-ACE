@@ -58,6 +58,7 @@ export default function Page() {
       <JsonLd data={faqSchema(faq)} />
       <PageHero
         crumbs={[
+          { name: "Academy", href: "/academy" },
           { name: "Investing", href: "/investing" },
           { name: "Case studies", href: PATH },
         ]}

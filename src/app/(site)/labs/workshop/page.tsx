@@ -99,6 +99,7 @@ export default function WorkshopPage() {
       <PageHero
         quiet
         crumbs={[
+          { name: "Intelligence", href: "/intelligence" },
           { name: "Labs", href: "/labs" },
           { name: "The Workshop", href: "/labs/workshop" },
         ]}

@@ -30,6 +30,7 @@ export default function MarketDayPage() {
       <PageHero
         quiet
         crumbs={[
+          { name: "Intelligence", href: "/intelligence" },
           { name: "Labs", href: "/labs" },
           { name: "One day of markets", href: "/labs/market-day" },
         ]}

@@ -19,7 +19,10 @@ export default function ContactPage() {
   return (
     <>
       <PageHero
-        crumbs={[{ name: "Contact", href: "/contact" }]}
+        crumbs={[
+          { name: "Company", href: "/about" },
+          { name: "Contact", href: "/contact" },
+        ]}
         eyebrow="Contact"
         title="Write to GIO4X."
         lead="Choose a topic and the form will tell you what helps us answer. The topic travels with your message, so it does not have to be explained twice."

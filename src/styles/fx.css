@@ -1236,6 +1236,30 @@ html[data-daypart="night"] .cx-hero {
 .gx-motto-b {
   color: var(--accent);
 }
+/* The Help button and the scroll arrows are fixed in the bottom-right corner
+   and never move. So the foot of the footer keeps that corner empty for them:
+   the motto's words stay clear of it on both sides (it is centred), and the
+   colophon's row ends before it, so the technology partner's logo is never
+   under the button. `--float-w` is the corner they take, measured from the
+   window's right edge: the button's own offset, its width with an unread count,
+   and a gap. On a phone the button is the icon alone. On a screen wider than
+   the page column the row already ends short of the corner and nothing changes. */
+footer[data-site-footer] {
+  --float-w: 10.5rem;
+}
+.gx-motto {
+  padding-inline: max(var(--gutter), 4.25rem);
+}
+@media (min-width: 560px) {
+  .gx-motto {
+    padding-inline: max(var(--gutter), var(--float-w));
+  }
+}
+@media (min-width: 820px) {
+  .wrap.gx-colophon {
+    padding-right: max(var(--gutter), calc(var(--float-w) + var(--gutter) - max(var(--gutter), (100% - var(--page)) / 2)));
+  }
+}
 /* the ribbon's words and its button keep to the page's content column, as the announcement line does */
 .gx-ribbon-in {
   display: flex;

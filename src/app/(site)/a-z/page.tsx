@@ -77,7 +77,7 @@ export default function Page() {
   return (
     <>
       <JsonLd data={webPageSchema({ path: "/a-z", name: "A to Z index", description: DESCRIPTION, type: "CollectionPage" })} />
-      <PageHero quiet crumbs={[{ name: "A to Z", href: "/a-z" }]} eyebrow="Index" title="A to Z" lead={`Every term, tool, lesson and page on this website, in one alphabetical list: ${list.length} entries. Each says what kind of thing it is and links to it.`} />
+      <PageHero quiet crumbs={[{ name: "Academy", href: "/academy" }, { name: "A to Z", href: "/a-z" }]} eyebrow="Index" title="A to Z" lead={`Every term, tool, lesson and page on this website, in one alphabetical list: ${list.length} entries. Each says what kind of thing it is and links to it.`} />
 
       <section className="section" aria-labelledby="az-h">
         <div className="wrap">

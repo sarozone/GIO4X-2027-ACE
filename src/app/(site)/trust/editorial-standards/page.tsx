@@ -21,6 +21,7 @@ export default function EditorialStandardsPage() {
       <JsonLd data={webPageSchema({ path: "/trust/editorial-standards", name: "Editorial standards", description })} />
       <PageHero
         crumbs={[
+          { name: "Company", href: "/about" },
           { name: "Trust Centre", href: "/trust" },
           { name: "Editorial standards", href: "/trust/editorial-standards" },
         ]}

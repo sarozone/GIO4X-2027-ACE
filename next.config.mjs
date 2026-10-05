@@ -45,6 +45,11 @@ if (process.env.NETLIFY) {
 /**
  * Content-Security-Policy, written for this application rather than copied.
  *  - No third-party scripts at all. Charts are TradingView iframes (frame-src).
+ *    What a frame may do is set on the frame itself, not here: each is
+ *    sandboxed, and the instrument chart alone is given `allow-downloads` and
+ *    `allow="clipboard-write"` for TradingView's "Download image" and "Copy
+ *    image" (src/components/markets/TradingViewChart.tsx). The policy below
+ *    and the Permissions-Policy header needed no change for that.
  *  - 'unsafe-inline' for script-src is required by Next.js' inline bootstrap
  *    when pages are statically generated (a nonce would force every page to be
  *    rendered on demand). No inline event handlers are used anywhere.

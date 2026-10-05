@@ -29,6 +29,7 @@ export default function TradeAnatomyPage() {
       <PageHero
         quiet
         crumbs={[
+          { name: "Intelligence", href: "/intelligence" },
           { name: "Labs", href: "/labs" },
           { name: TITLE, href: "/labs/trade-anatomy" },
         ]}

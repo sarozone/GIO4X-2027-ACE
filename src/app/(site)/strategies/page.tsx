@@ -25,10 +25,10 @@ export default function Page() {
       <PageHero
         quiet
         crumbs={[
-          { name: "Academy", href: "/academy" },
+          { name: "Trading", href: "/trading" },
           { name: "Strategy library", href: "/strategies" },
         ]}
-        eyebrow="Academy · approaches people use"
+        eyebrow="Trading · approaches people use"
         title="Strategy library"
         lead={`${STRATEGIES.length} well-known approaches, one page each: the idea, the rule as it is usually stated, what it needs from a market, what it costs and when it fails. None of them is recommended, and none has been shown here to be profitable.`}
       />

@@ -75,6 +75,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
       <PageHero
         quiet
         crumbs={[
+          { name: "Academy", href: "/academy" },
           { name: "Chart School", href: "/chart-school" },
           { name: "Chart patterns", href: INDEX },
           { name: pattern.name, href: path },

@@ -25,10 +25,10 @@ export default function Page() {
       <PageHero
         quiet
         crumbs={[
-          { name: "Academy", href: "/academy" },
+          { name: "Trading", href: "/trading" },
           { name: "Side by side", href: "/side-by-side" },
         ]}
-        eyebrow="Academy · comparisons"
+        eyebrow="Trading · comparisons"
         title="Side by side"
         lead={`${COMPARISONS.length} comparisons. Each sets things of one kind next to one another and asks the same questions of all of them. None says which to choose.`}
       />

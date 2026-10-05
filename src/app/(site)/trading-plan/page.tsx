@@ -52,7 +52,10 @@ export default function Page() {
       <JsonLd data={webPageSchema({ path: PATH, name: TITLE, description: DESCRIPTION })} />
       <PageHero
         quiet
-        crumbs={[{ name: TITLE, href: PATH }]}
+        crumbs={[
+          { name: "Trading", href: "/trading" },
+          { name: TITLE, href: PATH },
+        ]}
         eyebrow="Private · kept in your browser"
         title={TITLE}
         lead={`${PLAN_KEYS.length} questions in ${PLAN_SECTIONS.length} parts, answered in your own words, and set out beneath them as a plan you can print. The page asks and records. It does not suggest an answer, and it does not read yours.`}

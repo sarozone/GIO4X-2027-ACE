@@ -40,6 +40,12 @@ export function SiteFooter() {
     { title: "See it, play it", items: group("academy", "See it, play it") },
     { title: "Company", items: group("company", "GIO4X", "Trust") },
   ];
+  // A block named for a section links its name to the section's own page, unless a row beneath it already does
+  // (config/nav.ts does not list a section's page as a row).
+  const sectionHref = (c: (typeof columns)[number]) => {
+    const href = nav.find((s) => s.label === c.title)?.href;
+    return href && !c.items.some((i) => i.href === href) ? href : undefined;
+  };
   // a page already in the directory above is not repeated in the lists beneath it
   const listed = new Set(columns.flatMap((c) => c.items.map((i) => i.href)));
   const secondary = secondaryNav.map((g) => ({ ...g, items: g.items.filter((i) => !listed.has(i.href)) }));
@@ -72,7 +78,15 @@ export function SiteFooter() {
       <nav aria-label="Footer" className="wrap relative grid grid-cols-2 gap-x-21 gap-y-34 border-t border-night-line py-55 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
         {columns.map((c) => (
           <div key={c.title}>
-            <p className="label !text-accent">{c.title}</p>
+            <p className="label !text-accent">
+              {sectionHref(c) ? (
+                <Link href={sectionHref(c)!} className="underline-offset-4 hover:underline">
+                  {c.title}
+                </Link>
+              ) : (
+                c.title
+              )}
+            </p>
             <ul className="mt-13 grid gap-[0.4rem]">
               {c.items.map((i) => (
                 <li key={`${c.title}-${i.href}`}>
@@ -173,8 +187,8 @@ export function SiteFooter() {
         </details>
       </div>
 
-      {/* colophon */}
-      <div className="wrap relative flex flex-col gap-21 border-t border-night-line py-34 md:flex-row md:items-center md:justify-between">
+      {/* colophon: from `md`, where it is one row, `gx-colophon` keeps its right-hand end clear of the Help button and the scroll arrows (fx.css) */}
+      <div className="wrap gx-colophon relative flex flex-col gap-21 border-t border-night-line py-34 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-21">
           <Logo height={40} />
           <p className="text-xs text-on-night-2">

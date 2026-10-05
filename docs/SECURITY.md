@@ -184,6 +184,13 @@ strict-origin-when-cross-origin`, a restrictive `Permissions-Policy`, `Cross-Ori
 same-origin`. `/control/*` adds `Cache-Control: private, no-store` and `X-Robots-Tag: noindex, nofollow`;
 `/api/*` adds `Cache-Control: no-store`.
 
+The TradingView frames are sandboxed. The panels (`TradingViewWidget.tsx`) may run their own script and
+open TradingView in a new tab. The instrument chart (`TradingViewChart.tsx`) is given two things more, for
+its own "Download image" and "Copy image" menu and nothing else: the sandbox token `allow-downloads`, and
+`allow="clipboard-write"` on the frame (writing only; the clipboard cannot be read). Neither needs a change
+to the CSP or to `Permissions-Policy`: clipboard-write is a browser default for this origin and is delegated
+to that one frame by its `allow` attribute. No frame is given forms, top navigation or clipboard reading.
+
 Known weakness, stated: `script-src` includes `'unsafe-inline'` because statically generated Next.js pages
 need an inline bootstrap. A nonce-based policy would require rendering every page on demand.
 

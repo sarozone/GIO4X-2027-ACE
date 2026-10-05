@@ -62,6 +62,7 @@ export default function ClientFundsPage() {
       <JsonLd data={webPageSchema({ path: "/trust/client-funds", name: "Client funds", description })} />
       <PageHero
         crumbs={[
+          { name: "Company", href: "/about" },
           { name: "Trust Centre", href: "/trust" },
           { name: "Client funds", href: "/trust/client-funds" },
         ]}

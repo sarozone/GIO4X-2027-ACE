@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, type RefObject } from "react";
+import { chromeHeight, travelTo } from "@/lib/scroll";
 
 /**
  * What the site tour (Tour.tsx) and the single-page tours (PageTour.tsx) have
@@ -26,13 +27,27 @@ export function isStill(): boolean {
 /** Raised by a single-page tour as it starts, so that a site tour in progress steps aside: two panels never share the corner. */
 export const TOUR_END_EVENT = "gx:tour-end";
 
+/** the space left between the site header and the element a stop points at */
+const BELOW_HEADER = 21;
+
 /**
- * The one element a stop points at: brought into view, then ringed. `selector`
- * is a CSS selector, or undefined for a stop that points at nothing. The ring
- * follows the element through scrolling and resizing and is hidden whenever
- * the element cannot be found or has no size.
+ * Where a stop puts the page, and the one element it points at: brought into
+ * view, then ringed. `shown` names the stop on screen (null while there is
+ * none, or while its page is still on its way); `selector` is a CSS selector,
+ * or undefined for a stop that points at nothing.
+ *
+ * Every stop has one position, and takes it each time it is shown, by the
+ * same route whether it is reached first, with Next or with Back: the top of
+ * its element a fixed distance under the site header, or the top of the page
+ * for a stop without an element. Nothing else is measured (not the card, which
+ * can be minimised, and not the header as it happens to be drawn, which is
+ * taller at the top of a page), so the answer cannot depend on where the
+ * visitor came from. The journey is watched to its end (lib/scroll.ts).
+ *
+ * The ring follows the element through scrolling and resizing and is hidden
+ * whenever the element cannot be found or has no size.
  */
-export function useTourRing(ringRef: RefObject<HTMLDivElement | null>, panelRef: RefObject<HTMLElement | null>, selector: string | undefined): void {
+export function useTourRing(ringRef: RefObject<HTMLDivElement | null>, selector: string | undefined, shown: string | null): void {
   useEffect(() => {
     const ring = ringRef.current;
     if (!ring) return;
@@ -40,13 +55,25 @@ export function useTourRing(ringRef: RefObject<HTMLDivElement | null>, panelRef:
       ring.style.display = "none";
     };
     hide();
-    if (!selector) return;
+    if (shown === null) return;
 
     let el: HTMLElement | null = null;
     let dead = false;
     let raf = 0;
     let timer = 0;
     let tries = 0;
+    let stopTravel = () => {};
+
+    if (!selector) {
+      // a stop that points at nothing is about the page as a whole: it begins at the top
+      timer = window.setTimeout(() => {
+        stopTravel = travelTo(() => 0);
+      }, 420);
+      return () => {
+        window.clearTimeout(timer);
+        stopTravel();
+      };
+    }
 
     const place = () => {
       raf = 0;
@@ -67,17 +94,15 @@ export function useTourRing(ringRef: RefObject<HTMLDivElement | null>, panelRef:
       if (!raf) raf = requestAnimationFrame(place);
     };
 
+    // Where the element is laid out on the page, not where it is drawn: a section that is still
+    // arriving (data-reveal) is drawn a little off its place, and that must not move the stop.
+    const pageTop = (node: HTMLElement) => {
+      let top = 0;
+      for (let n: HTMLElement | null = node; n; n = n.offsetParent instanceof HTMLElement ? n.offsetParent : null) top += n.offsetTop;
+      return top;
+    };
     const bring = (node: HTMLElement) => {
-      const r = node.getBoundingClientRect();
-      const header = document.querySelector("header[data-site-header]")?.getBoundingClientRect().height ?? 55;
-      const panel = panelRef.current?.getBoundingClientRect();
-      // where the panel would lie over the element, the room it takes is not counted as room
-      const taken = panel && r.left < panel.right + 13 ? panel.height + 21 : 0;
-      const room = window.innerHeight - header - taken;
-      const offset = r.height + 42 <= room ? r.top - header - (room - r.height) / 2 : r.top - header - 21;
-      const top = Math.max(0, window.scrollY + offset);
-      if (Math.abs(top - window.scrollY) < 8) return;
-      window.scrollTo({ top, behavior: isStill() ? "auto" : "smooth" });
+      stopTravel = travelTo(() => pageTop(node) - chromeHeight() - BELOW_HEADER);
     };
 
     const find = () => {
@@ -106,11 +131,12 @@ export function useTourRing(ringRef: RefObject<HTMLDivElement | null>, panelRef:
     return () => {
       dead = true;
       window.clearTimeout(timer);
+      stopTravel();
       cancelAnimationFrame(raf);
       window.removeEventListener("scroll", queue);
       window.removeEventListener("resize", queue);
       ro?.disconnect();
       hide();
     };
-  }, [ringRef, panelRef, selector]);
+  }, [ringRef, selector, shown]);
 }

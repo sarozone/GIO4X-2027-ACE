@@ -19,6 +19,7 @@ export default async function ConnectTheDotsPage({ searchParams }: { searchParam
       <PageHero
         quiet
         crumbs={[
+          { name: "Intelligence", href: "/intelligence" },
           { name: "Labs", href: "/labs" },
           { name: "Connect the Dots", href: "/labs/connect-the-dots" },
         ]}

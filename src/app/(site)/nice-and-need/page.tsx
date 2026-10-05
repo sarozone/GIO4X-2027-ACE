@@ -19,7 +19,7 @@ export default function Page() {
   return (
     <>
       <JsonLd data={webPageSchema({ path: "/nice-and-need", name: "Nice & Need", description: DESCRIPTION, type: "CollectionPage" })} />
-      <PageHero quiet crumbs={[{ name: "Nice & Need", href: "/nice-and-need" }]} eyebrow="Free, from the whole web" title="Nice & Need" lead={`${total} free resources elsewhere on the web, sorted by what they are for. Some are nice to have. Some you need. Each is marked.`}>
+      <PageHero quiet crumbs={[{ name: "Academy", href: "/academy" }, { name: "Nice & Need", href: "/nice-and-need" }]} eyebrow="Free, from the whole web" title="Nice & Need" lead={`${total} free resources elsewhere on the web, sorted by what they are for. Some are nice to have. Some you need. Each is marked.`}>
         <Link href="#safe" className="btn btn-primary">
           Start with what you need
         </Link>

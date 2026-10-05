@@ -99,6 +99,7 @@ export default async function TermPage({ params }: Params) {
       <PageHero
         quiet
         crumbs={[
+          { name: "Academy", href: "/academy" },
           { name: "Glossary", href: "/glossary" },
           { name: t.term, href: path },
         ]}

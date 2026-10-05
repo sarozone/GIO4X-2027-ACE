@@ -47,6 +47,7 @@ export default function MoneyManagersPage() {
     <>
       <PageHero
         crumbs={[
+          { name: "Trading", href: "/trading" },
           { name: "Partners", href: "/partners" },
           { name: "Money managers", href: "/partners/money-managers" },
         ]}
