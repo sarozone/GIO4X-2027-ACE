@@ -91,8 +91,8 @@ export async function signUp(input: SignupInput): Promise<AuthActionResult> {
 
   return {
     ok: true,
-    message: "Check your email to confirm your account.",
-    redirectTo: `/auth/verify-email?email=${encodeURIComponent(email)}`,
+    message: "We emailed you a 6-digit code to confirm your account.",
+    redirectTo: `/auth/verify-otp?type=signup&email=${encodeURIComponent(email)}`,
   };
 }
 
@@ -260,10 +260,12 @@ export async function requestEmailOtp(formData: FormData): Promise<AuthActionRes
 export async function verifyEmailOtp(formData: FormData): Promise<AuthActionResult> {
   const email = String(formData.get("email") || "").trim().toLowerCase();
   const token = String(formData.get("token") || "").trim();
+  // "signup" confirms a new account; "email" is a passwordless sign-in.
+  const type = String(formData.get("type") || "") === "signup" ? "signup" : "email";
   if (!email || !token) return { ok: false, error: "Email and code are required." };
 
   const supabase = createServerSupabaseClient(cookies());
-  const { error } = await supabase.auth.verifyOtp({ email, token, type: "email" });
+  const { error } = await supabase.auth.verifyOtp({ email, token, type });
   if (error) return { ok: false, error: error.message };
   revalidatePath("/", "layout");
   return { ok: true, redirectTo: "/" };
