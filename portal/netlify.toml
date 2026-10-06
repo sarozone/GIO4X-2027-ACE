@@ -22,7 +22,7 @@
   # <this origin>/portal/auth/callback must be listed in the portal's Supabase
   # project under Auth → URL Configuration → Redirect URLs. Change it here
   # when the website moves to its real domain.
-  NEXT_PUBLIC_SITE_URL = "https://gio4x-2027-ace.netlify.app"
+  NEXT_PUBLIC_SITE_URL = "https://www.gio4x.com"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
