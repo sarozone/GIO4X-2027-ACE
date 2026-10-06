@@ -68,7 +68,7 @@ export async function signUp(input: SignupInput): Promise<AuthActionResult> {
 
   const supabase = createServerSupabaseClient(cookies());
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password: input.password,
     options: {
@@ -87,6 +87,17 @@ export async function signUp(input: SignupInput): Promise<AuthActionResult> {
 
   if (error) {
     return { ok: false, error: error.message };
+  }
+
+  // Supabase answers a sign-up for an e-mail that already has a confirmed
+  // account with a fake success and sends no e-mail (no identities on the
+  // returned user). Say so, instead of waiting for a code that never comes.
+  if (data.user && (data.user.identities?.length ?? 0) === 0) {
+    return {
+      ok: false,
+      error: "This email is already registered. Please sign in or reset your password.",
+      field: "email",
+    };
   }
 
   return {
